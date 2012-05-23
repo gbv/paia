@@ -1,7 +1,6 @@
 % Patrons Account Information API (PAIA)
 % Jakob Voß
-% 2012-05-22
-
+% GIT_REVISION_DATE
 
 # Introduction
 
@@ -20,7 +19,9 @@ based on use cases and taking into account existing related standards and
 products such as NISO Circulation Interchange Protocol (NCIP), \[X]SLNP,
 DLF-ILS recommendations, and ViFind ILS drivers.
 
-Updates and sources can be found at <http://github.com/gbv/paia>.
+Updates and sources can be found at <http://github.com/gbv/paia>. The current
+version of this document was last modified at GIT_REVISION_DATE with revision
+GIT_REVISION_HASH.
 
 
 ## Conformance requirements
