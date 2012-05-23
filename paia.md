@@ -30,10 +30,10 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
 interpreted as described in RFC 2119 [@RFC2119].
 
-A PAIA server MUST implement PAIA core and it MAY implement PAIA auth.  If PAIA
-auth is not implemented, another way SHOULD BE documented to distribute patron
-identifiers and access tokens. A PAIA server MAY support only a subset of
-methods but it MUST return a valid response on every method request.
+A PAIA server MUST implement *PAIA core* and it MAY implement *PAIA auth*.  If
+PAIA auth is not implemented, another way SHOULD BE documented to distribute
+patron identifiers and access tokens. A PAIA server MAY support only a subset
+of methods but it MUST return a valid response on every method request.
 
 
 # General 
@@ -55,7 +55,7 @@ methods at these base URLs as belonging to PAIA.
 In the following, the base URL <https://example.org/core/> is used for PAIA
 core and <https://example.org/auth/> for PAIA auth. 
 
-Authentification in PAIA is based on OAuth 2.0 (@OAuth2) with bearer tokens
+Authentification in PAIA is based on **OAuth 2.0** (@OAuth2) with bearer tokens
 (@OAuth2Bearer) over HTTPS (@RFC2818).  For security reasons, PAIA methods MUST
 be requested via HTTPS only. A PAIA client MUST NOT ignore SSL certificate
 errors; otherwise access token (PAIA core) or even password (PAIA auth) are
@@ -77,7 +77,7 @@ The HTTP response content type of a PAIA response is a JSON object (HTTP header
 (HTTP header `Content-Type: application/javascript;charset=UTF-8`).
 
 
-### Parameters and fields
+## Parameters and fields
 
 Every request parameter and every response field is defined with
 
@@ -191,12 +191,20 @@ purpose
   : Get general information about a patron
 URL
   : https://example.org/core/**getPatron**
-query parameters
-  : -----------  ------ --------  -------------------
-     username     1..1   String    patron identifier
-    -----------  ------ --------  -------------------
+request parameters
+  : ---------- ------ -------- -------------------
+     username   1..1   string   patron identifier
+    ---------- ------ -------- -------------------
 response fields
-  : ...
+  : --------- ------ --------------- ------------------------------
+     name      1..1   string          full name of the patron
+	 email     0..1   email           email address of the patron
+	 expires   0..1   date
+	 status    0..1   account state
+    --------- ------ --------------- ------------------------------
+ 
+Additional field such as address may be added in a later revision.
+
 
 ## getItems
 
@@ -204,12 +212,34 @@ purpose
   : Get a list of loans, reservations and other items related to a patron
 URL
   : https://example.org/core/**getItems**
-query parameters
-  : -----------  ------ --------  -------------------
-     username     1..1   String    patron identifier
-    -----------  ------ --------  -------------------
+request parameters
+  : -------- ------ -------- -------------------
+     patron   1..1   string   patron identifier
+    -------- ------ -------- -------------------
 response fields
-  : ...
+  : --------------- ------ --------------------- ----------------------------------------------------------
+     doc                                          list of documents (order is irrelevant)
+	 doc.status      1..1   document status
+	 doc.item        0..1   URI
+	 doc.edition     0..1   URI
+	 doc.requested   0..1   URI
+	 doc.about       0..1   string
+	 doc.label       0..1   string
+	 doc.queue       0..1   nonnegative integer
+	 doc.renewals    0..1   nonnegative integer
+	 doc.reminder    0..1   nonnegative integer   
+	 doc.duedate     0..1   date
+	 doc.cancancel   0..1   boolean               whether an ordered or provided document can be canceled
+	 doc.canrenew    0..1   boolean               whether a document can be renewed
+	 doc.storage     0..1   string                location of the document
+	 doc.storageid   0..1   URI                   location URI
+    --------------- ------ --------------------- ----------------------------------------------------------
+
+For each document there must be at least a `doc.item` URI or a `doc.edition`
+URI. In most cases there will be an item URI for a particular copy, but users
+may also have requested an edition.
+
+The response fields `doc.label` and `doc.storage`/`doc.storageid` correspond to properties in DAIA.
 
 
 ## renewItems
@@ -218,14 +248,24 @@ purpose
   : renew one or more documents held by the patron
 URL
   : https://example.org/core/**renewItems**
-query parameters
-  : -----------  ------ --------  ----------------------------
-     username     1..1   String    patron identifier
-     doc          0..n             list of documents to renew
-     doc.item     1..1   URI       URI of the particular item
-    -----------  ------ --------  ----------------------------
+request parameters
+  : ------------- ------ -------- ------------------------------
+     patron        1..1   String    patron identifier
+     doc           1..n             list of documents to renew
+     doc.item      0..1   URI       URI of a particular item
+     doc.edition   0..1   URI       URI of a particular edition
+    ------------- ------ --------  -----------------------------
 response fields
-  : ...
+  : --------------- ------ ----------------- 
+	 doc             1..n
+	 doc.status      1..1   document status
+	 doc.item        0..1   URI
+	 doc.edition     0..1   URI
+     doc.error       0..1   string
+    --------------- ------ ----------------- 
+
+For each document there must be at least a `doc.item` URI or a `doc.edition`
+URI both in the request and in the response.
 
 
 ## requestItems
@@ -234,8 +274,24 @@ purpose
   : Request one or more items for reservation or delivery.
 URL
   : https://example.org/core/**requestItems**
+request parameters
+  : ------------- ------ -------- ------------------------------
+     patron        1..1   String    patron identifier
+     doc           1..n             list of documents to renew
+     doc.item      0..1   URI       URI of a particular item
+     doc.edition   0..1   URI       URI of a particular edition
+    ------------- ------ --------  -----------------------------
 response fields
-  : ...
+  : --------------- ------ ----------------- 
+	 doc             1..n
+	 doc.status      1..1   document status
+	 doc.item        0..1   URI
+	 doc.edition     0..1   URI
+     doc.error       0..1   string
+    --------------- ------ ----------------- 
+
+For each document there must be either an `doc.item` URI or a `doc.edition` URI in
+the request and at least one of both in the response.
 
 
 ## cancelItems
@@ -244,8 +300,21 @@ purpose
   : Cancel requests for items.
 URL
   : https://example.org/core/**cancelItems**
+request parameters
+  : ------------- ------ -------- ------------------------------
+     patron        1..1   String    patron identifier
+     doc           1..n             list of documents to renew
+     doc.item      0..1   URI       URI of a particular item
+     doc.edition   0..1   URI       URI of a particular edition
+    ------------- ------ --------  -----------------------------
 response fields
-  : ...
+  : --------------- ------ ----------------- 
+	 doc             1..n
+	 doc.status      1..1   document status
+	 doc.item        0..1   URI
+	 doc.edition     0..1   URI
+     doc.error       0..1   string
+    --------------- ------ ----------------- 
 
 
 ## getFunds
@@ -254,8 +323,20 @@ purpose
   : Look up current funds of a patron.
 URL
   : https://example.org/core/**getFunds**
+request parameters
+  : -------- ------ -------- -------------------
+     patron   1..1   string   patron identifier
+    -------- ------ -------- -------------------
 response fields
-  : ...
+  : ------------- ------ -------- ----------------------------------------
+     amount        0..1   money    Sum of all fees. May also be negative!
+     fee           0..n            list of fees
+	 fee.amount    1..1   money
+	 fee.date      0..1   date
+	 fee.about     0..1   string
+	 fee.item      0..1   URI
+	 fee.edition   0..1   URI
+    ------------- ------ -------- ----------------------------------------
 
 
 # PAIA auth
@@ -292,7 +373,7 @@ purpose
   : Get a patron identifier and access token to access patron information
 URL
   : https://example.org/auth/**loginPatron**
-query parameters
+request parameters
   : ------------  ------ --------  ----------------------------
      username      1..1   string    User name of a patron 
      password      0..n             Password of a patron
@@ -335,7 +416,7 @@ purpose
   : Invalidate an access token
 URL
   : https://example.org/auth/**logoutPatron**
-query parameters
+request parameters
   : --------  ------ --------  -------------------
      patron    1..1   string    Patron identifier
     --------  ------ --------  -------------------
@@ -356,7 +437,7 @@ purpose
   : Change password of a patron.
 URL
   : https://example.org/auth/**changeLogin**
-query parameters
+request parameters
   : ---------- ------ --------  ----------------------------
      patron     1..1   string    Patron identifier
      username   1..1   string    User name of the patron 

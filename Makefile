@@ -6,6 +6,7 @@ paia.html: paia.md template.html5 references.bib
 	sed 's/GIT_REVISION_DATE/${REVDATE}/' paia.md \
 	| pandoc -N --bibliography=references.bib --template=template --toc -f markdown -t html5 -- \
 	| perl -p -e 's!(http://[^<]+)\.</p>!<a href="$$1"><code class="url">$$1</code></a>.</p>!g' \
+	| sed 's!<td style="text-align: center;">!<td>!' \
 	| sed 's!GIT_REVISION_HASH!<a href="https://github.com/gbv/paia/commit/${REVHASH}">${REVSHRT}<\/a>!' > paia.html
 
 revision: paia.html
@@ -21,5 +22,8 @@ website: revision
 
 clean:
 	rm -f paia.html paia-*.html
+
+html:
+	paia.html
 
 .PHONY: clean
