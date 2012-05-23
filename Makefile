@@ -14,8 +14,7 @@ revision: paia.html
 
 website: revision
 	git checkout gh-pages
-	rm paia.html
-	ln -s paia-${REVSHRT}.html paia.html
+	echo '<meta HTTP-EQUIV="REFRESH" content="0; url=paia-${REVSHRT}.html">' > paia.html
 	git add paia.html paia-${REVSHRT}.html
 	git commit -m "added revision ${REVSHRT}"
 	git checkout master
