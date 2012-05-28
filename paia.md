@@ -129,15 +129,70 @@ either as request parameter in the request body (HTTP POST) or as request header
 
 ## Error response
 
-...
+There are two types of errors:
 
+Request errors
+  : Malformed requests, failed authentification, unsupported methods, and
+    unexpected server errors such as backend downtime etc. MUST result in an 
+	error response. An error response is returned with a HTTP status code 
+	4xx (client error) or 5xx (server error) as defined in [@RFC2616], unless
+    the request parameter `suppress_response_codes` is given.
+Document errors
+  : Unknown document URIs and failed attempts to request, renew, or cancel 
+    a document do not result in an error response, unless there is another
+	request error. Document errors are indicated by setting the `doc.error`
+	response field.
+
+
+An error response is a JSON object with the following fields, compatible
+with OAuth error responses:
+
+------------------- ------ --------------------- -----------------------------------------
+ error               1..1   string                alphanumerical error code
+ code                0..1   nonnegative integer   HTTP status error code
+ error_description   0..1   string                Human-readable error description
+ error_uri           0..1   string                Human-readable web page about the error
+------------------- ------ --------------------- -----------------------------------------
+
+The `code` field is REQUIRED with request parameter `suppress_response_codes`. 
+It SHOULD be omitted with PAIA auth requests to not confuse OAuth clients.
+
+This is a preliminary, incomplete list of errors and error codes:
+
+------ ----------------------- -----------------------------
+ code  error
+------ ----------------------- -----------------------------
+ 400    invalid_request
+
+ 401    invalid_client
+ 
+ 401    invalid_grant
+ 
+ 404    not_found                Unknown method or base URL
+ 
+ 500    internal_server_error
+ 
+ 502    bad_gateway
+ 
+ 503    service_unavailable
+
+ 504    gateway_timeout
+------ ----------------------- ------------------------------
+
+NOTE: See <https://dev.twitter.com/docs/error-codes-responses> (TODO)
 
 ## Special request parameters
 
-* callback
-* suppress_response_codes
+The following special request parameters can be added to any request:
 
-
+callback
+  : A JavaScript callback method name to return JSONP instead of JSON. The
+    callback SHOULD only contain alphanumeric characters and underscores; 
+	any invalid characters MUST be stripped by a PAIA server. If callback
+	is given, the response content type MUST be `application/javascript`.
+suppress_response_codes
+  : If this parameter is present, *all* responses MUST be returned with a 
+    200 OK status code, even [error responses](#error-response).
 
 ## Data types
 
@@ -452,7 +507,9 @@ The server MUST check
 * whether the user identified by username is allowed to 
   change the given patrond’s password
 
-A PAIA server MAY reject this method (TODO: document error response).
+A PAIA server MAY reject this method and return an [error
+response](#error-response) with error code 403 (forbidden) or error code 501
+(not implemented).
 
 
 # Glossary

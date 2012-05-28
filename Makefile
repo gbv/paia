@@ -12,7 +12,8 @@ paia.html: paia.md template.html5 references.bib
 revision: paia.html
 	cp paia.html paia-${REVSHRT}.html
 
-website: revision
+website: clean revision
+	# TODO: "git status -s 2> /dev/null" check whether working directory is clean
 	git checkout gh-pages
 	echo '<meta HTTP-EQUIV="REFRESH" content="0; url=paia-${REVSHRT}.html">' > paia.html
 	git add paia.html paia-${REVSHRT}.html
