@@ -5,6 +5,8 @@ REVLINK=https://github.com/gbv/paia/commit/${REVHASH}
 
 html: paia.html
 
+pdf: paia.pdf
+
 new: purge html changes
 
 paia.html: paia.md template.html5 references.bib
@@ -16,21 +18,26 @@ paia.html: paia.md template.html5 references.bib
 	| sed 's!GIT_REVISION_HASH!<a href="${REVLINK}">${REVSHRT}<\/a>!' > paia.html
 	@git diff-index --quiet HEAD paia.md || echo "Current paia.md not checked in, so this is a DRAFT!" 
 
+# FIXME: the current PDF does not look that nice...
+paia.pdf: paia.md references.bib
+	pandoc -N --bibliography=references.bib --toc -f markdown -o paia.pdf paia.md
+
 changes: changes.html
 
 changes.html:
-	@git log -3 --pretty=format:'<li><a href=paia-%h.html><tt>%ci</tt></a> <a href="https://github.com/gbv/paia/commit/%H"><em>%s</em></a></li>' paia.md > changes.html
+	@git log -4 --pretty=format:'<li><a href=paia-%h.html><tt>%ci</tt></a>: <a href="https://github.com/gbv/paia/commit/%H"><em>%s</em></a></li>' paia.md > changes.html
 
 revision: paia.html
 	@cp paia.html paia-${REVSHRT}.html
 
 website: clean purge revision changes.html
-	git checkout gh-pages
-	perl -pi -e 's!paia-[0-9a-z]{7}!paia-${REVSHRT}!g' index.html
-	sed -i '/<!-- BEGIN CHANGES -->/,/<!-- END CHANGES -->/ {//!d}; /<!-- BEGIN CHANGES -->/r changes.html' index.html
-	git add index.html paia-${REVSHRT}.html
-	git commit -m "revision ${REVSHRT}"
-	git checkout master
+	@echo "new revision to be shown at http://gbv.github.com/paia/"
+	@git checkout gh-pages
+	@perl -pi -e 's!paia-[0-9a-z]{7}!paia-${REVSHRT}!g' index.html
+	@sed -i '/<!-- BEGIN CHANGES -->/,/<!-- END CHANGES -->/ {//!d}; /<!-- BEGIN CHANGES -->/r changes.html' index.html
+	@git add index.html paia-${REVSHRT}.html
+	@git commit -m "revision ${REVSHRT}"
+	@git checkout master
 
 cleancopy:
 	@echo "checking that no local modifcations exist..."

@@ -1,17 +1,27 @@
 The **Patrons Account Information API (PAIA)** is a HTTP based programming
 interface to access library patron information, such as loans, reservations,
-and fees. 
+and fees. See http://gbv.github.com/paia for an overview (included in the
+`gh-pages` in this repository).
 
-This git repository, hosted at http://github.com/gbv/paia, contains a 
-preliminary specification. The master file is `paia.md` with bibliographic
-references in `references.bib`.
+This git repository, hosted at http://github.com/gbv/paia, contains a
+preliminary specification of PAIA. The master file is `paia.md` with
+bibliographic references in `references.bib`. The specification is written in
+[Pandoc’s
+Markdown](http://johnmacfarlane.net/pandoc/demo/example9/pandocs-markdown.html).
 
-A website with snapshots of the specification is included in the `gh-pages`
-branch, visible at http://gbv.github.com/paia.
+# How to modify the specification
 
-Both the specification and the website are written in
-[Pandoc’s Markdown](http://johnmacfarlane.net/pandoc/demo/example9/pandocs-markdown.html).
-There is a `Makefile` in the `master` branch to create HTML and additional output formats.
+The best method is to create a github account so you can
 
-*Feel free to implement, comment, and edit! A bug tracking system is available
-at https://github.com/gbv/paia/issues.*
+1. Fork the repository: <http://github.com/gbv/paia/fork_select>
+2. Check out your fork
+3. Modify `paia.md`. You can create `paia.html` by simply calling `make` in 
+   your working directory to get a nice HTML version. With `make pdf` you
+   get a (less nice) PDF version. Both versions require Pandoc.
+4. Commit you changes and push to github
+5. Request a merge of your modification
+
+You can also just comment in the project Issue tracker and in the wiki:
+
+* https://github.com/gbv/paia/issues
+* https://github.com/gbv/paia/wiki
