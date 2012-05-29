@@ -4,7 +4,7 @@
 
 # Introduction
 
-The Patrons Account Information API (PAIA) is a HTTP based programming
+The **Patrons Account Information API (PAIA)** is a HTTP based programming
 interface to access library patron information, such as loans, reservations,
 and fees.  Its primary goal is to provide patron access for discovery
 interfaces and other third-party applications to integrated library system, as
@@ -17,7 +17,7 @@ This document is a first draft, based on a more elaborated version in German
 that is being implemented. The specification has been created collaboratively
 based on use cases and taking into account existing related standards and
 products such as NISO Circulation Interchange Protocol (NCIP), \[X]SLNP,
-DLF-ILS recommendations, and ViFind ILS drivers.
+DLF-ILS recommendations, and VuFind ILS drivers among others.
 
 Updates and sources can be found at <http://github.com/gbv/paia>. The current
 version of this document was last modified at GIT_REVISION_DATE with revision
@@ -157,18 +157,21 @@ with OAuth error responses:
 The `code` field is REQUIRED with request parameter `suppress_response_codes`. 
 It SHOULD be omitted with PAIA auth requests to not confuse OAuth clients.
 
-This is a preliminary, incomplete list of errors and error codes:
+This is a preliminary list of errors and error codes, compiled from the OAuth 2.0
+specification and a list of error codes of the Twitter API
+(<https://dev.twitter.com/docs/error-codes-responses>).
 
------- ----------------------- -----------------------------
- code  error
------- ----------------------- -----------------------------
- 400    invalid_request
+------ ----------------------- ------------------------------------------------
+ code  error                    description
+------ ----------------------- ------------------------------------------------
+ 400    invalid_request         malformed, missing, or unknown request 
+                                parameters or too many requests (rate limited)
 
  401    invalid_client
  
- 401    invalid_grant
+ 401    invalid_grant           missing or invalid access token
  
- 404    not_found                Unknown method or base URL
+ 404    not_found               unknown method or base URL
  
  500    internal_server_error
  
@@ -177,9 +180,8 @@ This is a preliminary, incomplete list of errors and error codes:
  503    service_unavailable
 
  504    gateway_timeout
------- ----------------------- ------------------------------
+------ ----------------------- ------------------------------------------------
 
-NOTE: See <https://dev.twitter.com/docs/error-codes-responses> (TODO)
 
 ## Special request parameters
 
@@ -254,9 +256,9 @@ response fields
   : --------- ------ --------------- ------------------------------
      name      1..1   string          full name of the patron
 	 email     0..1   email           email address of the patron
-	 expires   0..1   date
-	 status    0..1   account state
-    --------- ------ --------------- ------------------------------
+	 expires   0..1   date            date of patron account expiry
+	 status    0..1   account state   current state (0, 1, 2, or 3)
+    --------- ------ --------------- -------------------------------
  
 Additional field such as address may be added in a later revision.
 
@@ -274,16 +276,16 @@ request parameters
 response fields
   : --------------- ------ --------------------- ----------------------------------------------------------
      doc                                          list of documents (order is irrelevant)
-	 doc.status      1..1   document status
-	 doc.item        0..1   URI
-	 doc.edition     0..1   URI
-	 doc.requested   0..1   URI
-	 doc.about       0..1   string
-	 doc.label       0..1   string
-	 doc.queue       0..1   nonnegative integer
-	 doc.renewals    0..1   nonnegative integer
-	 doc.reminder    0..1   nonnegative integer   
-	 doc.duedate     0..1   date
+	 doc.status      1..1   document status       status (0, 1, 2, 3, 4, or 5)
+	 doc.item        0..1   URI                   URI of a particular copy
+	 doc.edition     0..1   URI                   URI of a the document (no particular copy)
+	 doc.requested   0..1   URI                   URI that was originally requested
+	 doc.about       0..1   string                textual description of the document
+	 doc.label       0..1   string                call number, shelf mark or similar item label
+	 doc.queue       0..1   nonnegative integer   number of waiting requests for the document or item
+	 doc.renewals    0..1   nonnegative integer   number of times the document has been renewed
+	 doc.reminder    0..1   nonnegative integer   number of times the patron has been reminded
+	 doc.duedate     0..1   date                  date of expiry of the document statue (most times loan)
 	 doc.cancancel   0..1   boolean               whether an ordered or provided document can be canceled
 	 doc.canrenew    0..1   boolean               whether a document can be renewed
 	 doc.storage     0..1   string                location of the document
@@ -294,7 +296,8 @@ For each document there must be at least a `doc.item` URI or a `doc.edition`
 URI. In most cases there will be an item URI for a particular copy, but users
 may also have requested an edition.
 
-The response fields `doc.label` and `doc.storage`/`doc.storageid` correspond to properties in DAIA.
+The response fields `doc.label`, `doc.storage`, `doc.storageid`, and
+`doc.queue` correspond to properties in DAIA.
 
 
 ## renewItems
@@ -529,5 +532,21 @@ PAIA core server
     all PAIA core methods can be accessed at a common base URL.
 patron identifier
   : A Unicode string that identifies a library patron account.
+
+# Security Considerations
+
+Security of OAuth 2.0 with bearer tokens relies on correct application of
+HTTPS.  It is known that SSL certificate errors are often ignored just because
+of laziness. It MUST be clear to all implementors that this spoils the whole
+chain of trust and is as secure as sending access tokens as plain text.
+
+To limit the risk of spoiled access tokens, PAIA servers SHOULD put limits on
+the lifetime of access tokens and on the number of allowed requests per minute
+among other security limitations.
+
+It is also known that several library systems allow weak passwords. For this reason
+PAIA auth servers MUST follow approriate security measures, such as protecting 
+against brute force attacks and blocking accounts with weak passwords or with
+passwords that have been sent unencrypted.
 
 # References
