@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Jakob Voß" />
+  <meta name="date" content="2012-09-04 13:29:52 +0200" />
+  <title>Patrons Account Information API (PAIA)</title>
+   <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <style type="text/css">
+  body { font-family: sans-serif; }
+  a { text-decoration: none }
+  a:hover { text-decoration: underline }
+  h1 { font: 170% sans-serif }
+  h2 { font: 140% sans-serif }
+  h3 { font: 120% sans-serif }
+  dt { font-weight: bold; }
+  h1, h2, h3, h1 a, h2 a, h3 a { color: #005A9C; }
+  table { border-collapse: collapse; }
+  td { border: 1px solid #999; padding: 3px }
+  dl p { margin-top: 0; }
+  dt { margin-top: 0.8em; }
+  dd { margin-left: 1.5em; }
+  ol { margin-bottom: 1em; }
+  table + p { margin-top: 1em; }
+  </style>
+</head>
+<body>
+<header>
+<h1 class="title">Patrons Account Information API (PAIA)</h1>
+<h3 class="author">Jakob Voß</h3>
+<h4 class="date">2012-09-04 13:29:52 +0200</h4>
+</header>
+
+<h1>Table of Contents</h1>
+<nav id="TOC">
+<ul>
+<li><a href="#introduction"><span class="toc-section-number">1</span> Introduction</a><ul>
+<li><a href="#status-of-this-document"><span class="toc-section-number">1.1</span> Status of this document</a></li>
+<li><a href="#conformance-requirements"><span class="toc-section-number">1.2</span> Conformance requirements</a></li>
+</ul></li>
+<li><a href="#general"><span class="toc-section-number">2</span> General</a><ul>
+<li><a href="#request-and-response-format"><span class="toc-section-number">2.1</span> Request and response format</a></li>
+<li><a href="#parameters-and-fields"><span class="toc-section-number">2.2</span> Parameters and fields</a></li>
+<li><a href="#access-tokens"><span class="toc-section-number">2.3</span> Access tokens</a></li>
+<li><a href="#error-response"><span class="toc-section-number">2.4</span> Error response</a></li>
+<li><a href="#special-request-parameters"><span class="toc-section-number">2.5</span> Special request parameters</a></li>
+<li><a href="#data-types"><span class="toc-section-number">2.6</span> Data types</a></li>
+</ul></li>
+<li><a href="#paia-core"><span class="toc-section-number">3</span> PAIA core</a><ul>
+<li><a href="#getpatron"><span class="toc-section-number">3.1</span> getPatron</a></li>
+<li><a href="#getitems"><span class="toc-section-number">3.2</span> getItems</a></li>
+<li><a href="#renewitems"><span class="toc-section-number">3.3</span> renewItems</a></li>
+<li><a href="#requestitems"><span class="toc-section-number">3.4</span> requestItems</a></li>
+<li><a href="#cancelitems"><span class="toc-section-number">3.5</span> cancelItems</a></li>
+<li><a href="#getfunds"><span class="toc-section-number">3.6</span> getFunds</a></li>
+</ul></li>
+<li><a href="#paia-auth"><span class="toc-section-number">4</span> PAIA auth</a><ul>
+<li><a href="#loginpatron"><span class="toc-section-number">4.1</span> loginPatron</a></li>
+<li><a href="#logoutpatron"><span class="toc-section-number">4.2</span> logoutPatron</a></li>
+<li><a href="#changelogin"><span class="toc-section-number">4.3</span> changeLogin</a></li>
+</ul></li>
+<li><a href="#glossary"><span class="toc-section-number">5</span> Glossary</a></li>
+<li><a href="#security-considerations"><span class="toc-section-number">6</span> Security Considerations</a></li>
+<li><a href="#references"><span class="toc-section-number">7</span> References</a></li>
+</ul>
+</nav>
+<h1 id="introduction"><a href="#TOC"><span class="header-section-number">1</span> Introduction</a></h1>
+<p>The <strong>Patrons Account Information API (PAIA)</strong> is a HTTP based programming interface to access library patron information, such as loans, reservations, and fees. Its primary goal is to provide patron access for discovery interfaces and other third-party applications to integrated library system, as easy as possible.</p>
+<h2 id="status-of-this-document"><a href="#TOC"><span class="header-section-number">1.1</span> Status of this document</a></h2>
+<p>This document is a first draft, based on a more elaborated version in German that is being implemented. The specification has been created collaboratively based on use cases and taking into account existing related standards and products such as NISO Circulation Interchange Protocol (NCIP), [X]SLNP, DLF-ILS recommendations, and VuFind ILS drivers among others.</p>
+<p>Updates and sources can be found at <a href="http://github.com/gbv/paia"><code class="url">http://github.com/gbv/paia</code></a>. The current version of this document was last modified at 2012-09-04 13:29:52 +0200 with revision <a href="https://github.com/gbv/paia/commit/840b77c46f6400da9c1c768e6e796bc86e0afe14">840b77c</a>.</p>
+<h2 id="conformance-requirements"><a href="#TOC"><span class="header-section-number">1.2</span> Conformance requirements</a></h2>
+<p>The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;, &quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and &quot;OPTIONAL&quot; in this document are to be interpreted as described in RFC 2119.</p>
+<p>A PAIA server MUST implement <em>PAIA core</em> and it MAY implement <em>PAIA auth</em>. If PAIA auth is not implemented, another way SHOULD BE documented to distribute patron identifiers and access tokens. A PAIA server MAY support only a subset of methods but it MUST return a valid response on every method request.</p>
+<h1 id="general"><a href="#TOC"><span class="header-section-number">2</span> General</a></h1>
+<p>PAIA consists of two independent parts:</p>
+<ul>
+<li><p><strong><a href="#paia-core">PAIA core</a></strong> defines six basic methods to look up, request and cancel loans and reservations, and to look up fees and general patron information.</p></li>
+<li><p><strong><a href="#paia-auth">PAIA auth</a></strong> defines three authentification methods (login, logout, and password update) to get access tokens, required by PAIA core.</p></li>
+</ul>
+<p>Each method is accessed at an URL with a common base URL for PAIA core methods and common base URL for PAIA auth methods. A server SHOULD NOT provide additional methods at these base URLs and it MUST NOT propagate additional methods at these base URLs as belonging to PAIA.</p>
+<p>In the following, the base URL <a href="https://example.org/core/"><code class="url">https://example.org/core/</code></a> is used for PAIA core and <a href="https://example.org/auth/"><code class="url">https://example.org/auth/</code></a> for PAIA auth.</p>
+<p>Authentification in PAIA is based on <strong>OAuth 2.0</strong> with bearer tokens over HTTPS (RFC 2818). For security reasons, PAIA methods MUST be requested via HTTPS only. A PAIA client MUST NOT ignore SSL certificate errors; otherwise access token (PAIA core) or even password (PAIA auth) are compromised by the client.</p>
+<h2 id="request-and-response-format"><a href="#TOC"><span class="header-section-number">2.1</span> Request and response format</a></h2>
+<p>Each PAIA method is identified by a name which is appended to the PAIA core/auth base URL to get the method’s full URL. In addition there is a set of request parameters for each method. These parameters can be send as URL parameters (HTTP GET) or as form fields with HTTP request content type set to <code>application/x-www-form-urlencoded</code> (HTTP POST). In addition there is the special request parameter <code>access_token</code> which MUST NOT be sent as URL parameter (see section on <a href="#access-tokens">access tokens</a> for details).</p>
+<p>The HTTP response content type of a PAIA response is a JSON object (HTTP header <code>Content-Type: application/json;charset=UTF-8</code>), optionally wrapped as JSONP (HTTP header <code>Content-Type: application/javascript;charset=UTF-8</code>).</p>
+<h2 id="parameters-and-fields"><a href="#TOC"><span class="header-section-number">2.2</span> Parameters and fields</a></h2>
+<p>Every request parameter and every response field is defined with</p>
+<ul>
+<li>the <strong>name</strong> of the parameter/field</li>
+<li>the <strong>ocurrence</strong> (occ) of the parameter/field being one of
+<ul>
+<li><code>0..1</code> (optional, non repeatable)</li>
+<li><code>1..1</code> (mandatory, non repeatable)</li>
+<li><code>1..n</code> (mandatory, repeatbale)</li>
+<li><code>0..n</code> (optional, repeatable)</li>
+</ul></li>
+<li>the <strong><a href="#data-types">data type</a></strong> of the parameter/field.</li>
+<li>a short description</li>
+</ul>
+<p>Simple parameter names and response fields consist of lowercase letters <code>a-z</code> only. For repeatable request parameters, consecutive numbers (<code>1</code>, <code>2</code>, ...) must be appended to the parameter name, unless the parameter is not repeated. For instance if <code>foo</code> is a repeatable parameter, the following URL query strings are valid:</p>
+<pre><code>?foo=x
+?foo1=x
+?foo1=x&amp;foo2=y</code></pre>
+<p>but the following URL query strings are invalid:</p>
+<pre><code>?foo1=x&amp;foo3=y
+?foo=x&amp;foo=y</code></pre>
+<p>Repeatable response fields are encoded as JSON arrays, for instance:</p>
+<pre><code>&quot;foo&quot;: [&quot;x&quot;,&quot;y&quot;],</code></pre>
+<p>Hierarchical structures are possible with a dot (<code>.</code>) as separator. and with objects in the JSON response. For instance the subfield/paramater <code>item</code> of the first field/paramater <code>doc</code> is encoded as</p>
+<pre><code>doc1.item=...</code></pre>
+<p>in a request or in a response as</p>
+<pre><code>&quot;doc&quot; : [ { &quot;item&quot; : &quot;...&quot; } ]</code></pre>
+<h2 id="access-tokens"><a href="#TOC"><span class="header-section-number">2.3</span> Access tokens</a></h2>
+<p>All PAIA methods, with <a href="#loginpatron">loginPatron</a> from PAIA auth as only exception, require an access token as special request parameter. The access token can be send either as request parameter in the request body (HTTP POST) or as request header:</p>
+<pre><code>curl -H &quot;Authorization: Bearer vF9dft4qmT&quot; https://example.org/core/getPatron</code></pre>
+<h2 id="error-response"><a href="#TOC"><span class="header-section-number">2.4</span> Error response</a></h2>
+<p>There are two types of errors:</p>
+<dl>
+<dt>Request errors</dt>
+<dd>Malformed requests, failed authentification, unsupported methods, and unexpected server errors such as backend downtime etc. MUST result in an error response. An error response is returned with a HTTP status code 4xx (client error) or 5xx (server error) as defined in RFC 2616, unless the request parameter <code>suppress_response_codes</code> is given.
+</dd>
+<dt>Document errors</dt>
+<dd>Unknown document URIs and failed attempts to request, renew, or cancel a document do not result in an error response, unless there is another request error. Document errors are indicated by setting the <code>doc.error</code> response field.
+</dd>
+</dl>
+<p>An error response is a JSON object with the following fields, compatible with OAuth error responses:</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>error</td>
+<td>1..1</td>
+<td>string</td>
+<td>alphanumerical error code</td>
+</tr>
+<tr class="even">
+<td>code</td>
+<td>0..1</td>
+<td>nonnegative integer</td>
+<td>HTTP status error code</td>
+</tr>
+<tr class="odd">
+<td>error_description</td>
+<td>0..1</td>
+<td>string</td>
+<td>Human-readable error description</td>
+</tr>
+<tr class="even">
+<td>error_uri</td>
+<td>0..1</td>
+<td>string</td>
+<td>Human-readable web page about the error</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>code</code> field is REQUIRED with request parameter <code>suppress_response_codes</code>. It SHOULD be omitted with PAIA auth requests to not confuse OAuth clients.</p>
+<p>This is a preliminary list of errors and error codes, compiled from the OAuth 2.0 specification and a list of error codes of the Twitter API (<a href="https://dev.twitter.com/docs/error-codes-responses"><code class="url">https://dev.twitter.com/docs/error-codes-responses</code></a>).</p>
+<table>
+<col style="width: 8%" /><col style="width: 30%" /><col style="width: 60%" /><thead>
+<tr class="header">
+<th style="text-align: center;">code</th>
+<th style="text-align: left;">error</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>400</td>
+<td style="text-align: left;">invalid_request</td>
+<td>malformed, missing, or unknown request parameters or too many requests (rate limited)</td>
+</tr>
+<tr class="even">
+<td>401</td>
+<td style="text-align: left;">invalid_client</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>401</td>
+<td style="text-align: left;">invalid_grant</td>
+<td>missing or invalid access token</td>
+</tr>
+<tr class="even">
+<td>404</td>
+<td style="text-align: left;">not_found</td>
+<td>unknown method or base URL</td>
+</tr>
+<tr class="odd">
+<td>500</td>
+<td style="text-align: left;">internal_server_error</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>502</td>
+<td style="text-align: left;">bad_gateway</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>503</td>
+<td style="text-align: left;">service_unavailable</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>504</td>
+<td style="text-align: left;">gateway_timeout</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="special-request-parameters"><a href="#TOC"><span class="header-section-number">2.5</span> Special request parameters</a></h2>
+<p>The following special request parameters can be added to any request:</p>
+<dl>
+<dt>callback</dt>
+<dd>A JavaScript callback method name to return JSONP instead of JSON. The callback SHOULD only contain alphanumeric characters and underscores; any invalid characters MUST be stripped by a PAIA server. If callback is given, the response content type MUST be <code>application/javascript</code>.
+</dd>
+<dt>suppress_response_codes</dt>
+<dd>If this parameter is present, <em>all</em> responses MUST be returned with a 200 OK status code, even <a href="#error-response">error responses</a>.
+</dd>
+</dl>
+<h2 id="data-types"><a href="#TOC"><span class="header-section-number">2.6</span> Data types</a></h2>
+<p>The following data types are used to define request and response format:</p>
+<dl>
+<dt>string</dt>
+<dd>A Unicode string. Strings MAY be empty.
+</dd>
+<dt>nonnegative integer</dt>
+<dd>An integer number larger than zero.
+</dd>
+<dt>boolean</dt>
+<dd>Either true or false (omitted boolean values are <em>not</em> false but unknown!).
+</dd>
+<dt>date</dt>
+<dd>A date value in <code>YYYY-MM-DD</code> format.
+</dd>
+<dt>money</dt>
+<dd>A monetary value with currency (format <code>[0-9]+\.[0-9][0-9] [A-Z][A-Z][A-Z]</code>), for instance <code>0.80 USD</code>.
+</dd>
+<dt>email</dt>
+<dd>syntactically correct email address.
+</dd>
+<dt>URI</dt>
+<dd>syntactically correct URI.
+</dd>
+<dt>account state</dt>
+<dd><p>A nonnegative integer representing the current state of a patron account. Possible values are:</p>
+<ol start="0" type="1">
+<li>active</li>
+<li>inactive</li>
+<li>inactive because account expired</li>
+<li>inactive because of outstanding fees</li>
+</ol>
+A PAIA server MAY define additional states which can be mapped to <code>1</code> by PAIA clients.
+</dd>
+<dt>document status</dt>
+<dd><p>A nonegative integer representing the current relation between a particular document and a particular patron. Possible values are:</p>
+<ol start="0" type="1">
+<li>no relation (this applies to most combinations of document and patron, and it can be expected if no other state is given)</li>
+<li>reserved (the document is not accesible for the user yet, but it will be)</li>
+<li>ordered (the document is beeing made accesible for the user)</li>
+<li>held (the document is on loan by the patron)</li>
+<li>provided (the document is ready to be used by the patron)</li>
+<li>rejected</li>
+</ol>
+A PAIA server MUST NOT define any other document states.
+</dd>
+<dt>document</dt>
+<dd><p>A key-value structure with the following fields</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>status</td>
+<td>1..1</td>
+<td>document status</td>
+<td>status (0, 1, 2, 3, 4, or 5)</td>
+</tr>
+<tr class="even">
+<td>item</td>
+<td>0..1</td>
+<td>URI</td>
+<td>URI of a particular copy</td>
+</tr>
+<tr class="odd">
+<td>edition</td>
+<td>0..1</td>
+<td>URI</td>
+<td>URI of a the document (no particular copy)</td>
+</tr>
+<tr class="even">
+<td>requested</td>
+<td>0..1</td>
+<td>URI</td>
+<td>URI that was originally requested</td>
+</tr>
+<tr class="odd">
+<td>about</td>
+<td>0..1</td>
+<td>string</td>
+<td>textual description of the document</td>
+</tr>
+<tr class="even">
+<td>label</td>
+<td>0..1</td>
+<td>string</td>
+<td>call number, shelf mark or similar item label</td>
+</tr>
+<tr class="odd">
+<td>queue</td>
+<td>0..1</td>
+<td>nonnegative integer</td>
+<td>number of waiting requests for the document or item</td>
+</tr>
+<tr class="even">
+<td>renewals</td>
+<td>0..1</td>
+<td>nonnegative integer</td>
+<td>number of times the document has been renewed</td>
+</tr>
+<tr class="odd">
+<td>reminder</td>
+<td>0..1</td>
+<td>nonnegative integer</td>
+<td>number of times the patron has been reminded</td>
+</tr>
+<tr class="even">
+<td>duedate</td>
+<td>0..1</td>
+<td>date</td>
+<td>date of expiry of the document statue (most times loan)</td>
+</tr>
+<tr class="odd">
+<td>cancancel</td>
+<td>0..1</td>
+<td>boolean</td>
+<td>whether an ordered or provided document can be canceled</td>
+</tr>
+<tr class="even">
+<td>canrenew</td>
+<td>0..1</td>
+<td>boolean</td>
+<td>whether a document can be renewed</td>
+</tr>
+<tr class="odd">
+<td>error</td>
+<td>0..1</td>
+<td>string</td>
+<td>error message, for instance if a request was rejected</td>
+</tr>
+<tr class="even">
+<td>storage</td>
+<td>0..1</td>
+<td>string</td>
+<td>location of the document</td>
+</tr>
+<tr class="odd">
+<td>storageid</td>
+<td>0..1</td>
+<td>URI</td>
+<td>location URI</td>
+</tr>
+</tbody>
+</table>
+<p>For each document at least an item URI or an edition URI MUST be given. The response fields <code>label</code>, <code>storage</code>, <code>storageid</code>, and <code>queue</code> correspond to properties in DAIA.</p>
+<p>An example of a document (with status 5=rejected) serialized in JSON is given below:</p>
+<pre><code>{
+   &quot;status&quot;:    5,
+   &quot;item&quot;:      &quot;http://example.org/items/barcode1234567&quot;,
+   &quot;item&quot;:      &quot;http://example.org/documents/9876543&quot;,
+   &quot;requested&quot;: &quot;http://example.org/documents/9876543&quot;,
+   &quot;error&quot;:     &quot;sorry, we found out that our copy is lost!&quot;
+}</code></pre>
+</dd>
+</dl>
+<h1 id="paia-core"><a href="#TOC"><span class="header-section-number">3</span> PAIA core</a></h1>
+<h2 id="getpatron"><a href="#TOC"><span class="header-section-number">3.1</span> getPatron</a></h2>
+<dl>
+<dt>purpose</dt>
+<dd>Get general information about a patron
+</dd>
+<dt>URL</dt>
+<dd>https://example.org/core/<strong>getPatron</strong>
+</dd>
+<dt>request parameters</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>patron</td>
+<td>1..1</td>
+<td>string</td>
+<td>patron identifier</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>response fields</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>name</td>
+<td>1..1</td>
+<td>string</td>
+<td>full name of the patron</td>
+</tr>
+<tr class="even">
+<td>email</td>
+<td>0..1</td>
+<td>email</td>
+<td>email address of the patron</td>
+</tr>
+<tr class="odd">
+<td>expires</td>
+<td>0..1</td>
+<td>date</td>
+<td>date of patron account expiry</td>
+</tr>
+<tr class="even">
+<td>status</td>
+<td>0..1</td>
+<td>account state</td>
+<td>current state (0, 1, 2, or 3)</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<p>Additional field such as address may be added in a later revision.</p>
+<h2 id="getitems"><a href="#TOC"><span class="header-section-number">3.2</span> getItems</a></h2>
+<dl>
+<dt>purpose</dt>
+<dd>Get a list of loans, reservations and other items related to a patron
+</dd>
+<dt>URL</dt>
+<dd>https://example.org/core/<strong>getItems</strong>
+</dd>
+<dt>request parameters</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>patron</td>
+<td>1..1</td>
+<td>string</td>
+<td>patron identifier</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>response fields</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>doc</td>
+<td>0..n</td>
+<td>document</td>
+<td>list of documents (order is irrelevant)</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<p>In most cases, each document will have an item URI for a particular copy, but users may also have requested an edition.</p>
+<h2 id="renewitems"><a href="#TOC"><span class="header-section-number">3.3</span> renewItems</a></h2>
+<dl>
+<dt>purpose</dt>
+<dd>renew one or more documents held by the patron
+</dd>
+<dt>URL</dt>
+<dd>https://example.org/core/<strong>renewItems</strong>
+</dd>
+<dt>request parameters</dt>
+<dd><table>
+<tbody>
+<tr class="odd">
+<td>patron</td>
+<td>1..1</td>
+<td>string</td>
+<td>patron identifier</td>
+</tr>
+<tr class="even">
+<td>doc</td>
+<td>1..n</td>
+<td></td>
+<td>list of documents to renew</td>
+</tr>
+<tr class="odd">
+<td>doc.item</td>
+<td>0..1</td>
+<td>URI</td>
+<td>URI of a particular item</td>
+</tr>
+<tr class="even">
+<td>doc.edition</td>
+<td>0..1</td>
+<td>URI</td>
+<td>URI of a particular edition</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>response fields</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>doc</td>
+<td>1..n</td>
+<td>document l</td>
+<td>ist of documents (order is irrelevant)</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<h2 id="requestitems"><a href="#TOC"><span class="header-section-number">3.4</span> requestItems</a></h2>
+<dl>
+<dt>purpose</dt>
+<dd>Request one or more items for reservation or delivery.
+</dd>
+<dt>URL</dt>
+<dd>https://example.org/core/<strong>requestItems</strong>
+</dd>
+<dt>request parameters</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>patron</td>
+<td>1..1</td>
+<td>string</td>
+<td>patron identifier</td>
+</tr>
+<tr class="even">
+<td>doc</td>
+<td>1..n</td>
+<td></td>
+<td>list of documents to renew</td>
+</tr>
+<tr class="odd">
+<td>doc.item</td>
+<td>0..1</td>
+<td>URI</td>
+<td>URI of a particular item</td>
+</tr>
+<tr class="even">
+<td>doc.edition</td>
+<td>0..1</td>
+<td>URI</td>
+<td>URI of a particular edition</td>
+</tr>
+<tr class="odd">
+<td>doc.storage</td>
+<td>0..1</td>
+<td>string</td>
+<td>Requested pickup location</td>
+</tr>
+<tr class="even">
+<td>doc.storageid</td>
+<td>0..1</td>
+<td>URI</td>
+<td>Requested pickup location</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>response fields</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>doc</td>
+<td>1..n</td>
+<td>document</td>
+<td>list of documents (order is irrelevant)</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<h2 id="cancelitems"><a href="#TOC"><span class="header-section-number">3.5</span> cancelItems</a></h2>
+<dl>
+<dt>purpose</dt>
+<dd>Cancel requests for items.
+</dd>
+<dt>URL</dt>
+<dd>https://example.org/core/<strong>cancelItems</strong>
+</dd>
+<dt>request parameters</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>patron</td>
+<td>1..1</td>
+<td>string</td>
+<td style="text-align: left;">patron identifier</td>
+</tr>
+<tr class="even">
+<td>doc</td>
+<td>1..n</td>
+<td></td>
+<td style="text-align: left;">list of documents to renew</td>
+</tr>
+<tr class="odd">
+<td>doc.item</td>
+<td>0..1</td>
+<td>URI</td>
+<td style="text-align: left;">URI of a particular item</td>
+</tr>
+<tr class="even">
+<td>doc.edition</td>
+<td>0..1</td>
+<td>URI</td>
+<td style="text-align: left;">URI of a particular edition</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>response fields</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>doc</td>
+<td>1..n</td>
+<td>document</td>
+<td>list of documents (order is irrelevant)</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<h2 id="getfunds"><a href="#TOC"><span class="header-section-number">3.6</span> getFunds</a></h2>
+<dl>
+<dt>purpose</dt>
+<dd>Look up current funds of a patron.
+</dd>
+<dt>URL</dt>
+<dd>https://example.org/core/<strong>getFunds</strong>
+</dd>
+<dt>request parameters</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>patron</td>
+<td>1..1</td>
+<td>string</td>
+<td>patron identifier</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>response fields</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>amount</td>
+<td>0..1</td>
+<td>money</td>
+<td>Sum of all fees. May also be negative!</td>
+</tr>
+<tr class="even">
+<td>fee</td>
+<td>0..n</td>
+<td></td>
+<td>list of fees</td>
+</tr>
+<tr class="odd">
+<td>fee.amount</td>
+<td>1..1</td>
+<td>money</td>
+<td>amout of a single fee</td>
+</tr>
+<tr class="even">
+<td>fee.date</td>
+<td>0..1</td>
+<td>date</td>
+<td>date when the fee was claimed</td>
+</tr>
+<tr class="odd">
+<td>fee.about</td>
+<td>0..1</td>
+<td>string</td>
+<td>textual information about the fee</td>
+</tr>
+<tr class="even">
+<td>fee.item</td>
+<td>0..1</td>
+<td>URI</td>
+<td>item that caused the fee</td>
+</tr>
+<tr class="odd">
+<td>fee.edition</td>
+<td>0..1</td>
+<td>URI</td>
+<td>edition that caused the fee</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<h1 id="paia-auth"><a href="#TOC"><span class="header-section-number">4</span> PAIA auth</a></h1>
+<p><strong>PAIA auth</strong> defines three methods for authentification based on username and password. These methods can be used to get access tokens and patron identifiers, which are required to access <strong>PAIA core</strong> methods. There MAY be additional or alternative ways to distribute and manage access tokens and patron identifiers.</p>
+<p>There is no strict one-to-one relationship between username/password and patron identifier/access token, but a username SHOULD uniquely identify a patron identifier. A username MAY even be equal to a patron identifier, but this is NOT RECOMMENDED. An access token MUST NOT be equal to the password of the same user.</p>
+<p>A <strong>PAIA auth</strong> server acts as OAuth authorization server with password credentials grant, as defined in section 4.3 of the OAuth 2.0 specification. The access tokens provided by the server are so called OAuth 2.0 Bearer Tokens.</p>
+<p>A <strong>PAIA auth</strong> server MUST protect against brute force attacks (e.g. using rate-limitation or generating alerts). It is RECOMMENDED to further restrict access to <strong>PAIA auth</strong> to specific clients, for instance by additional authorization.</p>
+<h2 id="loginpatron"><a href="#TOC"><span class="header-section-number">4.1</span> loginPatron</a></h2>
+<p>The <code>loginPatron</code> method is the only PAIA method that does not require an access token as part of the query.</p>
+<dl>
+<dt>purpose</dt>
+<dd>Get a patron identifier and access token to access patron information
+</dd>
+<dt>URL</dt>
+<dd>https://example.org/auth/<strong>loginPatron</strong>
+</dd>
+<dt>request parameters</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>username</td>
+<td>1..1</td>
+<td>string</td>
+<td style="text-align: left;">User name of a patron</td>
+</tr>
+<tr class="even">
+<td>password</td>
+<td>0..n</td>
+<td></td>
+<td style="text-align: left;">Password of a patron</td>
+</tr>
+<tr class="odd">
+<td>grant_type</td>
+<td>1..1</td>
+<td>string</td>
+<td style="text-align: left;">Fixed value set to &quot;password&quot;</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<p>A <code>scope</code> parameter, as defined by OAuth 2.0 may be added in a future release of this specification to provide access tokens with different access rights (for instance read-only access).</p>
+<p>The response format is a JSON structure as defined in section 5.1 (successful response) and section 5.2 (error response) of OAuth 2.0.</p>
+<dl>
+<dt>response fields</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>patron</td>
+<td>1..1</td>
+<td>string</td>
+<td>Patron identifier</td>
+</tr>
+<tr class="even">
+<td>access_token</td>
+<td>1..1</td>
+<td>string</td>
+<td>The access token issued by the PAIA auth server</td>
+</tr>
+<tr class="odd">
+<td>token_type</td>
+<td>1..1</td>
+<td>string</td>
+<td>Fixed value set to &quot;Bearer&quot;</td>
+</tr>
+<tr class="even">
+<td>expires_in</td>
+<td>0..1</td>
+<td>nonnegative integer</td>
+<td>The lifetime in seconds of the access token</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<p>An example of a successful response:</p>
+<pre><code>HTTPS/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+Cache-Control: no-store
+Pragma: no-cache
+
+{
+  &quot;access_token&quot;:&quot;2YotnFZFEjr1zCsicMWpAA&quot;,
+  &quot;token_type&quot;:&quot;Bearer&quot;,
+  &quot;expires_in&quot;:3600,
+  &quot;patron&quot;:&quot;8362432&quot;
+}</code></pre>
+<h2 id="logoutpatron"><a href="#TOC"><span class="header-section-number">4.2</span> logoutPatron</a></h2>
+<dl>
+<dt>purpose</dt>
+<dd>Invalidate an access token
+</dd>
+<dt>URL</dt>
+<dd>https://example.org/auth/<strong>logoutPatron</strong>
+</dd>
+<dt>request parameters</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>patron</td>
+<td>1..1</td>
+<td>string</td>
+<td>patron identifier</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>response fields</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>patron</td>
+<td>1..1</td>
+<td>string</td>
+<td>patron identifier</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<p>The logout method invalidates an access token, independent from the previous lifetime of the token. On success, the server MUST invalidate at least the access token that was used to access this method. The server MAY further invalidate additional access tokens that were created for the same patron.</p>
+<h2 id="changelogin"><a href="#TOC"><span class="header-section-number">4.3</span> changeLogin</a></h2>
+<dl>
+<dt>purpose</dt>
+<dd>Change password of a patron.
+</dd>
+<dt>URL</dt>
+<dd>https://example.org/auth/<strong>changeLogin</strong>
+</dd>
+<dt>request parameters</dt>
+<dd><table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">occ</th>
+<th style="text-align: center;">data type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>patron</td>
+<td>1..1</td>
+<td>string</td>
+<td>Patron identifier</td>
+</tr>
+<tr class="even">
+<td>username</td>
+<td>1..1</td>
+<td>string</td>
+<td>User name of the patron</td>
+</tr>
+<tr class="odd">
+<td>password</td>
+<td>1..1</td>
+<td>string</td>
+<td>Password of the patron</td>
+</tr>
+<tr class="even">
+<td>new</td>
+<td>1..1</td>
+<td>string</td>
+<td>New password of the patron</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<p>The server MUST check</p>
+<ul>
+<li>the access token</li>
+<li>whether username and password match</li>
+<li>whether the user identified by username is allowed to change the given patrond’s password</li>
+</ul>
+<p>A PAIA server MAY reject this method and return an <a href="#error-response">error response</a> with error code 403 (forbidden) or error code 501 (not implemented).</p>
+<h1 id="glossary"><a href="#TOC"><span class="header-section-number">5</span> Glossary</a></h1>
+<dl>
+<dt>access token</dt>
+<dd>A confidential random string that must be sent with each PAIA request for authentification.
+</dd>
+<dt>document</dt>
+<dd>A concrete or abstract document, such as a work, or an edition.
+</dd>
+<dt>item</dt>
+<dd>A concrete copy of a document, for instance a particular physical book.
+</dd>
+<dt>PAIA auth server</dt>
+<dd>HTTP endpoint that implements the PAIA auth specification, so all PAIA auth methods can be accessed at a common base URL.
+</dd>
+<dt>PAIA core server</dt>
+<dd>HTTP endpoint that implements the PAIA core specification, so all PAIA core methods can be accessed at a common base URL.
+</dd>
+<dt>patron identifier</dt>
+<dd>A Unicode string that identifies a library patron account.
+</dd>
+</dl>
+<h1 id="security-considerations"><a href="#TOC"><span class="header-section-number">6</span> Security Considerations</a></h1>
+<p>Security of OAuth 2.0 with bearer tokens relies on correct application of HTTPS. It is known that SSL certificate errors are often ignored just because of laziness. It MUST be clear to all implementors that this spoils the whole chain of trust and is as secure as sending access tokens as plain text.</p>
+<p>To limit the risk of spoiled access tokens, PAIA servers SHOULD put limits on the lifetime of access tokens and on the number of allowed requests per minute among other security limitations.</p>
+<p>It is also known that several library systems allow weak passwords. For this reason PAIA auth servers MUST follow approriate security measures, such as protecting against brute force attacks and blocking accounts with weak passwords or with passwords that have been sent unencrypted.</p>
+<h1 id="references"><a href="#TOC"><span class="header-section-number">7</span> References</a></h1>
+<p>Bradner, S. 1997. “RFC 2119: Key words for use in RFCs to Indicate Requirement Levels.” <a href="http://tools.ietf.org/html/rfc2119"><code class="url">http://tools.ietf.org/html/rfc2119</code></a>.</p>
+<p>Fielding, R. 1999. “RFC 2616: Hypertext Transfer Protocol.” <a href="http://tools.ietf.org/html/rfc2616"><code class="url">http://tools.ietf.org/html/rfc2616</code></a>.</p>
+<p>Hammer-Lahav, Recordon, D., E., and D. Hardt. 2012. “The OAuth 2.0 Authorization Framework.” <a href="http://tools.ietf.org/html/draft-ietf-oauth-v2"><code class="url">http://tools.ietf.org/html/draft-ietf-oauth-v2</code></a>.</p>
+<p>Jones, Hardt, D., M., and D. Recordon. 2012. “The OAuth 2.0 Protocol: Bearer Tokens.” <a href="http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer"><code class="url">http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer</code></a>.</p>
+<p>Rescorla, E. 2000. “RFC 2818: HTTP over TLS.” <a href="http://tools.ietf.org/html/rfc2818"><code class="url">http://tools.ietf.org/html/rfc2818</code></a>.</p>
+</body>
+</html>
