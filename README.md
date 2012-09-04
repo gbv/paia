@@ -15,9 +15,7 @@ The best method is to create a github account so you can
 
 1. Fork the repository: <http://github.com/gbv/paia/fork_select>
 2. Check out your fork
-3. Modify `paia.md`. You can create `paia.html` by simply calling `make` in 
-   your working directory to get a nice HTML version. With `make pdf` you
-   get a (less nice) PDF version. Both versions require Pandoc.
+3. Modify `paia.md`.
 4. Commit you changes and push to github
 5. Request a merge of your modification
 
@@ -25,3 +23,7 @@ You can also just comment in the project Issue tracker and in the wiki:
 
 * https://github.com/gbv/paia/issues
 * https://github.com/gbv/paia/wiki
+
+Creating a nice HTML version and other output formats from `paia.md` requires
+[Pandoc](http://johnmacfarlane.net/pandoc/) 1.9: simply call `make` in your
+working directory. With `make pdf` you get a (less nice) PDF version.

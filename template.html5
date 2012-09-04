@@ -43,7 +43,10 @@ $endif$
   table { border-collapse: collapse; }
   td { border: 1px solid #999; padding: 3px }
   dl p { margin-top: 0; }
+  dt { margin-top: 0.8em; }
+  dd { margin-left: 1.5em; }
   ol { margin-bottom: 1em; }
+  table + p { margin-top: 1em; }
   </style>
 $for(css)$
   <link rel="stylesheet" href="$css$" $if(html5)$$else$type="text/css" $endif$/>

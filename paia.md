@@ -28,7 +28,7 @@ GIT_REVISION_HASH.
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
-interpreted as described in RFC 2119 [@RFC2119].
+interpreted as described in RFC 2119.
 
 A PAIA server MUST implement *PAIA core* and it MAY implement *PAIA auth*.  If
 PAIA auth is not implemented, another way SHOULD BE documented to distribute
@@ -55,8 +55,8 @@ methods at these base URLs as belonging to PAIA.
 In the following, the base URL <https://example.org/core/> is used for PAIA
 core and <https://example.org/auth/> for PAIA auth. 
 
-Authentification in PAIA is based on **OAuth 2.0** (@OAuth2) with bearer tokens
-(@OAuth2Bearer) over HTTPS (@RFC2818).  For security reasons, PAIA methods MUST
+Authentification in PAIA is based on **OAuth 2.0** with bearer tokens
+over HTTPS (RFC 2818).  For security reasons, PAIA methods MUST
 be requested via HTTPS only. A PAIA client MUST NOT ignore SSL certificate
 errors; otherwise access token (PAIA core) or even password (PAIA auth) are
 compromised by the client.
@@ -82,12 +82,13 @@ The HTTP response content type of a PAIA response is a JSON object (HTTP header
 Every request parameter and every response field is defined with
 
 * the **name** of the parameter/field
-* the **ocurrence** of the parameter/field being one of
+* the **ocurrence** (occ) of the parameter/field being one of
     * `0..1` (optional, non repeatable)
     * `1..1` (mandatory, non repeatable)
     * `1..n` (mandatory, repeatbale)
     * `0..n` (optional, repeatable)
 * the **[data type](#data-types)** of the parameter/field.
+* a short description
 
 Simple parameter names and response fields consist of lowercase letters `a-z` only. For
 repeatable request parameters, consecutive numbers (`1`, `2`, ...) must be appended to
@@ -135,7 +136,7 @@ Request errors
   : Malformed requests, failed authentification, unsupported methods, and
     unexpected server errors such as backend downtime etc. MUST result in an 
 	error response. An error response is returned with a HTTP status code 
-	4xx (client error) or 5xx (server error) as defined in [@RFC2616], unless
+	4xx (client error) or 5xx (server error) as defined in RFC 2616, unless
     the request parameter `suppress_response_codes` is given.
 Document errors
   : Unknown document URIs and failed attempts to request, renew, or cancel 
@@ -147,6 +148,7 @@ Document errors
 An error response is a JSON object with the following fields, compatible
 with OAuth error responses:
 
+ name                occ    data type             description
 ------------------- ------ --------------------- -----------------------------------------
  error               1..1   string                alphanumerical error code
  code                0..1   nonnegative integer   HTTP status error code
@@ -198,7 +200,7 @@ suppress_response_codes
 
 ## Data types
 
-The following data types are supported:
+The following data types are used to define request and response format:
 
 string
   : A Unicode string. Strings MAY be empty.
@@ -225,7 +227,7 @@ account state
     3. inactive because of outstanding fees
 
     A PAIA server MAY define additional states which can be mapped to `1` by PAIA clients.
-document state
+document status
   : A nonegative integer representing the current relation between a particular
     document and a particular patron. Possible values are:
 
@@ -238,7 +240,43 @@ document state
     5. rejected
 
     A PAIA server MUST NOT define any other document states.
+document
+  : A key-value structure with the following fields
 
+     name        occ    data type             description
+    ----------- ------ --------------------- ----------------------------------------------------------
+     status      1..1   document status       status (0, 1, 2, 3, 4, or 5)
+     item        0..1   URI                   URI of a particular copy
+     edition     0..1   URI                   URI of a the document (no particular copy)
+     requested   0..1   URI                   URI that was originally requested
+     about       0..1   string                textual description of the document
+     label       0..1   string                call number, shelf mark or similar item label
+     queue       0..1   nonnegative integer   number of waiting requests for the document or item
+     renewals    0..1   nonnegative integer   number of times the document has been renewed
+     reminder    0..1   nonnegative integer   number of times the patron has been reminded
+     duedate     0..1   date                  date of expiry of the document statue (most times loan)
+     cancancel   0..1   boolean               whether an ordered or provided document can be canceled
+     canrenew    0..1   boolean               whether a document can be renewed
+     error       0..1   string                error message, for instance if a request was rejected
+     storage     0..1   string                location of the document
+     storageid   0..1   URI                   location URI
+    ----------- ------ --------------------- ----------------------------------------------------------
+
+
+    For each document at least an item URI or an edition URI MUST be given. The
+    response fields `label`, `storage`, `storageid`, and `queue`
+    correspond to properties in DAIA.
+
+    An example of a document (with status 5=rejected) serialized in JSON is
+    given below:
+
+        {
+           "status":    5,
+           "item":      "http://example.org/items/barcode1234567",
+           "item":      "http://example.org/documents/9876543",
+           "requested": "http://example.org/documents/9876543",
+           "error":     "sorry, we found out that our copy is lost!"
+        }
 
 # PAIA core
 
@@ -249,11 +287,13 @@ purpose
 URL
   : https://example.org/core/**getPatron**
 request parameters
-  : ---------- ------ -------- -------------------
-     username   1..1   string   patron identifier
-    ---------- ------ -------- -------------------
+  :  name     occ    data type     description
+    -------- ------ ----------- -------------------
+     patron   1..1   string      patron identifier
+    -------- ------ ----------- -------------------
 response fields
-  : --------- ------ --------------- ------------------------------
+  :  name      occ    data type       description
+    --------- ------ --------------- ------------------------------
      name      1..1   string          full name of the patron
 	 email     0..1   email           email address of the patron
 	 expires   0..1   date            date of patron account expiry
@@ -270,34 +310,18 @@ purpose
 URL
   : https://example.org/core/**getItems**
 request parameters
-  : -------- ------ -------- -------------------
-     patron   1..1   string   patron identifier
-    -------- ------ -------- -------------------
+  :  name     occ    data type     description
+    -------- ------ ----------- -------------------
+     patron   1..1   string      patron identifier
+    -------- ------ ----------- -------------------
 response fields
-  : --------------- ------ --------------------- ----------------------------------------------------------
-     doc                                          list of documents (order is irrelevant)
-	 doc.status      1..1   document status       status (0, 1, 2, 3, 4, or 5)
-	 doc.item        0..1   URI                   URI of a particular copy
-	 doc.edition     0..1   URI                   URI of a the document (no particular copy)
-	 doc.requested   0..1   URI                   URI that was originally requested
-	 doc.about       0..1   string                textual description of the document
-	 doc.label       0..1   string                call number, shelf mark or similar item label
-	 doc.queue       0..1   nonnegative integer   number of waiting requests for the document or item
-	 doc.renewals    0..1   nonnegative integer   number of times the document has been renewed
-	 doc.reminder    0..1   nonnegative integer   number of times the patron has been reminded
-	 doc.duedate     0..1   date                  date of expiry of the document statue (most times loan)
-	 doc.cancancel   0..1   boolean               whether an ordered or provided document can be canceled
-	 doc.canrenew    0..1   boolean               whether a document can be renewed
-	 doc.storage     0..1   string                location of the document
-	 doc.storageid   0..1   URI                   location URI
-    --------------- ------ --------------------- ----------------------------------------------------------
+  :  name   occ    data type   description
+    ------ ------ ----------- -----------------------------------------
+     doc    0..n   document    list of documents (order is irrelevant)
+    ------ ------ ----------- -----------------------------------------
 
-For each document there must be at least a `doc.item` URI or a `doc.edition`
-URI. In most cases there will be an item URI for a particular copy, but users
-may also have requested an edition.
-
-The response fields `doc.label`, `doc.storage`, `doc.storageid`, and
-`doc.queue` correspond to properties in DAIA.
+In most cases, each document will have an item URI for a particular copy, but
+users may also have requested an edition.
 
 
 ## renewItems
@@ -308,22 +332,16 @@ URL
   : https://example.org/core/**renewItems**
 request parameters
   : ------------- ------ -------- ------------------------------
-     patron        1..1   String    patron identifier
+     patron        1..1   string    patron identifier
      doc           1..n             list of documents to renew
      doc.item      0..1   URI       URI of a particular item
      doc.edition   0..1   URI       URI of a particular edition
     ------------- ------ --------  -----------------------------
 response fields
-  : --------------- ------ ----------------- 
-	 doc             1..n
-	 doc.status      1..1   document status
-	 doc.item        0..1   URI
-	 doc.edition     0..1   URI
-     doc.error       0..1   string
-    --------------- ------ ----------------- 
-
-For each document there must be at least a `doc.item` URI or a `doc.edition`
-URI both in the request and in the response.
+  :  name   occ    data type   description
+    ------ ------ ----------- -----------------------------------------
+     doc   1..n   document   list of documents (order is irrelevant)
+    ----- ------ ---------- -----------------------------------------
 
 
 ## requestItems
@@ -333,23 +351,20 @@ purpose
 URL
   : https://example.org/core/**requestItems**
 request parameters
-  : ------------- ------ -------- ------------------------------
-     patron        1..1   String    patron identifier
-     doc           1..n             list of documents to renew
-     doc.item      0..1   URI       URI of a particular item
-     doc.edition   0..1   URI       URI of a particular edition
-    ------------- ------ --------  -----------------------------
+  :  name            occ    data type   description
+    --------------- ------ ----------- ------------------------------
+     patron          1..1   string      patron identifier
+     doc             1..n               list of documents to renew
+     doc.item        0..1   URI         URI of a particular item
+     doc.edition     0..1   URI         URI of a particular edition
+     doc.storage     0..1   string      Requested pickup location
+     doc.storageid   0..1   URI         Requested pickup location
+    --------------- ------ ----------- ------------------------------
 response fields
-  : --------------- ------ ----------------- 
-	 doc             1..n
-	 doc.status      1..1   document status
-	 doc.item        0..1   URI
-	 doc.edition     0..1   URI
-     doc.error       0..1   string
-    --------------- ------ ----------------- 
-
-For each document there must be either an `doc.item` URI or a `doc.edition` URI in
-the request and at least one of both in the response.
+  :  name   occ    data type   description
+    ------ ------ ----------- -----------------------------------------
+     doc    1..n   document    list of documents (order is irrelevant)
+    ------ ------ ----------- -----------------------------------------
 
 
 ## cancelItems
@@ -359,20 +374,18 @@ purpose
 URL
   : https://example.org/core/**cancelItems**
 request parameters
-  : ------------- ------ -------- ------------------------------
-     patron        1..1   String    patron identifier
-     doc           1..n             list of documents to renew
-     doc.item      0..1   URI       URI of a particular item
-     doc.edition   0..1   URI       URI of a particular edition
-    ------------- ------ --------  -----------------------------
+  :  name          occ    data type
+    ------------- ------ ----------- -----------------------------
+     patron        1..1   string      patron identifier
+     doc           1..n               list of documents to renew
+     doc.item      0..1   URI         URI of a particular item
+     doc.edition   0..1   URI         URI of a particular edition
+    ------------- ------ ----------- -----------------------------
 response fields
-  : --------------- ------ ----------------- 
-	 doc             1..n
-	 doc.status      1..1   document status
-	 doc.item        0..1   URI
-	 doc.edition     0..1   URI
-     doc.error       0..1   string
-    --------------- ------ ----------------- 
+  :  name   occ    data type   description
+    ------ ------ ----------- -----------------------------------------
+     doc    1..n   document    list of documents (order is irrelevant)
+    ------ ------ ----------- -----------------------------------------
 
 
 ## getFunds
@@ -382,19 +395,21 @@ purpose
 URL
   : https://example.org/core/**getFunds**
 request parameters
-  : -------- ------ -------- -------------------
-     patron   1..1   string   patron identifier
-    -------- ------ -------- -------------------
+  :  name     occ    data type     description
+    -------- ------ ----------- -------------------
+     patron   1..1   string      patron identifier
+    -------- ------ ----------- -------------------
 response fields
-  : ------------- ------ -------- ----------------------------------------
-     amount        0..1   money    Sum of all fees. May also be negative!
-     fee           0..n            list of fees
-	 fee.amount    1..1   money
-	 fee.date      0..1   date
-	 fee.about     0..1   string
-	 fee.item      0..1   URI
-	 fee.edition   0..1   URI
-    ------------- ------ -------- ----------------------------------------
+  :  name          occ    data type   description
+    ------------- ------ ----------- ----------------------------------------
+     amount        0..1   money       Sum of all fees. May also be negative!
+     fee           0..n               list of fees
+	 fee.amount    1..1   money       amout of a single fee
+	 fee.date      0..1   date        date when the fee was claimed
+	 fee.about     0..1   string      textual information about the fee
+	 fee.item      0..1   URI         item that caused the fee
+	 fee.edition   0..1   URI         edition that caused the fee
+    ------------- ------ ----------- ----------------------------------------
 
 
 # PAIA auth
@@ -412,9 +427,9 @@ NOT RECOMMENDED.  An access token MUST NOT be equal to the password of the
 same user.
 
 A **PAIA auth** server acts as OAuth authorization server with password
-credentials grant, as defined in section 4.3 of the OAuth 2.0 specification
-[@OAuth2]. The access tokens provided by the server are so called OAuth 2.0 
-Bearer Tokens (@OAuth2Bearer).
+credentials grant, as defined in section 4.3 of the OAuth 2.0 specification.
+The access tokens provided by the server are so called OAuth 2.0 
+Bearer Tokens.
 
 A **PAIA auth** server MUST protect against brute force attacks (e.g. using
 rate-limitation or generating alerts). It is RECOMMENDED to further restrict
@@ -432,11 +447,12 @@ purpose
 URL
   : https://example.org/auth/**loginPatron**
 request parameters
-  : ------------  ------ --------  ----------------------------
-     username      1..1   string    User name of a patron 
-     password      0..n             Password of a patron
-     grant_type    1..1   string    Fixed value set to "password"
-    ------------  ------ --------  -------------------------------
+  :  name          occ   data type
+    ------------ ------ ----------- -------------------------------
+     username     1..1   string      User name of a patron 
+     password     0..n               Password of a patron
+     grant_type   1..1   string      Fixed value set to "password"
+    ------------ ------ ----------- -------------------------------
 
 A `scope` parameter, as defined by OAuth 2.0 may be added in a future release
 of this specification to provide access tokens with different access rights
@@ -446,7 +462,8 @@ The response format is a JSON structure as defined in section 5.1 (successful
 response) and section 5.2 (error response) of OAuth 2.0.
 
 response fields
-  : --------------  ------ ---------------------  -------------------------------------------------
+  :  name            occ    data type              description
+    --------------  ------ ---------------------  -------------------------------------------------
      patron          1..1   string                 Patron identifier
      access_token    1..1   string                 The access token issued by the PAIA auth server
      token_type      1..1   string                 Fixed value set to "Bearer"
@@ -475,13 +492,15 @@ purpose
 URL
   : https://example.org/auth/**logoutPatron**
 request parameters
-  : --------  ------ --------  -------------------
-     patron    1..1   string    Patron identifier
-    --------  ------ --------  -------------------
+  :  name     occ    data type     description
+    -------- ------ ----------- -------------------
+     patron   1..1   string      patron identifier
+    -------- ------ ----------- -------------------
 response fields
-  : --------  ------ --------  -------------------
-     patron    1..1   string    Patron identifier
-    --------  ------ --------  -------------------
+  :  name     occ    data type     description
+    -------- ------ ----------- -------------------
+     patron   1..1   string      patron identifier
+    -------- ------ ----------- -------------------
 
 The logout method invalidates an access token, independent from the previous
 lifetime of the token. On success, the server MUST invalidate at least the
@@ -496,12 +515,13 @@ purpose
 URL
   : https://example.org/auth/**changeLogin**
 request parameters
-  : ---------- ------ --------  ----------------------------
-     patron     1..1   string    Patron identifier
-     username   1..1   string    User name of the patron 
-     password   1..1   string    Password of the patron
-     new        1..1   string    New password of the patron
-    --------   ------ --------  ----------------------------
+  :  name       occ    data type   description
+    ---------- ------ ----------- ----------------------------
+     patron     1..1   string      Patron identifier
+     username   1..1   string      User name of the patron 
+     password   1..1   string      Password of the patron
+     new        1..1   string      New password of the patron
+    --------   ------ ----------- ----------------------------
 
 The server MUST check 
 
@@ -550,3 +570,13 @@ against brute force attacks and blocking accounts with weak passwords or with
 passwords that have been sent unencrypted.
 
 # References
+
+Bradner, S. 1997. “RFC 2119: Key words for use in RFCs to Indicate Requirement Levels.” http://tools.ietf.org/html/rfc2119.
+
+Fielding, R. 1999. “RFC 2616: Hypertext Transfer Protocol.” http://tools.ietf.org/html/rfc2616.
+
+Hammer-Lahav, Recordon, D., E., and D. Hardt. 2012. “The OAuth 2.0 Authorization Framework.” http://tools.ietf.org/html/draft-ietf-oauth-v2.
+
+Jones, Hardt, D., M., and D. Recordon. 2012. “The OAuth 2.0 Protocol: Bearer Tokens.” http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer.
+
+Rescorla, E. 2000. “RFC 2818: HTTP over TLS.” http://tools.ietf.org/html/rfc2818.
