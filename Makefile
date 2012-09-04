@@ -32,6 +32,7 @@ revision: paia.html
 
 website: clean purge revision changes.html
 	@echo "new revision to be shown at http://gbv.github.com/paia/"
+	@rm paia.html
 	@git checkout gh-pages
 	@perl -pi -e 's!paia-[0-9a-z]{7}!paia-${REVSHRT}!g' index.html
 	@sed -i '/<!-- BEGIN CHANGES -->/,/<!-- END CHANGES -->/ {//!d}; /<!-- BEGIN CHANGES -->/r changes.html' index.html
