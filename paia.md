@@ -134,21 +134,20 @@ header:
 
 There are two types of errors:
 
+Document errors
+  : Unknown document URIs and failed attempts to request, renew, or cancel 
+    a document _do not result_ in an error response. Instead they are
+    indicated by the `doc.error` response field.
+
 Request errors
   : Malformed requests, failed authentification, unsupported methods, and
     unexpected server errors such as backend downtime etc. MUST result in an 
 	error response. An error response is returned with a HTTP status code 
 	4xx (client error) or 5xx (server error) as defined in RFC 2616, unless
     the request parameter `suppress_response_codes` is given.
-Document errors
-  : Unknown document URIs and failed attempts to request, renew, or cancel 
-    a document do not result in an error response, unless there is another
-	request error. Document errors are indicated by setting the `doc.error`
-	response field.
 
-
-An error response is a JSON object with the following fields, compatible
-with OAuth error responses:
+The response body of a request error is a JSON object with the following fields
+(compatible with OAuth error response):
 
  name                occ    data type             description
 ------------------- ------ --------------------- -----------------------------------------
@@ -158,34 +157,59 @@ with OAuth error responses:
  error_uri           0..1   string                Human-readable web page about the error
 ------------------- ------ --------------------- -----------------------------------------
 
-The `code` field is REQUIRED with request parameter `suppress_response_codes`. 
-It SHOULD be omitted with PAIA auth requests to not confuse OAuth clients.
+The `code` field is REQUIRED with request parameter `suppress_response_codes`
+but it SHOULD be omitted with PAIA auth requests to not confuse OAuth clients.
 
-This is a preliminary list of errors and error codes, compiled from the OAuth 2.0
-specification and a list of error codes of the Twitter API
-(<https://dev.twitter.com/docs/error-codes-responses>).
+The following error responses are expected:[^errors]
 
------- ----------------------- ------------------------------------------------
- code  error                    description
------- ----------------------- ------------------------------------------------
- 400    invalid_request         malformed, missing, or unknown request 
-                                parameters or too many requests (rate limited)
+[^errors]: The error list was compiled from HTTP and OAuth 2.0 specifications,
+[the Twitter API](https://dev.twitter.com/docs/error-codes-responses), [the
+StackExchange API](https://api.stackexchange.com/docs/error-handling), and [the
+GitHub API](http://developer.github.com/v3/#client-errors).
 
- 401    invalid_client
- 
- 401    invalid_grant           missing or invalid access token
- 
- 404    not_found               unknown method or base URL
- 
- 500    internal_server_error
- 
- 502    bad_gateway
- 
- 503    service_unavailable
+--------------------- ------ --------------------------------------------------------------------
+ error                 code   description
+--------------------- ------ --------------------------------------------------------------------
+ not_found              404   Unknown request URL or unknown patron. Implementations SHOULD
+                              first check authentification and prefer error `invalid_grant` or
+                              `access_denied` to prevent leaking patron identifiers.
 
- 504    gateway_timeout
------- ----------------------- ------------------------------------------------
+ not_implemented        501   Known but unspupported request URL (for instance a PAIA auth server
+                              server may not implement `http://example.org/core/change`)
 
+ invalid_request        405   Unexpected HTTP verb (all but GET, POST, HEAD)
+
+ invalid_request        400   Malformed request (for instance error parsing JSON, unsupported
+                              request content type, etc.)
+ 
+ invalid_request        422   The request parameters could be parsed but they don’t match to the
+                              request method (for instance missing fields, invalid values, etc.)
+
+ invalid_grant          401   The access token was missing, invalid, or expired
+
+ access_denied          403   The access token was ok but it lacks permission for the request
+
+ internal_error         500   An unexpected error ocurred. This error corresponds to a bug in
+                              the implementation of a PAIA auth/core server
+ 
+ service_unavailable    503   The request couldn’t be serviced because of a temporary failure
+
+ bad_gateway            502   The request couldn’t be serviced because of a backend failure
+                              (for instance the library system’s database)
+ 
+ gateway_timeout        504   The request couldn’t be serviced because of a backend failure
+--------------------- ------ --------------------------------------------------------------------
+
+For instance the following response could result from a request with malformed URIs 
+
+~~~~ {.json}
+{
+  "error": "invalid_request",
+  "code": "422",
+  "error_description": "malformed item identifier provided: must be an URI",
+  "error_uri": "http://example.org/help/api"
+}
+~~~~
 
 ## Special request parameters
 
@@ -533,8 +557,8 @@ The server MUST check
   change the given patron’s password
 
 A PAIA server MAY reject this method and return an [error
-response](#error-response) with error code 403 (forbidden) or error code 501
-(not implemented).
+response](#error-response) with error code `access_denied` (403) or error code
+`not_implemented` (501).
 
 
 # Glossary
