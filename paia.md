@@ -13,11 +13,10 @@ easy as possible.
 
 ## Status of this document
 
-This document is a first draft, based on a more elaborated version in German
-that is being implemented. The specification has been created collaboratively
-based on use cases and taking into account existing related standards and
-products such as NISO Circulation Interchange Protocol (NCIP), \[X]SLNP,
-DLF-ILS recommendations, and VuFind ILS drivers among others.
+The specification has been created collaboratively based on use cases and
+taking into account existing related standards and products such as NISO
+Circulation Interchange Protocol (NCIP), \[X]SLNP, DLF-ILS recommendations, and
+VuFind ILS drivers among others.
 
 Updates and sources can be found at <http://github.com/gbv/paia>. The current
 version of this document was last modified at GIT_REVISION_DATE with revision
@@ -30,23 +29,36 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
 interpreted as described in RFC 2119.
 
-A PAIA server MUST implement *PAIA core* and it MAY implement *PAIA auth*.  If
+A PAIA server MUST implement [PAIA core] and it MAY implement [PAIA auth].  If
 PAIA auth is not implemented, another way SHOULD BE documented to distribute
 patron identifiers and access tokens. A PAIA server MAY support only a subset
-of methods but it MUST return a valid response on every method request.
+of methods but it MUST return a valid response or error response on every
+method request, as defined in this document.
+
+
+[PAIA core]: #paia-core
+[PAIA auth]: #paia-auth
+[patron]: #patron
+[items]: #items
+[renew]: #renew
+[request]: #request
+[cancel]: #cancel
+[fees]: #fees
+[login]: #login
+[logout]: #logout
+[change]: #change
 
 
 # General 
 
 PAIA consists of two independent parts:
 
-* **[PAIA core](#paia-core)** defines six basic methods to look up,
-  request and cancel loans and reservations, and to look up fees and general
-  patron information.
+* **[PAIA core]** defines six basic methods to look up loaned and reserved 
+  [items], to [request] and [cancel] loans and reservations, and to look up 
+  [fees] and general [patron] information.
 
-* **[PAIA auth](#paia-auth)** defines three authentification methods
-  ([login](#login), [logout](#logout), and password [change](#change)) to get 
-  access tokens, required by PAIA core.
+* **[PAIA auth]** defines three authentification methods ([login], [logout], 
+  and password [change]) to get access tokens, required by PAIA core.
 
 Each method is accessed at an URL with a common base URL for PAIA core methods
 and common base URL for PAIA auth methods. A server SHOULD NOT provide
@@ -65,20 +77,21 @@ compromised by the client.
 
 ## Request and response format
 
-Each PAIA method is identified by a name which is appended to the PAIA
-core/auth base URL to get the method’s full URL. In addition there is a set of
-request parameters for each method. These parameters can be send as URL
-parameters (HTTP GET) or as form fields with HTTP request content type set to
-`application/x-www-form-urlencoded` (HTTP POST). In addition there is the
-special request parameter `access_token` which MUST NOT be sent as URL
-parameter (see section on [access tokens](#access-tokens) for details).
+Each PAIA method is identified by an URL and a HTTP verb (either HTTP GET or
+HTTP POST). 
+
+For POST methods a request body must be included in JSON format
+(HTTP request header `Content-Type: application/json` or
+`application/json;charset=UTF-8`). 
+
+In addition there is the special request parameter `access_token` for an
+[access token](#access-tokens), which can be sent either as HTTP query
+parameter or in a HTTP request header. 
 
 The HTTP response content type of a PAIA response is a JSON object (HTTP header
 `Content-Type: application/json;charset=UTF-8`), optionally wrapped as JSONP
 (HTTP header `Content-Type: application/javascript;charset=UTF-8`).
 
-
-## Parameters and fields
 
 Every request parameter and every response field is defined with
 
@@ -91,48 +104,52 @@ Every request parameter and every response field is defined with
 * the **[data type](#data-types)** of the parameter/field.
 * a short description
 
-Simple parameter names and response fields consist of lowercase letters `a-z` only. For
-repeatable request parameters, consecutive numbers (`1`, `2`, ...) must be appended to
-the parameter name, unless the parameter is not repeated. For instance if `foo` is
-a repeatable parameter, the following URL query strings are valid:
-
-    ?foo=x
-    ?foo1=x
-    ?foo1=x&foo2=y
-
-but the following URL query strings are invalid:
-
-    ?foo1=x&foo3=y
-    ?foo=x&foo=y
+Simple parameter names and response fields consist of lowercase letters `a-z` only.
 
 Repeatable response fields are encoded as JSON arrays, for instance:
 
-    "foo": ["x","y"],
+~~~~ {.json}
+{ "foo": ["x","y"] }
+~~~~
 
-Hierarchical structures are possible with a dot (`.`) as separator. and with
-objects in the JSON response. For instance the subfield/paramater `item` of the
-first field/paramater `doc` is encoded as
+Hierarchical JSON structures in this document are refereced with a dot (`.`) 
+as separator. For instance the subfield/paramater `item` of the `doc` is referenced
+as `doc.item` would refer to the following JSON structure:
 
-    doc1.item=...
-
-in a request or in a response as
-
-    "doc" : [ { "item" : "..." } ]
+~~~~ {.json}
+{ "doc" : [ { "item" : "..." } ] }
+~~~~
 
 
+## Special request parameters
+
+The following special request parameters can be added to any request as URL query parameters:
+
+callback
+  : A JavaScript callback method name to return JSONP instead of JSON. The
+    callback SHOULD only contain alphanumeric characters and underscores; 
+	any invalid characters MUST be stripped by a PAIA server. If callback
+	is given, the response content type MUST be `application/javascript`.
+suppress_response_codes
+  : If this parameter is present, *all* responses MUST be returned with a 
+    200 OK status code, even [error responses](#error-response).
+
+ 
 ## Access tokens
 
 All PAIA methods, with [login](#login) from PAIA auth as only exception,
 require an access token as special request parameter. The access token can be
-send either as request parameter in the request body (HTTP POST) or as request
-header:
+send either as URL query parameter or in a HTTP header. For instance the
+following requests both get information about patron `123` with access token
+`vF9dft4qmT`:
 
-    curl -H "Authorization: Bearer vF9dft4qmT" https://example.org/core/getPatron
+    curl -H "Authorization: Bearer vF9dft4qmT" https://example.org/core/patron/123
+    curl -H https://example.org/core/patron/123?access_token=vF9dft4qmT
 
 
 ## Error response
 
-There are two types of errors:
+Two classes of errors must be distinguished:
 
 Document errors
   : Unknown document URIs and failed attempts to request, renew, or cancel 
@@ -211,18 +228,7 @@ For instance the following response could result from a request with malformed U
 }
 ~~~~
 
-## Special request parameters
-
-The following special request parameters can be added to any request:
-
-callback
-  : A JavaScript callback method name to return JSONP instead of JSON. The
-    callback SHOULD only contain alphanumeric characters and underscores; 
-	any invalid characters MUST be stripped by a PAIA server. If callback
-	is given, the response content type MUST be `application/javascript`.
-suppress_response_codes
-  : If this parameter is present, *all* responses MUST be returned with a 
-    200 OK status code, even [error responses](#error-response).
+ 
 
 ## Data types
 
@@ -296,27 +302,27 @@ document
     An example of a document (with status 5=rejected) serialized in JSON is
     given below:
 
-        {
-           "status":    5,
-           "item":      "http://example.org/items/barcode1234567",
-           "item":      "http://example.org/documents/9876543",
-           "requested": "http://example.org/documents/9876543",
-           "error":     "sorry, we found out that our copy is lost!"
-        }
+    ~~~~ {.json}
+    {
+       "status":    5,
+       "item":      "http://example.org/items/barcode1234567",
+       "item":      "http://example.org/documents/9876543",
+       "requested": "http://example.org/documents/9876543",
+       "error":     "sorry, we found out that our copy is lost!"
+    }
+    ~~~~
 
 # PAIA core
 
-## getPatron
+Each API method of PAIA core is accessed at an URL that includes the
+URI-escaped patron identifier.
+
+## patron
 
 purpose
   : Get general information about a patron
-URL
-  : https://example.org/core/**getPatron**
-request parameters
-  :  name     occ    data type     description
-    -------- ------ ----------- -------------------
-     patron   1..1   string      patron identifier
-    -------- ------ ----------- -------------------
+HTTP verb and URL
+  : GET https://example.org/core/**{uri_escaped_patron_identifier}**
 response fields
   :  name      occ    data type       description
     --------- ------ --------------- ------------------------------
@@ -329,17 +335,12 @@ response fields
 Additional field such as address may be added in a later revision.
 
 
-## getItems
+## items
 
 purpose
   : Get a list of loans, reservations and other items related to a patron
-URL
-  : https://example.org/core/**getItems**
-request parameters
-  :  name     occ    data type     description
-    -------- ------ ----------- -------------------
-     patron   1..1   string      patron identifier
-    -------- ------ ----------- -------------------
+HTTP verb and URL
+  : GET https://example.org/core/**{uri_escaped_patron_identifier}**/items
 response fields
   :  name   occ    data type   description
     ------ ------ ----------- -----------------------------------------
@@ -350,15 +351,14 @@ In most cases, each document will have an item URI for a particular copy, but
 users may also have requested an edition.
 
 
-## renewItems
+## renew
 
 purpose
   : renew one or more documents held by the patron
-URL
-  : https://example.org/core/**renewItems**
+HTTP verb and URL
+  : POST https://example.org/core/**{uri_escaped_patron_identifier}**/renew
 request parameters
   : ------------- ------ -------- ------------------------------
-     patron        1..1   string    patron identifier
      doc           1..n             list of documents to renew
      doc.item      0..1   URI       URI of a particular item
      doc.edition   0..1   URI       URI of a particular edition
@@ -366,20 +366,19 @@ request parameters
 response fields
   :  name   occ    data type   description
     ------ ------ ----------- -----------------------------------------
-     doc   1..n   document   list of documents (order is irrelevant)
-    ----- ------ ---------- -----------------------------------------
+     doc   1..n   document     list of documents (order is irrelevant)
+    ----- ------ ------------ -----------------------------------------
 
 
-## requestItems
+## request
 
 purpose
   : Request one or more items for reservation or delivery.
-URL
-  : https://example.org/core/**requestItems**
+HTTP verb and URL
+  : POST https://example.org/core/**{uri_escaped_patron_identifier}**/request
 request parameters
   :  name            occ    data type   description
     --------------- ------ ----------- ------------------------------
-     patron          1..1   string      patron identifier
      doc             1..n               list of documents to renew
      doc.item        0..1   URI         URI of a particular item
      doc.edition     0..1   URI         URI of a particular edition
@@ -393,16 +392,15 @@ response fields
     ------ ------ ----------- -----------------------------------------
 
 
-## cancelItems
+## cancel
 
 purpose
   : Cancel requests for items.
-URL
-  : https://example.org/core/**cancelItems**
+HTTP verb and URL
+  : POST https://example.org/core/**{uri_escaped_patron_identifier}**/cancel
 request parameters
   :  name          occ    data type
     ------------- ------ ----------- -----------------------------
-     patron        1..1   string      patron identifier
      doc           1..n               list of documents to renew
      doc.item      0..1   URI         URI of a particular item
      doc.edition   0..1   URI         URI of a particular edition
@@ -414,17 +412,12 @@ response fields
     ------ ------ ----------- -----------------------------------------
 
 
-## getFunds
+## fees
 
 purpose
-  : Look up current funds of a patron.
-URL
-  : https://example.org/core/**getFunds**
-request parameters
-  :  name     occ    data type     description
-    -------- ------ ----------- -------------------
-     patron   1..1   string      patron identifier
-    -------- ------ ----------- -------------------
+  : Look up current fees of a patron.
+HTTP verb and URL
+  : GET https://example.org/core/**{uri_escaped_patron_identifier}**/fees
 response fields
   :  name          occ    data type   description
     ------------- ------ ----------- ----------------------------------------
@@ -442,7 +435,7 @@ response fields
 
 **PAIA auth** defines three methods for authentification based on username and
 password. These methods can be used to get access tokens and patron
-identifiers, which are required to access **PAIA core** methods. There MAY be
+identifiers, which are required to access **[PAIA core]** methods. There MAY be
 additional or alternative ways to distribute and manage access tokens and
 patron identifiers. 
 
@@ -503,13 +496,14 @@ An example of a successful response:
     Cache-Control: no-store
     Pragma: no-cache
 
-    {
-      "access_token":"2YotnFZFEjr1zCsicMWpAA",
-      "token_type":"Bearer",
-      "expires_in":3600,
-      "patron":"8362432"
-    }
-
+~~~~ {.json}
+{
+  "access_token": "2YotnFZFEjr1zCsicMWpAA",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "patron": "8362432"
+}
+~~~~
 
 ## logout
 
@@ -537,7 +531,7 @@ invalidate additional access tokens that were created for the same patron.
 ## change
 
 purpose
-  : Change password of a patron.
+  : Change password of a patron
 URL
   : https://example.org/auth/**change**
 request parameters
@@ -588,12 +582,13 @@ chain of trust and is as secure as sending access tokens as plain text.
 
 To limit the risk of spoiled access tokens, PAIA servers SHOULD put limits on
 the lifetime of access tokens and on the number of allowed requests per minute
-among other security limitations.
+among other security limitations. 
 
 It is also known that several library systems allow weak passwords. For this reason
 PAIA auth servers MUST follow approriate security measures, such as protecting 
 against brute force attacks and blocking accounts with weak passwords or with
 passwords that have been sent unencrypted.
+
 
 # References
 
