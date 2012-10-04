@@ -44,8 +44,9 @@ PAIA consists of two independent parts:
   request and cancel loans and reservations, and to look up fees and general
   patron information.
 
-* **[PAIA auth](#paia-auth)** defines three authentification methods (login,
-  logout, and password update) to get access tokens, required by PAIA core.
+* **[PAIA auth](#paia-auth)** defines three authentification methods
+  ([login](#login), [logout](#logout), and password [change](#change)) to get 
+  access tokens, required by PAIA core.
 
 Each method is accessed at an URL with a common base URL for PAIA core methods
 and common base URL for PAIA auth methods. A server SHOULD NOT provide
@@ -121,9 +122,10 @@ in a request or in a response as
 
 ## Access tokens
 
-All PAIA methods, with [loginPatron](#loginpatron) from PAIA auth as only exception,
-require an access token as special request parameter. The access token can be send
-either as request parameter in the request body (HTTP POST) or as request header:
+All PAIA methods, with [login](#login) from PAIA auth as only exception,
+require an access token as special request parameter. The access token can be
+send either as request parameter in the request body (HTTP POST) or as request
+header:
 
     curl -H "Authorization: Bearer vF9dft4qmT" https://example.org/core/getPatron
 
@@ -437,15 +439,15 @@ access to **PAIA auth** to specific clients, for instance by additional
 authorization.
 
 
-## loginPatron
+## login
 
-The `loginPatron` method is the only PAIA method that does not require an
-access token as part of the query.
+The `login` method is the only PAIA method that does not require an access
+token as part of the query.
 
 purpose
   : Get a patron identifier and access token to access patron information
 URL
-  : https://example.org/auth/**loginPatron**
+  : https://example.org/auth/**login**
 request parameters
   :  name          occ   data type
     ------------ ------ ----------- -------------------------------
@@ -485,12 +487,12 @@ An example of a successful response:
     }
 
 
-## logoutPatron
+## logout
 
 purpose
   : Invalidate an access token
 URL
-  : https://example.org/auth/**logoutPatron**
+  : https://example.org/auth/**logout**
 request parameters
   :  name     occ    data type     description
     -------- ------ ----------- -------------------
@@ -508,12 +510,12 @@ access token that was used to access this method. The server MAY further
 invalidate additional access tokens that were created for the same patron.
 
 
-## changeLogin
+## change
 
 purpose
   : Change password of a patron.
 URL
-  : https://example.org/auth/**changeLogin**
+  : https://example.org/auth/**change**
 request parameters
   :  name       occ    data type   description
     ---------- ------ ----------- ----------------------------
@@ -528,7 +530,7 @@ The server MUST check
 * the access token 
 * whether username and password match
 * whether the user identified by username is allowed to 
-  change the given patrond’s password
+  change the given patron’s password
 
 A PAIA server MAY reject this method and return an [error
 response](#error-response) with error code 403 (forbidden) or error code 501
