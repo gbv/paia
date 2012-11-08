@@ -68,9 +68,9 @@ methods at these base URLs as belonging to PAIA.
 In the following, the base URL <https://example.org/core/> is used for PAIA
 core and <https://example.org/auth/> for PAIA auth. 
 
-Authentification in PAIA is based on **OAuth 2.0** with bearer tokens
-over HTTPS (RFC 2818).  For security reasons, PAIA methods MUST
-be requested via HTTPS only. A PAIA client MUST NOT ignore SSL certificate
+Authentification in PAIA is based on **OAuth 2.0** (RFC 6749) with bearer
+tokens (RFC 6750) over HTTPS (RFC 2818).  For security reasons, PAIA methods
+MUST be requested via HTTPS only. A PAIA client MUST NOT ignore SSL certificate
 errors; otherwise access token (PAIA core) or even password (PAIA auth) are
 compromised by the client.
 
@@ -138,9 +138,10 @@ suppress_response_codes
 ## Access tokens and scopes
 
 All PAIA methods, with [login](#login) from PAIA auth as only exception,
-require an **access token** as special request parameter. The access token can
-be send either as URL query parameter or in a HTTP header. For instance the
-following requests both get information about patron `123` with access token
+require an **access token** as special request parameter. The access token is a
+so called bearer token as described in RFC 6750. The access token can be send
+either as URL query parameter or in a HTTP header. For instance the following
+requests both get information about patron `123` with access token
 `vF9dft4qmT`:
 
     curl -H "Authorization: Bearer vF9dft4qmT" https://example.org/core/patron/123
@@ -208,9 +209,9 @@ The following error responses are expected:[^errors]
 StackExchange API](https://api.stackexchange.com/docs/error-handling), and [the
 GitHub API](http://developer.github.com/v3/#client-errors).
 
---------------------- ------ --------------------------------------------------------------------
+--------------------- ------ ------------------------------------------------------------------------
  error                 code   description
---------------------- ------ --------------------------------------------------------------------
+--------------------- ------ ------------------------------------------------------------------------
  not_found              404   Unknown request URL or unknown patron. Implementations SHOULD
                               first check authentification and prefer error `invalid_grant` or
                               `access_denied` to prevent leaking patron identifiers.
@@ -228,7 +229,7 @@ GitHub API](http://developer.github.com/v3/#client-errors).
 
  invalid_grant          401   The access token was missing, invalid, or expired
 
- access_denied          403   The access token was ok but it lacks permission for the request
+ insufficient_scope     403   The access token was accepted but it lacks permission for the request
 
  internal_error         500   An unexpected error ocurred. This error corresponds to a bug in
                               the implementation of a PAIA auth/core server
@@ -239,7 +240,7 @@ GitHub API](http://developer.github.com/v3/#client-errors).
                               (for instance the library system’s database)
  
  gateway_timeout        504   The request couldn’t be serviced because of a backend failure
---------------------- ------ --------------------------------------------------------------------
+--------------------- ------ ------------------------------------------------------------------------
 
 For instance the following response could result from a request with malformed URIs 
 
@@ -252,7 +253,6 @@ For instance the following response could result from a request with malformed U
 }
 ~~~~
 
- 
 
 ## Data types
 
@@ -481,10 +481,10 @@ identifier. A username MAY even be equal to a patron identifier, but this is
 NOT RECOMMENDED.  An access token MUST NOT be equal to the password of the
 same user.
 
-A **PAIA auth** server acts as OAuth authorization server with password
-credentials grant, as defined in section 4.3 of the OAuth 2.0 specification.
-The access tokens provided by the server are so called OAuth 2.0 
-Bearer Tokens.
+A **PAIA auth** server acts as OAuth authorization server (RFC 6749) with
+password credentials grant, as defined in section 4.3 of the OAuth 2.0
+specification.  The access tokens provided by the server are so called OAuth
+2.0 bearer tokens (RFC 6750).
 
 A **PAIA auth** server MUST protect against brute force attacks (e.g. using
 rate-limitation or generating alerts). It is RECOMMENDED to further restrict
@@ -620,7 +620,7 @@ patron identifier
 Security of OAuth 2.0 with bearer tokens relies on correct application of
 HTTPS.  It is known that SSL certificate errors are often ignored just because
 of laziness. It MUST be clear to all implementors that this spoils the whole
-chain of trust and is as secure as sending access tokens as plain text.
+chain of trust and is as secure as sending access tokens in plain text.
 
 To limit the risk of spoiled access tokens, PAIA servers SHOULD put limits on
 the lifetime of access tokens and on the number of allowed requests per minute
@@ -638,8 +638,8 @@ Bradner, S. 1997. “RFC 2119: Key words for use in RFCs to Indicate Requirement
 
 Fielding, R. 1999. “RFC 2616: Hypertext Transfer Protocol.” http://tools.ietf.org/html/rfc2616.
 
-Hammer-Lahav, Recordon, D., E., and D. Hardt. 2012. “The OAuth 2.0 Authorization Framework.” http://tools.ietf.org/html/draft-ietf-oauth-v2.
+D. Hardt. 2012. “RFC 6749: The OAuth 2.0 Authorization Framework.” http://tools.ietf.org/html/rfc6749.
 
-Jones, Hardt, D., M., and D. Recordon. 2012. “The OAuth 2.0 Protocol: Bearer Tokens.” http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer.
+Jones, M. and Hardt, D. 2012. “RFC 6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage.” http://tools.ietf.org/html/rfc6750.
 
 Rescorla, E. 2000. “RFC 2818: HTTP over TLS.” http://tools.ietf.org/html/rfc2818.
