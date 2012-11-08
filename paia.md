@@ -467,13 +467,14 @@ URL
   : https://example.org/auth/**login**
 request parameters
   :  name          occ   data type
-    ------------ ------ ----------- -------------------------------
+    ------------ ------ ----------- --------------------------------
      username     1..1   string      User name of a patron 
-     password     0..n               Password of a patron
+     password     1..1   string      Password of a patron
      grant_type   1..1   string      Fixed value set to "password"
-    ------------ ------ ----------- -------------------------------
+     scope        0..1   string      Comma-separated list of scopes
+    ------------ ------ ----------- --------------------------------
 
-A `scope` parameter, as defined by OAuth 2.0 may be added in a future release
+The `scope` parameter, as defined by OAuth 2.0, is reserved for future releases
 of this specification to provide access tokens with different access rights
 (for instance read-only access). 
 
@@ -486,6 +487,7 @@ response fields
      patron          1..1   string                 Patron identifier
      access_token    1..1   string                 The access token issued by the PAIA auth server
      token_type      1..1   string                 Fixed value set to "Bearer"
+     scope           0..1   string                 Comma-separated list of granted scopes
      expires_in      0..1   nonnegative integer    The lifetime in seconds of the access token
     --------------  ------ ---------------------  -------------------------------------------------
 
