@@ -85,8 +85,8 @@ For POST methods a request body must be included in JSON format
 `application/json;charset=UTF-8`). 
 
 In addition there is the special request parameter `access_token` for an
-[access token](#access-tokens), which can be sent either as HTTP query
-parameter or in a HTTP request header. 
+[access token](#access-tokens-and-scopes), which can be sent either as HTTP
+query parameter or in a HTTP request header. 
 
 The HTTP response content type of a PAIA response is a JSON object (HTTP header
 `Content-Type: application/json;charset=UTF-8`), optionally wrapped as JSONP
@@ -135,16 +135,40 @@ suppress_response_codes
     200 OK status code, even [error responses](#error-response).
 
  
-## Access tokens
+## Access tokens and scopes
 
 All PAIA methods, with [login](#login) from PAIA auth as only exception,
-require an access token as special request parameter. The access token can be
-send either as URL query parameter or in a HTTP header. For instance the
+require an **access token** as special request parameter. The access token can
+be send either as URL query parameter or in a HTTP header. For instance the
 following requests both get information about patron `123` with access token
 `vF9dft4qmT`:
 
     curl -H "Authorization: Bearer vF9dft4qmT" https://example.org/core/patron/123
     curl -H https://example.org/core/patron/123?access_token=vF9dft4qmT
+
+An access token is valid for a limited set of actions, referred to as
+**scope**.  The following scopes are possible:
+
+read_patron
+  : Get patron information by the [patron](#patron) method.
+read_fees
+  : Get fees of a patron by the [fees](#fees) method.
+read_items
+  : Get a patron’s item information by the [items](#items) method.
+write_items
+  : Request, renew, and cancel items by the [request](#request), 
+    [renew](#renew), and [cancel](#cancel) methods.
+
+For instance a particular token with scopes `read_patron` and `read_items` may
+be used to for read-only access to information about a patron, including its
+loans and requested items but not its fees.
+
+A PAIA core server SHOULD send the following HTTP headers with every response:
+
+X-OAuth-Scopes
+  : A space-separated list of scopes, the current token has authorized
+X-Accepted-OAuth-Scopes
+  : A space-separated list of scopes, the current method checks for
 
 
 ## Error response
@@ -323,6 +347,8 @@ purpose
   : Get general information about a patron
 HTTP verb and URL
   : GET https://example.org/core/**{uri_escaped_patron_identifier}**
+scope
+  : read_patron
 response fields
   :  name      occ    data type       description
     --------- ------ --------------- ------------------------------
@@ -341,6 +367,8 @@ purpose
   : Get a list of loans, reservations and other items related to a patron
 HTTP verb and URL
   : GET https://example.org/core/**{uri_escaped_patron_identifier}**/items
+scope
+  : read_item
 response fields
   :  name   occ    data type   description
     ------ ------ ----------- -----------------------------------------
@@ -357,6 +385,8 @@ purpose
   : renew one or more documents held by the patron
 HTTP verb and URL
   : POST https://example.org/core/**{uri_escaped_patron_identifier}**/renew
+scope
+  : write_item
 request parameters
   : ------------- ------ -------- ------------------------------
      doc           1..n             list of documents to renew
@@ -376,6 +406,8 @@ purpose
   : Request one or more items for reservation or delivery.
 HTTP verb and URL
   : POST https://example.org/core/**{uri_escaped_patron_identifier}**/request
+scope
+  : write_item
 request parameters
   :  name            occ    data type   description
     --------------- ------ ----------- ------------------------------
@@ -398,6 +430,8 @@ purpose
   : Cancel requests for items.
 HTTP verb and URL
   : POST https://example.org/core/**{uri_escaped_patron_identifier}**/cancel
+scope
+  : write_item
 request parameters
   :  name          occ    data type
     ------------- ------ ----------- -----------------------------
@@ -418,6 +452,8 @@ purpose
   : Look up current fees of a patron.
 HTTP verb and URL
   : GET https://example.org/core/**{uri_escaped_patron_identifier}**/fees
+scope
+  : read_fees
 response fields
   :  name          occ    data type   description
     ------------- ------ ----------- ----------------------------------------
@@ -471,15 +507,18 @@ request parameters
      username     1..1   string      User name of a patron 
      password     1..1   string      Password of a patron
      grant_type   1..1   string      Fixed value set to "password"
-     scope        0..1   string      Comma-separated list of scopes
+     scope        0..1   string      Space separated list of scopes
     ------------ ------ ----------- --------------------------------
 
-The `scope` parameter, as defined by OAuth 2.0, is reserved for future releases
-of this specification to provide access tokens with different access rights
-(for instance read-only access). 
+If no `scope` parameter is given, it is set to the default value `read_patron
+read_fees read_items write_items` for full access to all PAIA core methods (see
+[access tokens and scopes ](#access-tokens-and-scopes)).
 
 The response format is a JSON structure as defined in section 5.1 (successful
-response) and section 5.2 (error response) of OAuth 2.0.
+response) and section 5.2 (error response) of OAuth 2.0. The PAIA auth server
+may grant different scopes than requested for, for instance if the account of a
+patron has expired, so the patron should not be allowed to request and renew
+new documents.
 
 response fields
   :  name            occ    data type              description
@@ -487,11 +526,11 @@ response fields
      patron          1..1   string                 Patron identifier
      access_token    1..1   string                 The access token issued by the PAIA auth server
      token_type      1..1   string                 Fixed value set to "Bearer"
-     scope           0..1   string                 Comma-separated list of granted scopes
+     scope           1..1   string                 Space separated list of granted scopes
      expires_in      0..1   nonnegative integer    The lifetime in seconds of the access token
     --------------  ------ ---------------------  -------------------------------------------------
 
-An example of a successful response:
+An example of a successful response (the scopes parameter is not clear yet):
 
     HTTPS/1.1 200 OK
     Content-Type: application/json;charset=UTF-8
@@ -503,7 +542,8 @@ An example of a successful response:
   "access_token": "2YotnFZFEjr1zCsicMWpAA",
   "token_type": "Bearer",
   "expires_in": 3600,
-  "patron": "8362432"
+  "patron": "8362432",
+  "scope": "read_patron read_fees read_items write_items"
 }
 ~~~~
 
