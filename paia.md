@@ -675,6 +675,39 @@ PAIA auth servers MUST follow approriate security measures, such as protecting
 against brute force attacks and blocking accounts with weak passwords or with
 passwords that have been sent unencrypted.
 
+# Examples
+
+This non-normative section contains additional examples to illustrate concepts
+and methods of PAIA.
+
+## Transitions of document states
+
+Six document status [data type](#data-types) values are possible. One document
+can have different status for different patrons and for different times. The
+following table illustrates reasonable transitions of document status with time
+for a fixed patron. For instance some document held by another patron is first
+requested (0 → 1) with PAIA method [request](#request), made available after
+return (1 → 4), picked up (4 → 3), renewed after some time with PAIA method
+[renew](#renew) (4 → 4) and later returned (3 → 0).
+
+  transition →      0              1: reserved     2: ordered    3: held   4: provided     5: rejected
+ -------------- --------------- --------------- --------------- --------- --------------- ------------------------------------
+  0              =               `request`       `request`       loan      `request`       `request`
+  1: reserved    `cancel`        =               available       loan      available       patron inactive, document lost ...
+  2: ordered     `cancel`        /               =               loan      available       patron inactive, document lost ...
+  3: held        return          /               /               `renew`   /               /
+  4: provided    not picked up   /               /               loan      =               patron inactive, ...
+  5: rejected    time passed     patron active   patron active   /         patron active   =
+ -------------- --------------- --------------- --------------- --------- --------------- ------------------------------------
+
+Transitions marked with "/" may also be possible in special circumstances: for
+instance a book ordered from the stacks (status 2) may turn out to be damaged,
+so it is first repaired and reserved for the patron meanwhile (status 1).
+Transitions for digital publications may also be different. Note that a PAIA
+server does not need to implement all document states. A reasonable subset is 
+to only support 0, 1, 3, and 5.
+
+------
 
 # References
 
