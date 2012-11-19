@@ -89,8 +89,8 @@ In addition there is the special request parameter `access_token` for an
 query parameter or in a HTTP request header. 
 
 The HTTP response content type of a PAIA response is a JSON object (HTTP header
-`Content-Type: application/json;charset=UTF-8`), optionally wrapped as JSONP
-(HTTP header `Content-Type: application/javascript;charset=UTF-8`).
+`Content-Type: application/json; charset=utf-8`), optionally wrapped as JSONP
+(HTTP header `Content-Type: application/javascript; charset=utf-8`).
 
 
 Every request parameter and every response field is defined with
@@ -261,9 +261,10 @@ The following data types are used to define request and response format:
 string
   : A Unicode string. Strings MAY be empty.
 nonnegative integer
-  : An integer number larger than zero.
+  : An integer number larger than or equal to zero.
 boolean
-  : Either true or false (omitted boolean values are *not* false but unknown!).
+  : Either true or false. Note that omitted boolean values are *not* false by 
+    default but unknown!
 date
   : A date value in `YYYY-MM-DD` format.
 money
@@ -282,7 +283,9 @@ account state
     2. inactive because account expired
     3. inactive because of outstanding fees
 
-    A PAIA server MAY define additional states which can be mapped to `1` by PAIA clients.
+    A PAIA server MAY define additional states which can be mapped to `1` by PAIA 
+    clients.  For convenience, account states in JSON can expressed both as numbers 
+    (`0`) and as strings (`"0"`).
 document status
   : A nonegative integer representing the current relation between a particular
     document and a particular patron. Possible values are:
@@ -295,7 +298,9 @@ document status
     4. provided (the document is ready to be used by the patron)
     5. rejected
 
-    A PAIA server MUST NOT define any other document states.
+    A PAIA server MUST NOT define any other document states. For convenience, 
+    document status in JSON can expressed both as numbers (`1`) and as strings (`"1"`).
+
 document
   : A key-value structure with the following fields
 
@@ -324,13 +329,14 @@ document
     correspond to properties in DAIA.
 
     An example of a document (with status 5=rejected) serialized in JSON is
-    given below:
+    given below. In this case an arbitrary copy of a selected document was
+    requested and mapped to a particular copy that turned out to be not accesible:
 
     ~~~~ {.json}
     {
        "status":    5,
        "item":      "http://example.org/items/barcode1234567",
-       "item":      "http://example.org/documents/9876543",
+       "edition":   "http://example.org/documents/9876543",
        "requested": "http://example.org/documents/9876543",
        "error":     "sorry, we found out that our copy is lost!"
     }
@@ -360,6 +366,30 @@ response fields
  
 Additional field such as address may be added in a later revision.
 
+**Example**
+
+~~~
+GET /core/patron/123 HTTP/1.1
+Host: example.org
+Accept: application/json
+Authorization: Bearer a0dedc54bbfae4b
+~~~
+
+~~~
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-Accepted-OAuth-Scopes: read_patron
+X-OAuth-Scopes: read_patron, read_fees, read_items, write_items
+~~~
+
+~~~{.json}
+{
+  "name": "Jane Q. Public", 
+  "email": "jane@example.org",
+  "expires": "2013-05-18",
+  "status": 0
+}
+~~~
 
 ## items
 
@@ -530,10 +560,10 @@ response fields
      expires_in      0..1   nonnegative integer    The lifetime in seconds of the access token
     --------------  ------ ---------------------  -------------------------------------------------
 
-An example of a successful response (the scopes parameter is not clear yet):
+An example of a successful response (scopes omitted in this example):
 
-    HTTPS/1.1 200 OK
-    Content-Type: application/json;charset=UTF-8
+    HTTP/1.1 200 OK
+    Content-Type: application/json; charset=utf-8
     Cache-Control: no-store
     Pragma: no-cache
 
