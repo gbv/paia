@@ -78,11 +78,10 @@ compromised by the client.
 ## Request and response format
 
 Each PAIA method is identified by an URL and a HTTP verb (either HTTP GET or
-HTTP POST). 
-
-For POST methods a request body must be included in JSON format
-(HTTP request header `Content-Type: application/json` or
-`application/json;charset=UTF-8`). 
+HTTP POST). For POST methods of PAIA core a request body MUST be included in
+JSON format (`Content-Type: application/json` or `application/json;
+charset=utf-8`). For POST methods of PAIA auth a request body MUST be included
+as URL encoded query (`Content-Type: application/x-www-form-urlencoded`).
 
 In addition there is the special request parameter `access_token` for an
 [access token](#access-tokens-and-scopes), which can be sent either as HTTP
@@ -200,7 +199,8 @@ The response body of a request error is a JSON object with the following fields
 ------------------- ------ --------------------- -----------------------------------------
 
 The `code` field is REQUIRED with request parameter `suppress_response_codes`
-but it SHOULD be omitted with PAIA auth requests to not confuse OAuth clients.
+in PAIA core. It SHOULD be omitted with PAIA auth requests to not confuse OAuth
+clients.
 
 The following error responses are expected:[^errors]
 
@@ -284,8 +284,7 @@ account state
     3. inactive because of outstanding fees
 
     A PAIA server MAY define additional states which can be mapped to `1` by PAIA 
-    clients.  For convenience, account states in JSON can expressed both as numbers 
-    (`0`) and as strings (`"0"`).
+    clients. In JSON account states MUST be encoded as numbers instead of strings.
 document status
   : A nonegative integer representing the current relation between a particular
     document and a particular patron. Possible values are:
@@ -298,8 +297,8 @@ document status
     4. provided (the document is ready to be used by the patron)
     5. rejected
 
-    A PAIA server MUST NOT define any other document states. For convenience, 
-    document status in JSON can expressed both as numbers (`1`) and as strings (`"1"`).
+    A PAIA server MUST NOT define any other document states. In JSON document status
+    MUST be encoded as numbers instead of strings.
 
 document
   : A key-value structure with the following fields
@@ -560,12 +559,22 @@ response fields
      expires_in      0..1   nonnegative integer    The lifetime in seconds of the access token
     --------------  ------ ---------------------  -------------------------------------------------
 
-An example of a successful response (scopes omitted in this example):
+**Example of a successful request**
 
-    HTTP/1.1 200 OK
-    Content-Type: application/json; charset=utf-8
-    Cache-Control: no-store
-    Pragma: no-cache
+~~~
+POST /auth/login
+Host: example.org
+Accept: application/json
+Content-Type: application/x-www-form-urlencoded
+
+username=alice02&password=jo-!97kdl%2Btt&grant_type=password
+
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Cache-Control: no-store
+Pragma: no-cache
+~~~~
 
 ~~~~ {.json}
 {
@@ -607,13 +616,18 @@ purpose
 URL
   : https://example.org/auth/**change**
 request parameters
-  :  name       occ    data type   description
-    ---------- ------ ----------- ----------------------------
-     patron     1..1   string      Patron identifier
-     username   1..1   string      User name of the patron 
-     password   1..1   string      Password of the patron
-     new        1..1   string      New password of the patron
-    --------   ------ ----------- ----------------------------
+  :  name           occ    data type   description
+    -------------- ------ ----------- ----------------------------
+     patron         1..1   string      Patron identifier
+     username       1..1   string      User name of the patron 
+     old_password   1..1   string      Password of the patron
+     new_password   1..1   string      New password of the patron
+    -------------- ------ ----------- ----------------------------
+response fields
+  :  name     occ    data type     description
+    -------- ------ ----------- -------------------
+     patron   1..1   string      patron identifier
+    -------- ------ ----------- -------------------
 
 The server MUST check 
 
@@ -624,7 +638,7 @@ The server MUST check
 
 A PAIA server MAY reject this method and return an [error
 response](#error-response) with error code `access_denied` (403) or error code
-`not_implemented` (501).
+`not_implemented` (501). On success, the patron identifier is returned.
 
 
 # Glossary
