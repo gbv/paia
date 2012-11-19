@@ -78,10 +78,10 @@ compromised by the client.
 ## Request and response format
 
 Each PAIA method is identified by an URL and a HTTP verb (either HTTP GET or
-HTTP POST). For POST methods of PAIA core a request body MUST be included in
-JSON format (`Content-Type: application/json` or `application/json;
-charset=utf-8`). For POST methods of PAIA auth a request body MUST be included
-as URL encoded query (`Content-Type: application/x-www-form-urlencoded`).
+HTTP POST). For POST methods a request body MUST be included in JSON format 
+(`Content-Type: application/json` or `application/json; charset=utf-8`). A PAIA
+auth server MAY additionally accept URL-encoded HTTP POST request bodies with
+content type `application/x-www-form-urlencoded`.
 
 In addition there is the special request parameter `access_token` for an
 [access token](#access-tokens-and-scopes), which can be sent either as HTTP
@@ -230,6 +230,8 @@ GitHub API](http://developer.github.com/v3/#client-errors).
  invalid_grant          401   The access token was missing, invalid, or expired
 
  insufficient_scope     403   The access token was accepted but it lacks permission for the request
+ 
+ access_denied          403   Wrong or missing credentials to get an access token
 
  internal_error         500   An unexpected error ocurred. This error corresponds to a bug in
                               the implementation of a PAIA auth/core server
@@ -565,9 +567,14 @@ response fields
 POST /auth/login
 Host: example.org
 Accept: application/json
-Content-Type: application/x-www-form-urlencoded
+Content-Type: application/json
+Content-Length: 85
 
-username=alice02&password=jo-!97kdl%2Btt&grant_type=password
+{
+  "username": "alice02",
+  "password": "jo-!97kdl+tt",
+  "grant_type": "password"
+}
 
 
 HTTP/1.1 200 OK
@@ -583,6 +590,22 @@ Pragma: no-cache
   "expires_in": 3600,
   "patron": "8362432",
   "scope": "read_patron read_fees read_items write_items"
+}
+~~~~
+
+**Example of a rejected request**
+
+~~~~
+HTTP/1.1 403 Forbidden
+Content-Type: application/json; charset=utf-8
+Cache-Control: no-store
+Pragma: no-cache
+~~~~
+
+~~~~ {.json}
+{
+  "error": "access_denied",
+  "code": "403"
 }
 ~~~~
 
