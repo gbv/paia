@@ -147,7 +147,7 @@ requests both get information about patron `123` with access token
     curl -H https://example.org/core/patron/123?access_token=vF9dft4qmT
 
 An access token is valid for a limited set of actions, referred to as
-**scope**.  The following scopes are possible:
+**scope**.  The following scopes are possible for PAIA core:
 
 read_patron
   : Get patron information by the [patron](#patron) method.
@@ -163,13 +163,22 @@ For instance a particular token with scopes `read_patron` and `read_items` may
 be used to for read-only access to information about a patron, including its
 loans and requested items but not its fees.
 
-A PAIA core server SHOULD send the following HTTP headers with every response:
+A PAIA server SHOULD send the following HTTP headers with every response:
 
 X-OAuth-Scopes
   : A space-separated list of scopes, the current token has authorized
 X-Accepted-OAuth-Scopes
   : A space-separated list of scopes, the current method checks for
 
+For PAIA auth an additional scope is possible:
+
+change_password
+  : Change the password of a patron with PAIA auth [change](#change) method.
+
+A PAIA core server SHOULD NOT include the `change_password` scope in the
+`X-OAuth-Scopes` header because the scope is limited to PAIA auth. A PAIA auth
+server MAY send `X-OAuth-Scopes` and `X-Accepted-OAuth-Scopes` headers with
+both PAIA auth scopes and PAIA core scopes.
 
 ## Error response
 
@@ -638,6 +647,8 @@ purpose
   : Change password of a patron
 URL
   : https://example.org/auth/**change**
+scope
+  : change_password
 request parameters
   :  name           occ    data type   description
     -------------- ------ ----------- ----------------------------
@@ -656,8 +667,7 @@ The server MUST check
 
 * the access token 
 * whether username and password match
-* whether the user identified by username is allowed to 
-  change the given patron’s password
+* whether the user identified by username has scope `change_password`
 
 A PAIA server MAY reject this method and return an [error
 response](#error-response) with error code `access_denied` (403) or error code
