@@ -127,8 +127,8 @@ The following special request parameters can be added to any request as URL quer
 callback
   : A JavaScript callback method name to return JSONP instead of JSON. The
     callback SHOULD only contain alphanumeric characters and underscores; 
-	any invalid characters MUST be stripped by a PAIA server. If callback
-	is given, the response content type MUST be `application/javascript`.
+    any invalid characters MUST be stripped by a PAIA server. If callback
+    is given, the response content type MUST be `application/javascript`.
 suppress_response_codes
   : If this parameter is present, *all* responses MUST be returned with a 
     200 OK status code, even [error responses](#error-response).
@@ -192,8 +192,8 @@ Document errors
 Request errors
   : Malformed requests, failed authentification, unsupported methods, and
     unexpected server errors such as backend downtime etc. MUST result in an 
-	error response. An error response is returned with a HTTP status code 
-	4xx (client error) or 5xx (server error) as defined in RFC 2616, unless
+    error response. An error response is returned with a HTTP status code 
+    4xx (client error) or 5xx (server error) as defined in RFC 2616, unless
     the request parameter `suppress_response_codes` is given.
 
 The response body of a request error is a JSON object with the following fields
@@ -293,7 +293,7 @@ account state
     1. inactive
     2. inactive because account expired
     3. inactive because of outstanding fees
-	4. inactive because account expired and outstanding fees
+    4. inactive because account expired and outstanding fees
 
     A PAIA server MAY define additional states which can be mapped to `1` by PAIA 
     clients. In JSON account states MUST be encoded as numbers instead of strings.
@@ -370,9 +370,9 @@ response fields
   :  name      occ    data type       description
     --------- ------ --------------- ------------------------------
      name      1..1   string          full name of the patron
-	 email     0..1   email           email address of the patron
-	 expires   0..1   date            date of patron account expiry
-	 status    0..1   account state   current state (0, 1, 2, or 3)
+     email     0..1   email           email address of the patron
+     expires   0..1   date            date of patron account expiry
+     status    0..1   account state   current state (0, 1, 2, or 3)
     --------- ------ --------------- -------------------------------
  
 Additional field such as address may be added in a later revision.
@@ -500,11 +500,11 @@ response fields
     ------------- ------ ----------- ----------------------------------------
      amount        0..1   money       Sum of all fees. May also be negative!
      fee           0..n               list of fees
-	 fee.amount    1..1   money       amout of a single fee
-	 fee.date      0..1   date        date when the fee was claimed
-	 fee.about     0..1   string      textual information about the fee
-	 fee.item      0..1   URI         item that caused the fee
-	 fee.edition   0..1   URI         edition that caused the fee
+     fee.amount    1..1   money       amout of a single fee
+     fee.date      0..1   date        date when the fee was claimed
+     fee.about     0..1   string      textual information about the fee
+     fee.item      0..1   URI         item that caused the fee
+     fee.edition   0..1   URI         edition that caused the fee
     ------------- ------ ----------- ----------------------------------------
 
 
@@ -760,13 +760,23 @@ following rules of thumb may help:
 
 Although PAIA is first defined as HTTP API, it includes a conceptual data
 model, which can be mapped to RDF among other expressions. The expression of
-PAIA in RDF is in an early phase of discussion. The mapping to RDF includes the
-following core concepts:
+PAIA in RDF is in an early phase of discussion. The following ontologies may 
+be reused:
+
+    @prefix bibo: <http://purl.org/ontology/bibo/> .
+    @prefix daia: <http://purl.org/ontology/daia/> .
+    @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+    @prefix frbr: <http://purl.org/vocab/frbr/core#> .
+    @prefix sioc: <http://rdfs.org/sioc/ns#> .
+    @prefix ssso: <http://purl.org/ontology/ssso> .
+    @prefix particip: <http://purl.org/vocab/participation/schema#> .
+
+The mapping to RDF includes the following core concepts:
 
 Patron
   : A patron account expressed as instance of `sioc:User`. The patron account
     typically belongs to a person, connected to with `foaf:account`. The date
-	of expiration can be expressed with `particip:endDate`.
+    of expiration can be expressed with `particip:endDate`.
 Document
   : An abstract work, a specific edition, or an item. Probably an instance of
     `bibo:Document` or `frbr:Item`.
@@ -776,11 +786,11 @@ Account state
 Document service
   : An instance of a library service connected to a patron and a document.
     Document services are returned by the PAIA core method [items](). This
-	entity could be expressed with DAIA ontology.
+    entity could be expressed with DAIA ontology.
 Document status
   : The current state of a (document) service, defined as subclass instance of 
     `ssso:Service` from the Simple Service Status Ontology (SSSO) and as instance
-	of `daia:Service` from the Document Availability Information Ontology (DAIA).
+    of `daia:Service` from the Document Availability Information Ontology (DAIA).
 Fee
   : An amount of money that has to be paid by a patron for some reason.
     Each fee can be connected to a document service.
@@ -803,4 +813,9 @@ Rescorla, E. 2000. “RFC 2818: HTTP over TLS.” http://tools.ietf.org/html/rfc
 
 ## Informative References
 
+Styles, Rob, Wallace, Chris and Moeller, Knud. 2008. “Participation schema“. http://vocab.org/participation/schema.
+
 Voss, J. 2012. “DAIA ontology“. http://purl.org/ontology/daia/. 
+
+Voss, J. 2012. “Simple Service Status Ontology“. http://purl.org/ontology/ssso/. 
+
