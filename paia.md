@@ -108,12 +108,12 @@ Simple parameter names and response fields consist of lowercase letters `a-z` on
 Repeatable response fields are encoded as JSON arrays, for instance:
 
 ~~~~ {.json}
-{ "foo": ["x","y"] }
+{ "fee" : [ { ... }, { ... } ] }
 ~~~~
 
 Hierarchical JSON structures in this document are refereced with a dot (`.`) 
-as separator. For instance the subfield/paramater `item` of the `doc` is referenced
-as `doc.item` would refer to the following JSON structure:
+as separator. For instance the subfield/parameter `item` of the `doc` element
+is referenced as `doc.item` and refers to the following JSON structure:
 
 ~~~~ {.json}
 { "doc" : [ { "item" : "..." } ] }
@@ -293,6 +293,7 @@ account state
     1. inactive
     2. inactive because account expired
     3. inactive because of outstanding fees
+	4. inactive because account expired and outstanding fees
 
     A PAIA server MAY define additional states which can be mapped to `1` by PAIA 
     clients. In JSON account states MUST be encoded as numbers instead of strings.
@@ -689,6 +690,8 @@ PAIA auth server
 PAIA core server
   : HTTP endpoint that implements the PAIA core specification, so 
     all PAIA core methods can be accessed at a common base URL.
+patron
+  : An account of a library user
 patron identifier
   : A Unicode string that identifies a library patron account.
 
@@ -708,10 +711,10 @@ PAIA auth servers MUST follow approriate security measures, such as protecting
 against brute force attacks and blocking accounts with weak passwords or with
 passwords that have been sent unencrypted.
 
-# Examples
+# Examples and mappings
 
-This non-normative section contains additional examples to illustrate concepts
-and methods of PAIA.
+This non-normative section contains additional examples and a mapping to RDF to
+illustrate the semantics of PAIA concepts and methods.
 
 ## Transitions of document states
 
@@ -740,9 +743,53 @@ Transitions for digital publications may also be different. Note that a PAIA
 server does not need to implement all document states. A reasonable subset is 
 to only support 0, 1, 3, and 5.
 
+## Digital documents
+
+The handling of digital documents is subject to frequently asked questions. The
+following rules of thumb may help:
+
+* For most digital documents the concept of an item does not make sense and there
+  is no URI of a particular copy. In this case the `document.edition` field should
+  be used instead of `document.item`.
+* For some digital documents there may be no distinction between status `provided` 
+  and status `held`.  The status `provided` should be preferred when the same 
+  document can be used by multiple patrons at the same time, and `held` should
+  be used when the document can exclusively be used by the patron.
+
+## PAIA ontology in RDF
+
+Although PAIA is first defined as HTTP API, it includes a conceptual data
+model, which can be mapped to RDF among other expressions. The expression of
+PAIA in RDF is in an early phase of discussion. The mapping to RDF includes the
+following core concepts:
+
+Patron
+  : A patron account expressed as instance of `sioc:User`. The patron account
+    typically belongs to a person, connected to with `foaf:account`. The date
+	of expiration can be expressed with `particip:endDate`.
+Document
+  : An abstract work, a specific edition, or an item. Probably an instance of
+    `bibo:Document` or `frbr:Item`.
+Account state
+  : The current state of a patron account. Still to be discussed whether modeled
+    as entity or as relationship.
+Document service
+  : An instance of a library service connected to a patron and a document.
+    Document services are returned by the PAIA core method [items](). This
+	entity could be expressed with DAIA ontology.
+Document status
+  : The current state of a (document) service, defined as subclass instance of 
+    `ssso:Service` from the Simple Service Status Ontology (SSSO) and as instance
+	of `daia:Service` from the Document Availability Information Ontology (DAIA).
+Fee
+  : An amount of money that has to be paid by a patron for some reason.
+    Each fee can be connected to a document service.
+
 ------
 
 # References
+
+## Normative References
 
 Bradner, S. 1997. “RFC 2119: Key words for use in RFCs to Indicate Requirement Levels.” http://tools.ietf.org/html/rfc2119.
 
@@ -753,3 +800,7 @@ D. Hardt. 2012. “RFC 6749: The OAuth 2.0 Authorization Framework.” http://to
 Jones, M. and Hardt, D. 2012. “RFC 6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage.” http://tools.ietf.org/html/rfc6750.
 
 Rescorla, E. 2000. “RFC 2818: HTTP over TLS.” http://tools.ietf.org/html/rfc2818.
+
+## Informative References
+
+Voss, J. 2012. “DAIA ontology“. http://purl.org/ontology/daia/. 
