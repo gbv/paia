@@ -78,19 +78,23 @@ compromised by the client.
 ## Request and response format
 
 Each PAIA method is identified by an URL and a HTTP verb (either HTTP GET or
-HTTP POST). For POST methods a request body MUST be included in JSON format 
-(`Content-Type: application/json` or `application/json; charset=utf-8`). A PAIA
-auth server MAY additionally accept URL-encoded HTTP POST request bodies with
-content type `application/x-www-form-urlencoded`.
+HTTP POST). For POST methods a request body MUST be included in JSON format in
+UTF-8. A Content-Type request header MUST be sent with `application/json;
+charset=utf-8` or `application/json`. A PAIA auth server MAY additionally
+accept URL-encoded HTTP POST request bodies with content type
+`application/x-www-form-urlencoded`.
 
 In addition there is the special request parameter `access_token` for an
 [access token](#access-tokens-and-scopes), which can be sent either as HTTP
 query parameter or in a HTTP request header. 
 
 The HTTP response content type of a PAIA response is a JSON object (HTTP header
-`Content-Type: application/json; charset=utf-8`), optionally wrapped as JSONP
-(HTTP header `Content-Type: application/javascript; charset=utf-8`).
-
+`Content-Type: application/json`), optionally wrapped as JSONP (HTTP header
+`Content-Type: application/javascript`). The charset MUST be included as part
+of the Content-Type header. The response charset is first determined by looking
+at the requests Accept-Charset header and second by its Accept header. If none
+of both headers contains a charset supported by the PAIA server, the server MUST
+use either either ISO-8859-1 or UTF-8. A PAIA server MUST at least support UTF-8.
 
 Every request parameter and every response field is defined with
 
@@ -541,7 +545,7 @@ token as part of the query.
 purpose
   : Get a patron identifier and access token to access patron information
 URL
-  : https://example.org/auth/**login**
+  : GET or POST https://example.org/auth/**login**
 request parameters
   :  name          occ   data type
     ------------ ------ ----------- --------------------------------
@@ -624,7 +628,7 @@ Pragma: no-cache
 purpose
   : Invalidate an access token
 URL
-  : https://example.org/auth/**logout**
+  : GET or POST https://example.org/auth/**logout**
 request parameters
   :  name     occ    data type     description
     -------- ------ ----------- -------------------
@@ -641,13 +645,12 @@ lifetime of the token. On success, the server MUST invalidate at least the
 access token that was used to access this method. The server MAY further
 invalidate additional access tokens that were created for the same patron.
 
-
 ## change
 
 purpose
   : Change password of a patron
 URL
-  : https://example.org/auth/**change**
+  : POST https://example.org/auth/**change**
 scope
   : change_password
 request parameters
@@ -673,7 +676,6 @@ The server MUST check
 A PAIA server MAY reject this method and return an [error
 response](#error-response) with error code `access_denied` (403) or error code
 `not_implemented` (501). On success, the patron identifier is returned.
-
 
 # Glossary
 
@@ -786,14 +788,21 @@ Account state
 Document service
   : An instance of a library service connected to a patron and a document.
     Document services are returned by the PAIA core method [items](). This
-    entity could be expressed with DAIA ontology.
+    entity is an instance of `daia:Service` (and `ssso:Service`).
 Document status
   : The current state of a (document) service, defined as subclass instance of 
     `ssso:Service` from the Simple Service Status Ontology (SSSO) and as instance
     of `daia:Service` from the Document Availability Information Ontology (DAIA).
 Fee
-  : An amount of money that has to be paid by a patron for some reason.
-    Each fee can be connected to a document service.
+  : An amount of money that has to be paid by a patron for some reason. Each fee 
+    is represented by the following properties of a `ssso:Service` instance:
+    
+	* `dc:date` (or a more specific subproperty) for `fee.date`
+	* `schema:price` and `schema:priceCurrency` for `fee.amount`
+	* `dc:description` for `fee.about`
+	* Maybe `schema:itemOffered` to connect to a document service, which
+	  is connected to item and edition --- but the fee could also be equal 
+	  to the document service (?)
 
 ------
 
@@ -802,6 +811,8 @@ Fee
 ## Normative References
 
 Bradner, S. 1997. “RFC 2119: Key words for use in RFCs to Indicate Requirement Levels.” http://tools.ietf.org/html/rfc2119.
+
+Crockford, D. 2006. “RFC 6427: The application/json Media Type for JavaScript Object Notation (JSON).” http://tools.ietf.org/html/rfc4627.
 
 Fielding, R. 1999. “RFC 2616: Hypertext Transfer Protocol.” http://tools.ietf.org/html/rfc2616.
 
