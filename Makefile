@@ -1,42 +1,50 @@
-REVHASH=$(shell git log -1 --format="%H" paia.md)
-REVDATE=$(shell git log -1 --format="%ai" paia.md)
-REVSHRT=$(shell git log -1 --format="%h" paia.md)
-REVLINK=https://github.com/gbv/paia/commit/${REVHASH}
+NAME=paia
+GITHUB=http://github.com/gbv/paia/
 
-html: paia.html
+SOURCE=$(NAME).md
+REVHASH=$(shell git log -1 --format="%H" $(SOURCE))
+REVDATE=$(shell git log -1 --format="%ai" $(SOURCE))
+REVSHRT=$(shell git log -1 --format="%h" $(SOURCE))
 
-pdf: paia.pdf
+REVLINK=$(GITHUB)commit/$(REVHASH)
+
+RESULTFILES=$(NAME).html
 
 new: purge html changes
 
-paia.html: paia.md template.html5 references.bib
-	@echo "creating paia.html..."
-	@sed 's/GIT_REVISION_DATE/${REVDATE}/' paia.md  > paia.tmp
-	@ pandoc -s -N --template=template --toc -f markdown -t html5 paia.tmp \
-	| perl -p -e 's!(http://[^<]+)\.</p>!<a href="$$1"><code class="url">$$1</code></a>.</p>!g' \
-	| sed 's!<td style="text-align: center;">!<td>!' \
-	| sed 's!GIT_REVISION_HASH!<a href="${REVLINK}">${REVSHRT}<\/a>!' > paia.html
-	@git diff-index --quiet HEAD paia.md || echo "Current paia.md not checked in, so this is a DRAFT!" 
+html: $(NAME).html
+pdf:  $(NAME).pdf
+
+$(NAME).html: $(NAME).md template.html5 references.bib
+	@echo "creating $@..."
+	@sed 's/GIT_REVISION_DATE/${REVDATE}/' $(SOURCE) > $(NAME).tmp
+	@pandoc -s -N --template=template --toc -f markdown -t html5 $(NAME).tmp \
+		| perl -p -e 's!(http://[^<]+)\.</p>!<a href="$$1"><code class="url">$$1</code></a>.</p>!g' \
+		| perl -p -e 's!(<h2(.+)span>\s*([^<]+)</a></h2>)!<a id="$$3"></a>$$1!g' \
+		| sed 's!<td style="text-align: center;">!<td>!' \
+		| sed 's!GIT_REVISION_HASH!<a href="${REVLINK}">${REVSHRT}<\/a>!' > $@
+	@git diff-index --quiet HEAD $(SOURCE) || echo "Current $(SOURCE) not checked in, so this is a DRAFT!"
 
 # FIXME: the current PDF does not look that nice...
-paia.pdf: paia.md references.bib
-	pandoc -N --bibliography=references.bib --toc -f markdown -o paia.pdf paia.md
+$(NAME).pdf: $(NAME).md references.bib
+	pandoc -N --bibliography=references.bib --toc -f markdown -o $(NAME).pdf $(NAME).md
 
 changes: changes.html
 
 changes.html:
-	@git log -4 --pretty=format:'<li><a href=paia-%h.html><tt>%ci</tt></a>: <a href="https://github.com/gbv/paia/commit/%H"><em>%s</em></a></li>' paia.md > changes.html
+	@git log -4 --pretty=format:'<li><a href=$(NAME)-%h.html><tt>%ci</tt></a>: <a href="$(GITHUB)commit/%H"><em>%s</em></a></li>' $(SOURCE) > $@
 
-revision: paia.html
-	@cp paia.html paia-${REVSHRT}.html
+revision: $(RESULTFILES)
+	@cp $(NAME).html $(NAME)-${REVSHRT}.html
 
-website: clean purge revision changes.html
-	@echo "new revision to be shown at http://gbv.github.com/paia/"
-	@rm paia.html
+website: clean purge revision changes.html $(NAME).ttl $(NAME).owl
+	@echo "new revision to be shown at $(GITHUB)"
+	@rm $(RESULTFILES)
 	@git checkout gh-pages
-	@perl -pi -e 's!paia-[0-9a-z]{7}!paia-${REVSHRT}!g' index.html
+	@perl -pi -e 's!$(NAME)-[0-9a-z]{7}!$(NAME)-${REVSHRT}!g' index.html
 	@sed -i '/<!-- BEGIN CHANGES -->/,/<!-- END CHANGES -->/ {//!d}; /<!-- BEGIN CHANGES -->/r changes.html' index.html
-	@git add index.html paia-${REVSHRT}.html
+	@cp $(NAME)-${REVSHRT}.html $(NAME).html
+	@git add index.html $(NAME)-${REVSHRT}.html $(RESULTFILES)
 	@git commit -m "revision ${REVSHRT}"
 	@git checkout master
 
@@ -45,7 +53,6 @@ cleancopy:
 	@git diff-index --quiet HEAD -- 
 
 purge:
-	@rm -f paia.html paia-*.html changes.html
-
+	@rm -f $(NAME).html $(NAME)-*.html changes.html
 
 .PHONY: clean purge html
