@@ -37,7 +37,7 @@ changes.html:
 revision: $(RESULTFILES)
 	@cp $(NAME).html $(NAME)-${REVSHRT}.html
 
-website: clean purge revision changes.html $(NAME).ttl $(NAME).owl
+website: clean purge revision changes.html 
 	@echo "new revision to be shown at $(GITHUB)"
 	@rm $(RESULTFILES)
 	@git checkout gh-pages

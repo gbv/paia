@@ -427,7 +427,8 @@ users may also have requested an edition.
 ## renew
 
 purpose
-  : renew one or more documents held by the patron
+  : renew one or more documents usually held by the patron. PAIA servers
+    MAY also allow renewal of reserved, ordered, and provided documents.
 HTTP verb and URL
   : POST https://example.org/core/**{uri_escaped_patron_identifier}**/renew
 scope
@@ -443,6 +444,9 @@ response fields
     ------ ------ ----------- -----------------------------------------
      doc   1..n   document     list of documents (order is irrelevant)
     ----- ------ ------------ -----------------------------------------
+
+The response SHOULD include the same documents as requested. A client MAY also
+use the [items](#items) method to get the document status after renewal.
 
 
 ## request
@@ -467,6 +471,9 @@ response fields
     ------ ------ ----------- -----------------------------------------
      doc    1..n   document    list of documents (order is irrelevant)
     ------ ------ ----------- -----------------------------------------
+
+The response SHOULD include the same documents as requested. A client MAY also
+use the [items](#items) method to get the document status after renewal.
 
 
 ## cancel
@@ -791,8 +798,8 @@ Document service
     entity is an instance of `daia:Service` (and `ssso:Service`).
 Document status
   : The current state of a (document) service, defined as subclass instance of 
-    `ssso:Service` from the Simple Service Status Ontology (SSSO) and as instance
-    of `daia:Service` from the Document Availability Information Ontology (DAIA).
+    `ssso:Service` from the [Simple Service Status Ontology] (SSSO) and as instance
+    of `daia:Service` from the [Document Availability Information Ontology](http://purl.org/ontology/daia/) (DAIA).
 Fee
   : An amount of money that has to be paid by a patron for some reason. Each fee 
     is represented by the following properties of a `ssso:Service` instance:
@@ -828,5 +835,7 @@ Styles, Rob, Wallace, Chris and Moeller, Knud. 2008. “Participation schema“.
 
 Voss, J. 2012. “DAIA ontology“. http://purl.org/ontology/daia/. 
 
-Voss, J. 2012. “Simple Service Status Ontology“. http://purl.org/ontology/ssso/. 
+Voss, J. 2013. “Simple Service Status Ontology“. http://purl.org/ontology/ssso/. 
+
+[Simple Service Status Ontology]: http://purl.org/ontology/ssso/
 
