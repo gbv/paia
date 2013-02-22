@@ -200,6 +200,8 @@ Request errors
     4xx (client error) or 5xx (server error) as defined in RFC 2616, unless
     the request parameter `suppress_response_codes` is given.
 
+The following section only covers request errors.
+
 The response body of a request error is a JSON object with the following fields
 (compatible with OAuth error response):
 
@@ -214,6 +216,13 @@ The response body of a request error is a JSON object with the following fields
 The `code` field is REQUIRED with request parameter `suppress_response_codes`
 in PAIA core. It SHOULD be omitted with PAIA auth requests to not confuse OAuth
 clients.
+
+The response header of a request error MUST include a `WWW-Authenticate` header field to
+indicate the need of providing a proper access token. The field MAY include a short name of the 
+PAIA service with a "realm" parameter:
+
+    WWW-Authentificate: Bearer
+    WWW-Authentificate: Bearer realm="PAIA Core"
 
 The following error responses are expected:[^errors]
 
@@ -268,6 +277,7 @@ For instance the following response could result from a request with malformed U
 }
 ~~~~
 
+If the
 
 ## Data types
 
