@@ -130,9 +130,8 @@ The following special request parameters can be added to any request as URL quer
 
 callback
   : A JavaScript callback method name to return JSONP instead of JSON. The
-    callback SHOULD only contain alphanumeric characters and underscores; 
-    any invalid characters MUST be stripped by a PAIA server. If callback
-    is given, the response content type MUST be `application/javascript`.
+    callback MUST only contain alphanumeric characters and underscores. If a
+    callback is given, the response content type MUST be `application/javascript`.
 suppress_response_codes
   : If this parameter is present, *all* responses MUST be returned with a 
     200 OK status code, even [error responses](#error-response).
