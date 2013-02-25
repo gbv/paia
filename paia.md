@@ -348,8 +348,11 @@ document
     ----------- ------ --------------------- ----------------------------------------------------------
 
 
-    For each document at least an item URI or an edition URI MUST be given. The
-    response fields `label`, `storage`, `storageid`, and `queue`
+    For each document at least an item URI or an edition URI MUST be given.
+    Togther, item and edition URI MUST uniquely identify a document within 
+    the set of documents related to a patron.
+
+    The response fields `label`, `storage`, `storageid`, and `queue`
     correspond to properties in DAIA.
 
     An example of a document (with status 5=rejected) serialized in JSON is
@@ -630,12 +633,13 @@ HTTP/1.1 403 Forbidden
 Content-Type: application/json; charset=utf-8
 Cache-Control: no-store
 Pragma: no-cache
+WWW-Authentificate: Bearer realm="PAIA auth example"
 ~~~~
 
 ~~~~ {.json}
 {
-  "error": "access_denied",
-  "code": "403"
+  "code": "403",
+  "error": "access_denied"
 }
 ~~~~
 
@@ -791,24 +795,47 @@ be reused:
 
 The mapping to RDF includes the following core concepts:
 
-Patron
+PatronAccount
   : A patron account expressed as instance of `sioc:User`. The patron account
     typically belongs to a person, connected to with `foaf:account`. The date
-    of expiration can be expressed with `particip:endDate`.
+    of expiration can be expressed with `particip:endDate`. Please note that
+    a patron account is not equal to a patron as indiviual person.
 Document
   : An abstract work, a specific edition, or an item. Probably an instance of
     `bibo:Document` or `frbr:Item`.
 Account state
-  : The current state of a patron account. Still to be discussed whether modeled
-    as entity or as relationship.
+  : The current state of a patron account. Still to be discussed whether 
+    modeled as entity or as relationship. To keep things simple, only
+    active and inactive accounts might be enough.
 Document service
   : An instance of a library service connected to a patron and a document.
     Document services are returned by the PAIA core method [items](). This
-    entity is an instance of `daia:Service` (and `ssso:Service`).
+    entity is an instance of `daia:Service` and `ssso:Service`.
 Document status
-  : The current state of a (document) service, defined as subclass instance of 
-    `ssso:Service` from the [Simple Service Status Ontology] (SSSO) and as instance
-    of `daia:Service` from the [Document Availability Information Ontology](http://purl.org/ontology/daia/) (DAIA).
+  : The current state of a (document) service is defined as an instance of a subclass
+    off `ssso:Service` from the [Simple Service Status Ontology] (SSSO), which are:
+
+    * [ssso:ReservedService](http://purl.org/ontology/ssso#ReservedService): 
+      document status 1 (reserved)
+    * [ssso:PreparedService](http://purl.org/ontology/ssso#PreparedService):
+      document status 2 (ordered)
+    * [ssso:ExecutedService](http://purl.org/ontology/ssso#ExecutedService): 
+      document status 3 (held)
+    * [ssso:ProvidedService](http://purl.org/ontology/ssso#ProvidedService): 
+      document status 4 (provided)
+    * [ssso:RejectedService](http://purl.org/ontology/ssso#RejectedService): 
+      document status 4 (rejected)
+
+    The specific type of service on an item can be indicated by a subclass of
+    `daia:Service` from the [Document Availability Information Ontology]
+    (DAIA) - this services may be refactored into a dedicated 
+    *library service ontology* (libso). By now the particular service types are:
+
+    * **loan** (borrow to use at home for a limited time)
+    * **access** (view/use within the boundaries of a library)
+    * **interloan** (get a document/copy mediated from another library)
+    * **openaccess** (get directed to the location of a publically available document)
+
 Fee
   : An amount of money that has to be paid by a patron for some reason. Each fee 
     is represented by the following properties of a `ssso:Service` instance:
@@ -816,9 +843,8 @@ Fee
 	* `dc:date` (or a more specific subproperty) for `fee.date`
 	* `schema:price` and `schema:priceCurrency` for `fee.amount`
 	* `dc:description` for `fee.about`
-	* Maybe `schema:itemOffered` to connect to a document service, which
-	  is connected to item and edition --- but the fee could also be equal 
-	  to the document service (?)
+	* Maybe `schema:itemOffered` to connect to a document or document service
+      (item and/or edition).
 
 ------
 
@@ -826,25 +852,37 @@ Fee
 
 ## Normative References
 
-Bradner, S. 1997. “RFC 2119: Key words for use in RFCs to Indicate Requirement Levels.” http://tools.ietf.org/html/rfc2119.
+Bradner, S. 1997. “RFC 2119: Key words for use in RFCs to Indicate Requirement Levels”.
+<http://tools.ietf.org/html/rfc2119>.
 
-Crockford, D. 2006. “RFC 6427: The application/json Media Type for JavaScript Object Notation (JSON).” http://tools.ietf.org/html/rfc4627.
+Crockford, D. 2006. “RFC 6427: The application/json Media Type for JavaScript Object Notation (JSON)”.
+<http://tools.ietf.org/html/rfc4627>.
 
-Fielding, R. 1999. “RFC 2616: Hypertext Transfer Protocol.” http://tools.ietf.org/html/rfc2616.
+Fielding, R. 1999. “RFC 2616: Hypertext Transfer Protocol”.
+<http://tools.ietf.org/html/rfc2616>.
 
-D. Hardt. 2012. “RFC 6749: The OAuth 2.0 Authorization Framework.” http://tools.ietf.org/html/rfc6749.
+D. Hardt. 2012. “RFC 6749: The OAuth 2.0 Authorization Framework”.
+<http://tools.ietf.org/html/rfc6749>.
 
-Jones, M. and Hardt, D. 2012. “RFC 6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage.” http://tools.ietf.org/html/rfc6750.
+Jones, M. and Hardt, D. 2012. “RFC 6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage”.
+<http://tools.ietf.org/html/rfc6750>.
 
-Rescorla, E. 2000. “RFC 2818: HTTP over TLS.” http://tools.ietf.org/html/rfc2818.
+Rescorla, E. 2000. “RFC 2818: HTTP over TLS.”
+<http://tools.ietf.org/html/rfc2818>.
 
 ## Informative References
 
-Styles, Rob, Wallace, Chris and Moeller, Knud. 2008. “Participation schema“. http://vocab.org/participation/schema.
+Styles, Rob, Wallace, Chris and Moeller, Knud. 2008. “Participation schema“. 
+<http://vocab.org/participation/schema>.
 
-Voss, J. 2012. “DAIA ontology“. http://purl.org/ontology/daia/. 
+Voss, J. 2012. “DAIA ontology“. 
+<http://purl.org/ontology/daia>. 
 
-Voss, J. 2013. “Simple Service Status Ontology“. http://purl.org/ontology/ssso/. 
+Voss, J. 2013. “Simple Service Status Ontology“.
+<http://purl.org/ontology/ssso>. 
 
-[Simple Service Status Ontology]: http://purl.org/ontology/ssso/
+
+[Document Availability Information Ontology]: http://purl.org/ontology/daia
+
+[Simple Service Status Ontology]: http://purl.org/ontology/ssso
 
