@@ -45,7 +45,8 @@ $endif$
   dl p { margin-top: 0; }
   dt { margin-top: 0.8em; }
   dd { margin-left: 1.5em; }
-  ol { margin-bottom: 1em; }
+  ol, ul { margin-bottom: 1em; }
+  ul li ul { margin-bottom: 0em; }
   table + p { margin-top: 1em; }
   </style>
 $for(css)$

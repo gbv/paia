@@ -77,16 +77,17 @@ compromised by the client.
 
 ## Request and response format
 
-Each PAIA method is identified by an URL and a HTTP verb (either HTTP GET or
-HTTP POST). For POST methods a request body MUST be included in JSON format in
+Each PAIA method is identified by an URL and a HTTP verb (GET or POST). Method
+calls expect a set of request parameters and return a JSON object.
+
+The special request parameter [`access token`](#access-tokens-and-scopes) 
+can be sent either as HTTP query parameter or in a HTTP request header. 
+
+For POST methods a request body MUST be included in JSON format in
 UTF-8. A Content-Type request header MUST be sent with `application/json;
 charset=utf-8` or `application/json`. A PAIA auth server MAY additionally
 accept URL-encoded HTTP POST request bodies with content type
 `application/x-www-form-urlencoded`.
-
-In addition there is the special request parameter `access_token` for an
-[access token](#access-tokens-and-scopes), which can be sent either as HTTP
-query parameter or in a HTTP request header. 
 
 The HTTP response content type of a PAIA response is a JSON object (HTTP header
 `Content-Type: application/json`), optionally wrapped as JSONP (HTTP header
@@ -276,8 +277,6 @@ For instance the following response could result from a request with malformed U
 }
 ~~~~
 
-If the
-
 ## Data types
 
 The following data types are used to define request and response format:
@@ -295,12 +294,12 @@ money
   : A monetary value with currency (format `[0-9]+\.[0-9][0-9] [A-Z][A-Z][A-Z]`),
     for instance `0.80 USD`.
 email
-  : syntactically correct email address.
+  : A syntactically correct email address.
 URI
-  : syntactically correct URI.
+  : A syntactically correct URI.
 account state
-  : A nonnegative integer representing the current state of a patron account. Possible
-    values are:
+  : A nonnegative integer representing the current state of a patron account. 
+    Possible values are:
 
     0. active
     1. inactive
@@ -310,9 +309,11 @@ account state
 
     A PAIA server MAY define additional states which can be mapped to `1` by PAIA 
     clients. In JSON account states MUST be encoded as numbers instead of strings.
-document status
-  : A nonegative integer representing the current relation between a particular
-    document and a particular patron. Possible values are:
+service status
+  : A nonegative integer representing the current status in fulfillment of a 
+    service. In most cases the service is related to a document, so the service
+	status is a relation between a particular document and a particular patron. 
+	Possible values are:
 
     0. no relation (this applies to most combinations of document and patron, and
        it can be expected if no other state is given)
@@ -322,7 +323,7 @@ document status
     4. provided (the document is ready to be used by the patron)
     5. rejected
 
-    A PAIA server MUST NOT define any other document states. In JSON document status
+    A PAIA server MUST NOT define any other service status. In JSON service status
     MUST be encoded as numbers instead of strings.
 
 document
@@ -330,7 +331,7 @@ document
 
      name        occ    data type             description
     ----------- ------ --------------------- ----------------------------------------------------------
-     status      1..1   document status       status (0, 1, 2, 3, 4, or 5)
+     status      1..1   service status        status (0, 1, 2, 3, 4, or 5)
      item        0..1   URI                   URI of a particular copy
      edition     0..1   URI                   URI of a the document (no particular copy)
      requested   0..1   URI                   URI that was originally requested
@@ -339,7 +340,7 @@ document
      queue       0..1   nonnegative integer   number of waiting requests for the document or item
      renewals    0..1   nonnegative integer   number of times the document has been renewed
      reminder    0..1   nonnegative integer   number of times the patron has been reminded
-     duedate     0..1   date                  date of expiry of the document statue (most times loan)
+     duedate     0..1   date                  date of expiry of the service status (most times loan)
      cancancel   0..1   boolean               whether an ordered or provided document can be canceled
      canrenew    0..1   boolean               whether a document can be renewed
      error       0..1   string                error message, for instance if a request was rejected
@@ -458,7 +459,7 @@ response fields
     ----- ------ ------------ -----------------------------------------
 
 The response SHOULD include the same documents as requested. A client MAY also
-use the [items](#items) method to get the document status after renewal.
+use the [items](#items) method to get the service status after renewal.
 
 
 ## request
@@ -485,7 +486,7 @@ response fields
     ------ ------ ----------- -----------------------------------------
 
 The response SHOULD include the same documents as requested. A client MAY also
-use the [items](#items) method to get the document status after renewal.
+use the [items](#items) method to get the service status after renewal.
 
 
 ## cancel
@@ -558,13 +559,14 @@ authorization.
 
 ## login
 
-The `login` method is the only PAIA method that does not require an access
-token as part of the query.
+The PAIA auth `login` method is the only PAIA method that does not require an
+access token as part of the query.
 
 purpose
   : Get a patron identifier and access token to access patron information
 URL
-  : GET or POST https://example.org/auth/**login**
+  : POST https://example.org/auth/**login** 
+    (in addition a PAIA auth server MAY support HTTP GET requests)
 request parameters
   :  name          occ   data type
     ------------ ------ ----------- --------------------------------
@@ -580,7 +582,7 @@ read_fees read_items write_items` for full access to all PAIA core methods (see
 
 The response format is a JSON structure as defined in section 5.1 (successful
 response) and section 5.2 (error response) of OAuth 2.0. The PAIA auth server
-may grant different scopes than requested for, for instance if the account of a
+MAY grant different scopes than requested for, for instance if the account of a
 patron has expired, so the patron should not be allowed to request and renew
 new documents.
 
@@ -589,27 +591,30 @@ response fields
     --------------  ------ ---------------------  -------------------------------------------------
      patron          1..1   string                 Patron identifier
      access_token    1..1   string                 The access token issued by the PAIA auth server
-     token_type      1..1   string                 Fixed value set to "Bearer"
+     token_type      1..1   string                 Fixed value set to "Bearer" or "bearer"
      scope           1..1   string                 Space separated list of granted scopes
      expires_in      0..1   nonnegative integer    The lifetime in seconds of the access token
     --------------  ------ ---------------------  -------------------------------------------------
 
-**Example of a successful request**
+**Example of a successful login request**
 
-~~~
+~~~~
 POST /auth/login
 Host: example.org
 Accept: application/json
 Content-Type: application/json
 Content-Length: 85
+~~~~
 
+~~~~ {.json}
 {
   "username": "alice02",
   "password": "jo-!97kdl+tt",
   "grant_type": "password"
 }
+~~~~
 
-
+~~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 Cache-Control: no-store
@@ -626,7 +631,7 @@ Pragma: no-cache
 }
 ~~~~
 
-**Example of a rejected request**
+**Example of a rejected login request**
 
 ~~~~
 HTTP/1.1 403 Forbidden
@@ -648,7 +653,8 @@ WWW-Authentificate: Bearer realm="PAIA auth example"
 purpose
   : Invalidate an access token
 URL
-  : GET or POST https://example.org/auth/**logout**
+  : POST https://example.org/auth/**logout**
+    (in addition a PAIA auth server MAY support HTTP GET requests)
 request parameters
   :  name     occ    data type     description
     -------- ------ ----------- -------------------
@@ -738,11 +744,11 @@ passwords that have been sent unencrypted.
 This non-normative section contains additional examples and a mapping to RDF to
 illustrate the semantics of PAIA concepts and methods.
 
-## Transitions of document states
+## Transitions of service states
 
-Six document status [data type](#data-types) values are possible. One document
+Six service status [data type](#data-types) values are possible. One document
 can have different status for different patrons and for different times. The
-following table illustrates reasonable transitions of document status with time
+following table illustrates reasonable transitions of service status with time
 for a fixed patron. For instance some document held by another patron is first
 requested (0 → 1) with PAIA method [request](#request), made available after
 return (1 → 4), picked up (4 → 3), renewed after some time with PAIA method
@@ -762,7 +768,7 @@ Transitions marked with "/" may also be possible in special circumstances: for
 instance a book ordered from the stacks (status 2) may turn out to be damaged,
 so it is first repaired and reserved for the patron meanwhile (status 1).
 Transitions for digital publications may also be different. Note that a PAIA
-server does not need to implement all document states. A reasonable subset is 
+server does not need to implement all service status. A reasonable subset is 
 to only support 0, 1, 3, and 5.
 
 ## Digital documents
@@ -778,12 +784,17 @@ following rules of thumb may help:
   document can be used by multiple patrons at the same time, and `held` should
   be used when the document can exclusively be used by the patron.
 
+## Library services not related to documents
+
+Libraries also provide services not related to documents, such as reservation
+of a cabin. PAIA can also be used for such services.
+
 ## PAIA ontology in RDF
 
-Although PAIA is first defined as HTTP API, it includes a conceptual data
+Primariliy defined as HTTP API, PAIA includes an implicit conceptual data
 model, which can be mapped to RDF among other expressions. The expression of
-PAIA in RDF is in an early phase of discussion. The following ontologies may 
-be reused:
+PAIA in RDF is in an early phase of discussion. The following ontologies may be
+reused:
 
     @prefix bibo: <http://purl.org/ontology/bibo/> .
     @prefix daia: <http://purl.org/ontology/daia/> .
@@ -811,20 +822,20 @@ Document service
   : An instance of a library service connected to a patron and a document.
     Document services are returned by the PAIA core method [items](). This
     entity is an instance of `daia:Service` and `ssso:Service`.
-Document status
+Service status
   : The current state of a (document) service is defined as an instance of a subclass
-    off `ssso:Service` from the [Simple Service Status Ontology] (SSSO), which are:
+    of `ssso:Service` from the [Simple Service Status Ontology] (SSSO), which are:
 
     * [ssso:ReservedService](http://purl.org/ontology/ssso#ReservedService): 
-      document status 1 (reserved)
+      document service status 1 (reserved)
     * [ssso:PreparedService](http://purl.org/ontology/ssso#PreparedService):
-      document status 2 (ordered)
+      document service status 2 (ordered)
     * [ssso:ExecutedService](http://purl.org/ontology/ssso#ExecutedService): 
-      document status 3 (held)
+      document service status 3 (held)
     * [ssso:ProvidedService](http://purl.org/ontology/ssso#ProvidedService): 
-      document status 4 (provided)
+      document service status 4 (provided)
     * [ssso:RejectedService](http://purl.org/ontology/ssso#RejectedService): 
-      document status 4 (rejected)
+      document service status 4 (rejected)
 
     The specific type of service on an item can be indicated by a subclass of
     `daia:Service` from the [Document Availability Information Ontology]
