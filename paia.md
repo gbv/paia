@@ -168,8 +168,8 @@ either as URL query parameter or in a HTTP header. For instance the following
 requests both get information about patron `123` with access token
 `vF9dft4qmT`:
 
-    curl -H "Authorization: Bearer vF9dft4qmT" https://example.org/core/patron/123
-    curl -H https://example.org/core/patron/123?access_token=vF9dft4qmT
+    curl -H "Authorization: Bearer vF9dft4qmT" https://example.org/core/123
+    curl -H https://example.org/core/123?access_token=vF9dft4qmT
 
 An access token is valid for a limited set of actions, referred to as
 **scope**.  The following scopes are possible for PAIA core:
@@ -418,7 +418,7 @@ Additional field such as address may be added in a later revision.
 **Example**
 
 ~~~
-GET /core/patron/123 HTTP/1.1
+GET /core/123 HTTP/1.1
 Host: example.org
 Accept: application/json
 Authorization: Bearer a0dedc54bbfae4b
