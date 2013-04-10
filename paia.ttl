@@ -1,0 +1,9 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix bibo: <http://purl.org/ontology/bibo/> .
+@prefix daia: <http://purl.org/ontology/daia/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix frbr: <http://purl.org/vocab/frbr/core#> .
+@prefix sioc: <http://rdfs.org/sioc/ns#> .
+@prefix ssso: <http://purl.org/ontology/ssso> .
+@prefix particip: <http://purl.org/vocab/participation/schema#> .
+
