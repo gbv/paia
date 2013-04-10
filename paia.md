@@ -10,7 +10,6 @@ and fees.  Its primary goal is to provide patron access for discovery
 interfaces and other third-party applications to integrated library system, as
 easy as possible.
 
-
 ## Status of this document
 
 The specification has been created collaboratively based on use cases and
@@ -18,10 +17,32 @@ taking into account existing related standards and products such as NISO
 Circulation Interchange Protocol (NCIP), \[X]SLNP, DLF-ILS recommendations, and
 VuFind ILS drivers among others.
 
-Updates and sources can be found at <http://github.com/gbv/paia>. The current
-version of this document was last modified at GIT_REVISION_DATE with revision
-GIT_REVISION_HASH.
+A preliminary version of PAIA has been specified in German as part of a
+[GBV](http://www.gbv.de/) project. This page should help to get a clean and
+useful specification in English before releasing PAIA 1.0.
 
+Updates and sources can be found in a public git repository at
+<http://github.com/gbv/paia>. The master file
+[paia.md](https://github.com/gbv/paia/blob/master/paia.md) is written in
+[Pandoc’s Markdown](http://johnmacfarlane.net/pandoc/demo/example9/pandocs-markdown.html).
+HTML version of the specification and PAIA ontology [in RDF/Turtle](paia.ttl) 
+and [in RDF/XML](paia.owl) are is genereted from the master file with
+[makespec](https://github.com/jakobib/makespec).
+
+**How to contribute**
+
+* Implement a PAIA server for your library system.
+* Implement a PAIA client that makes use of patron account information.
+* [Comment](https://github.com/gbv/paia/issues) on the specification.
+* Suggest [useful apps and mashups](https://github.com/gbv/paia/wiki/Use-cases) 
+  that make use of PAIA.
+
+**Revision history**
+
+The current version of this document was last modified at GIT_REVISION_DATE
+with revision GIT_REVISION_HASH.
+
+GIT_CHANGES
 
 ## Conformance requirements
 
@@ -796,6 +817,7 @@ model, which can be mapped to RDF among other expressions. The expression of
 PAIA in RDF is in an early phase of discussion. The following ontologies may be
 reused:
 
+~~~ {.ttl}
     @prefix bibo: <http://purl.org/ontology/bibo/> .
     @prefix daia: <http://purl.org/ontology/daia/> .
     @prefix foaf: <http://xmlns.com/foaf/0.1/> .
@@ -803,6 +825,7 @@ reused:
     @prefix sioc: <http://rdfs.org/sioc/ns#> .
     @prefix ssso: <http://purl.org/ontology/ssso> .
     @prefix particip: <http://purl.org/vocab/participation/schema#> .
+~~~
 
 The mapping to RDF includes the following core concepts:
 
