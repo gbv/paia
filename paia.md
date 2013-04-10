@@ -550,8 +550,19 @@ response fields
      fee.about     0..1   string      textual information about the fee
      fee.item      0..1   URI         item that caused the fee
      fee.edition   0..1   URI         edition that caused the fee
+     fee.feetype   0..1   string      textual description of the type of fee
+     fee.feeid     0..1   URI         URI of the type of fee
     ------------- ------ ----------- ----------------------------------------
 
+Note that `fee.feetype` MUST NOT refer to the individual fee but to the type of
+fee.  A PAIA server MUST return identical values of `fee.feetype` for identical
+`fee.feeid`.  The default value of `fee.feeid` is:
+
+* <http://purl.org/ontology/dso#DocumentService> if `fee.item` is set,
+* <http://purl.org/ontology/ssso#ServiceEvent> otherwise.
+
+If a fee was caused by an item (`fee.feeid`), the value of `fee.feeid` SHOULD
+be a class URI from the [Document Service Ontology].
 
 # PAIA auth
 
@@ -847,7 +858,7 @@ Document service
     entity is an instance of `daia:Service` and `ssso:Service`.
 Service status
   : The current state of a (document) service is defined as an instance of a subclass
-    of `ssso:Service` from the [Simple Service Status Ontology] (SSSO), which are:
+    of `ssso:ServiceEvent` from the [Simple Service Status Ontology] (SSSO), which are:
 
     * [ssso:ReservedService](http://purl.org/ontology/ssso#ReservedService): 
       document service status 1 (reserved)
@@ -869,16 +880,17 @@ Service status
     * **access** (view/use within the boundaries of a library)
     * **interloan** (get a document/copy mediated from another library)
     * **openaccess** (get directed to the location of a publically available document)
-
 Fee
   : An amount of money that has to be paid by a patron for some reason. Each fee 
-    is represented by the following properties of a `ssso:Service` instance:
+    is represented by the following properties of a `ssso:ServiceEvent` instance:
     
 	* `dc:date` (or a more specific subproperty) for `fee.date`
 	* `schema:price` and `schema:priceCurrency` for `fee.amount`
 	* `dc:description` for `fee.about`
 	* Maybe `schema:itemOffered` to connect to a document or document service
       (item and/or edition).
+
+    The type of fee is represented by a class from the [Document Service Ontology].
 
 ------
 
@@ -915,8 +927,10 @@ Voss, J. 2012. “DAIA ontology“.
 Voss, J. 2013. “Simple Service Status Ontology“.
 <http://purl.org/ontology/ssso>. 
 
+Voss, J. 2013. “Document Service Ontology“.
+<http://gbv.github.io/dso/>.
 
 [Document Availability Information Ontology]: http://purl.org/ontology/daia
 
 [Simple Service Status Ontology]: http://purl.org/ontology/ssso
-
+[Document Service Ontology]: http://gbv.github.io/dso/
