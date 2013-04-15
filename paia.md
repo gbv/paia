@@ -458,31 +458,6 @@ In most cases, each document will have an item URI for a particular copy, but
 users may also have requested an edition.
 
 
-## renew
-
-purpose
-  : renew one or more documents usually held by the patron. PAIA servers
-    MAY also allow renewal of reserved, ordered, and provided documents.
-HTTP verb and URL
-  : POST https://example.org/core/**{uri_escaped_patron_identifier}**/renew
-scope
-  : write_item
-request parameters
-  : ------------- ------ -------- ------------------------------
-     doc           1..n             list of documents to renew
-     doc.item      0..1   URI       URI of a particular item
-     doc.edition   0..1   URI       URI of a particular edition
-    ------------- ------ --------  -----------------------------
-response fields
-  :  name   occ    data type   description
-    ------ ------ ----------- -----------------------------------------
-     doc   1..n   document     list of documents (order is irrelevant)
-    ----- ------ ------------ -----------------------------------------
-
-The response SHOULD include the same documents as requested. A client MAY also
-use the [items](#items) method to get the service status after renewal.
-
-
 ## request
 
 purpose
@@ -505,6 +480,31 @@ response fields
     ------ ------ ----------- -----------------------------------------
      doc    1..n   document    list of documents (order is irrelevant)
     ------ ------ ----------- -----------------------------------------
+
+The response SHOULD include the same documents as requested. A client MAY also
+use the [items](#items) method to get the service status after renewal.
+
+
+## renew
+
+purpose
+  : renew one or more documents usually held by the patron. PAIA servers
+    MAY also allow renewal of reserved, ordered, and provided documents.
+HTTP verb and URL
+  : POST https://example.org/core/**{uri_escaped_patron_identifier}**/renew
+scope
+  : write_item
+request parameters
+  : ------------- ------ -------- ------------------------------
+     doc           1..n             list of documents to renew
+     doc.item      0..1   URI       URI of a particular item
+     doc.edition   0..1   URI       URI of a particular edition
+    ------------- ------ --------  -----------------------------
+response fields
+  :  name   occ    data type   description
+    ------ ------ ----------- -----------------------------------------
+     doc   1..n   document     list of documents (order is irrelevant)
+    ----- ------ ------------ -----------------------------------------
 
 The response SHOULD include the same documents as requested. A client MAY also
 use the [items](#items) method to get the service status after renewal.
@@ -554,15 +554,16 @@ response fields
      fee.feeid     0..1   URI         URI of the type of fee
     ------------- ------ ----------- ----------------------------------------
 
-Note that `fee.feetype` MUST NOT refer to the individual fee but to the type of
+If given, `fee.feetype` MUST NOT refer to the individual fee but to the type of
 fee.  A PAIA server MUST return identical values of `fee.feetype` for identical
 `fee.feeid`.  The default value of `fee.feeid` is:
 
-* <http://purl.org/ontology/dso#DocumentService> if `fee.item` is set,
+* <http://purl.org/ontology/dso#DocumentService> if `fee.item` or `fee.edition` is set,
 * <http://purl.org/ontology/ssso#ServiceEvent> otherwise.
 
-If a fee was caused by an item (`fee.feeid`), the value of `fee.feeid` SHOULD
-be a class URI from the [Document Service Ontology].
+If a fee was caused by a document (`fee.item` or `fee.edition`), the value of
+`fee.feeid` SHOULD be a class URI from the [Document Service Ontology].
+
 
 # PAIA auth
 
@@ -816,10 +817,6 @@ following rules of thumb may help:
   document can be used by multiple patrons at the same time, and `held` should
   be used when the document can exclusively be used by the patron.
 
-## Library services not related to documents
-
-Libraries also provide services not related to documents, such as reservation
-of a cabin. PAIA can also be used for such services.
 
 ## PAIA ontology in RDF
 
@@ -891,6 +888,22 @@ Fee
       (item and/or edition).
 
     The type of fee is represented by a class from the [Document Service Ontology].
+
+
+# PAIA core extensions to non-document services
+
+A future version of PAIA may be extended to support services not related to
+documents. For instance a patron may reserve a cabin or some other facility. 
+The following methods may be added to PAIA core for this purpose:
+
+## services
+
+List non-document services related to a patron - similar to method [items].
+
+## servictypes
+
+Get a list of services that a patron may request, each with URI, name, and
+short description.
 
 ------
 
