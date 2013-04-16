@@ -1,48 +1,63 @@
-% Patrons Account Information API (PAIA)
-% Jakob Voß
-% GIT_REVISION_DATE
-
 # Introduction
 
 The **Patrons Account Information API (PAIA)** is a HTTP based programming
 interface to access library patron information, such as loans, reservations,
 and fees.  Its primary goal is to provide patron access for discovery
 interfaces and other third-party applications to integrated library system, as
-easy as possible.
+easy and open as possible.
+
+
+## Synopsis
+
+The following table list all PAIA methods with their HTTP verb and the entities
+they act on. The response format is a JSON document, optionally wrapped as JSONP.
+
+  [PAIA core]                                      [PAIA auth]
+------------------------------------------------- ----------------------------------------
+  GET [patron]: general patron information         POST [login]: get access token
+  GET [items]: current loans, reservations …       POST [logout]: invalidate access token
+  POST [request]: new reservation, delivery …      POST [change]: modify credentials
+  POST [renew]: existing loans, reservations …     
+  POST [cancel]: requests, reservations …     
+  GET [fees]: paid and open charges
+------------------------------------------------- ----------------------------------------
+
 
 ## Status of this document
 
-The specification has been created collaboratively based on use cases and
-taking into account existing related standards and products such as NISO
-Circulation Interchange Protocol (NCIP), \[X]SLNP, DLF-ILS recommendations, and
-VuFind ILS drivers among others.
+This specification has been created collaboratively based on use cases and
+taking into account existing related standards and products of integrated
+library systems (ILS), such as NISO Circulation Interchange Protocol (NCIP),
+SIP2, \[X]SLNP,[^SLNP] DLF-ILS recommendations, and VuFind ILS.
 
-A preliminary version of PAIA has been specified in German as part of a
-[GBV](http://www.gbv.de/) project. This page should help to get a clean and
-useful specification in English before releasing PAIA 1.0.
+[^SLNP]: The Simple Library Network Protocol (SLNP) and its variant XSLNP is an
+  internal protocol of the the SISIS-Sunrise™ library system, providing access 
+  to patron information, among other functionality. OCLC does not allow 
+  publication of the specification or public use of SLNP.
 
 Updates and sources can be found in a public git repository at
 <http://github.com/gbv/paia>. The master file
 [paia.md](https://github.com/gbv/paia/blob/master/paia.md) is written in
 [Pandoc’s Markdown](http://johnmacfarlane.net/pandoc/demo/example9/pandocs-markdown.html).
 HTML version of the specification and PAIA ontology [in RDF/Turtle](paia.ttl) 
-and [in RDF/XML](paia.owl) are is genereted from the master file with
-[makespec](https://github.com/jakobib/makespec).
+and [in RDF/XML](paia.owl) are is generated from the master file with
+[makespec](https://github.com/jakobib/makespec). The text of the specification
+can be distributed freely under the terms of CC-BY-SA.
 
-**How to contribute**
 
-* Implement a PAIA server for your library system.
-* Implement a PAIA client that makes use of patron account information.
-* [Comment](https://github.com/gbv/paia/issues) on the specification.
+## How to contribute
+
+* Implement a PAIA server for your library system - either directly to 
+  the core, or as wrapper above existing protocols (SIP2, SLNP, NCIP), or
+  based on screen-scraping.
+* Urge libraries to implement a public PAIA server for their patrons.
+* Implement a PAIA client that makes use of patron account information - 
+  for instance a mobile app or a web application.
+* [Comment](https://github.com/gbv/paia/issues) on the specification and point
+  to errors.
 * Suggest [useful apps and mashups](https://github.com/gbv/paia/wiki/Use-cases) 
   that make use of PAIA.
 
-**Revision history**
-
-The current version of this document was last modified at GIT_REVISION_DATE
-with revision GIT_REVISION_HASH.
-
-GIT_CHANGES
 
 ## Conformance requirements
 
@@ -99,14 +114,15 @@ compromised by the client.
 ## Request and response format
 
 Each PAIA method is identified by an URL and a HTTP verb (GET or POST). Method
-calls expect a set of request parameters and return a JSON object.
+calls expect a set of request parameters and return a JSON object. Request
+parameters and JSON response of PAIA core can be [mapped to RDF](#paia-ontology).
 
 The special request parameter [`access token`](#access-tokens-and-scopes) 
 can be sent either as HTTP query parameter or in a HTTP request header. 
 
 For POST methods a request body MUST be included in JSON format in
 UTF-8. A Content-Type request header MUST be sent with `application/json;
-charset=utf-8` or `application/json`. A PAIA auth server MAY additionally
+charset=utf-8` or `application/json`. A PAIA auth server SHOULD additionally
 accept URL-encoded HTTP POST request bodies with content type
 `application/x-www-form-urlencoded`.
 
@@ -391,6 +407,8 @@ document
     }
     ~~~~
 
+    See [document services in RDF] for a mapping in RDF.
+
 # PAIA core
 
 Each API method of PAIA core is accessed at an URL that includes the
@@ -412,7 +430,9 @@ response fields
      expires   0..1   date            date of patron account expiry
      status    0..1   account state   current state (0, 1, 2, or 3)
     --------- ------ --------------- -------------------------------
- 
+mapping to RDF
+  : see [patrons in RDF]
+
 Additional field such as address may be added in a later revision.
 
 **Example**
@@ -453,6 +473,8 @@ response fields
     ------ ------ ----------- -----------------------------------------
      doc    0..n   document    list of documents (order is irrelevant)
     ------ ------ ----------- -----------------------------------------
+mapping to RDF
+  : see [document services in RDF]
 
 In most cases, each document will have an item URI for a particular copy, but
 users may also have requested an edition.
@@ -553,6 +575,8 @@ response fields
      fee.feetype   0..1   string      textual description of the type of fee
      fee.feeid     0..1   URI         URI of the type of fee
     ------------- ------ ----------- ----------------------------------------
+mapping to RDF
+  : see [fees in RDF]
 
 If given, `fee.feetype` MUST NOT refer to the individual fee but to the type of
 fee.  A PAIA server MUST return identical values of `fee.feetype` for identical
@@ -736,6 +760,127 @@ A PAIA server MAY reject this method and return an [error
 response](#error-response) with error code `access_denied` (403) or error code
 `not_implemented` (501). On success, the patron identifier is returned.
 
+
+# PAIA Ontology
+
+Primariliy defined as HTTP API, PAIA core includes an implicit conceptual data
+model, which can be mapped to RDF among other expressions. The expression of
+PAIA in RDF is in an early phase of discussion. The following ontologies may be
+reused:
+
+~~~ {.ttl}
+@prefix bibo: <http://purl.org/ontology/bibo/> .
+@prefix daia: <http://purl.org/ontology/daia/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix frbr: <http://purl.org/vocab/frbr/core#> .
+@prefix sioc: <http://rdfs.org/sioc/ns#> .
+@prefix ssso: <http://purl.org/ontology/ssso#> .
+@prefix dso:  <http://purl.org/ontology/dso#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix particip: <http://purl.org/vocab/participation/schema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+~~~
+
+## patrons in RDF
+
+[patrons in RDF]: #patrons-in-rdf
+
+A patron account, as returned by PAIA core method [patron], is expressed as
+instance of `sioc:User`. The patron account typically belongs to a person,
+connected to with `foaf:account`. The date of expiration can be expressed with
+`particip:endDate`. Please note that a patron account is not equal to a patron
+as individual person.
+
+~~~ {.ttl}
+sioc:User a owl:Class ;                 # a patron account
+    rdfs:subClassOf foaf:OnlineAccount .
+
+particip:Role a owl:Class .             # a patron account
+
+foaf:account a owl:ObjectProperty ;     # relates a patron to its account
+    rdfs:domain foaf:Agent ;
+    rdfs:range foaf:OnlineAccount .
+
+sioc:account_of a owl:ObjectProperty ;  # relates a patron account to its patron
+    rdfs:domain sioc:User ;
+    rdfs:range foaf:Agent .
+
+foaf:accountName a owl:DataProperty ;   # relates a patron account to its identifier
+    rdfs:domain foaf:OnlineAccount ;
+    rdfs:range rdfs:Literal .
+
+foaf:mbox a owl:ObjectProperty ;        # relates a patron account to an email address
+    rdfs:domain sioc:Agent ;
+    rdfs:range owl:Thing .
+
+foaf:name a owl:DataProperty ;          # relates a patron to its name
+    rdfs:range rdfs:Literal .
+
+particip:endDate a owl:DataProperty ;   # relates a patron account to the date of expiry
+    rdfs:domain particip:Role ;
+    rdfs:range xsd:Date .
+
+# TODO: relate patron account to its account state
+# Still to be discussed whether modeled as entity or as relationship. 
+# To keep things simple, only active and inactive accounts might be enough.
+~~~
+
+## document services in RDF
+
+[document services in RDF]: #document-services-in-rdf
+
+The final mapping to RDF will probably include the following core concepts:
+
+Document
+  : An abstract work, a specific edition, or an item. Probably an instance of
+    `bibo:Document` or `frbr:Item`.
+Document service
+  : An instance of a library service connected to a patron and a document.
+    Document services are returned by the PAIA core method [items](). This
+    entity is an instance of `daia:Service` and `ssso:Service`.
+Service status
+  : The current state of a (document) service is defined as an instance of a subclass
+    of `ssso:ServiceEvent` from the [Simple Service Status Ontology] (SSSO), which are:
+
+    * [ssso:ReservedService](http://purl.org/ontology/ssso#ReservedService): 
+      document service status 1 (reserved)
+    * [ssso:PreparedService](http://purl.org/ontology/ssso#PreparedService):
+      document service status 2 (ordered)
+    * [ssso:ExecutedService](http://purl.org/ontology/ssso#ExecutedService): 
+      document service status 3 (held)
+    * [ssso:ProvidedService](http://purl.org/ontology/ssso#ProvidedService): 
+      document service status 4 (provided)
+    * [ssso:RejectedService](http://purl.org/ontology/ssso#RejectedService): 
+      document service status 4 (rejected)
+
+    The specific type of service on an item can be indicated by a subclass of
+    `daia:Service` from the [Document Availability Information Ontology]
+    (DAIA) - this services may be refactored into a dedicated 
+    *library service ontology* (libso). By now the particular service types are:
+
+    * **loan** (borrow to use at home for a limited time)
+    * **access** (view/use within the boundaries of a library)
+    * **interloan** (get a document/copy mediated from another library)
+    * **openaccess** (get directed to the location of a publically available document)
+
+## fees in RDF
+
+[fees in RDF]: #fees-in-rdf
+
+A fee, as returned by the method [fees], is an amount of money that has to be
+paid by a patron for some reason. Each fee is represented by the following
+properties of a `ssso:ServiceEvent` instance:
+    
+* `dc:date` (or a more specific subproperty) for `fee.date`
+* `schema:price` and `schema:priceCurrency` for `fee.amount`
+* `dc:description` for `fee.about`
+* Maybe `schema:itemOffered` to connect to a document or document service
+  (item and/or edition).
+
+The type of fee is represented by a class from the [Document Service Ontology].
+
+
 # Glossary
 
 access token
@@ -772,10 +917,10 @@ PAIA auth servers MUST follow approriate security measures, such as protecting
 against brute force attacks and blocking accounts with weak passwords or with
 passwords that have been sent unencrypted.
 
-# Examples and mappings
+# Informative parts
 
-This non-normative section contains additional examples and a mapping to RDF to
-illustrate the semantics of PAIA concepts and methods.
+This non-normative section contains additional examples and explanations to
+illustrate the semantics of PAIA concepts and methods and usage.
 
 ## Transitions of service states
 
@@ -817,133 +962,80 @@ following rules of thumb may help:
   document can be used by multiple patrons at the same time, and `held` should
   be used when the document can exclusively be used by the patron.
 
-
-## PAIA ontology in RDF
-
-Primariliy defined as HTTP API, PAIA includes an implicit conceptual data
-model, which can be mapped to RDF among other expressions. The expression of
-PAIA in RDF is in an early phase of discussion. The following ontologies may be
-reused:
-
-~~~ {.ttl}
-    @prefix bibo: <http://purl.org/ontology/bibo/> .
-    @prefix daia: <http://purl.org/ontology/daia/> .
-    @prefix foaf: <http://xmlns.com/foaf/0.1/> .
-    @prefix frbr: <http://purl.org/vocab/frbr/core#> .
-    @prefix sioc: <http://rdfs.org/sioc/ns#> .
-    @prefix ssso: <http://purl.org/ontology/ssso> .
-    @prefix particip: <http://purl.org/vocab/participation/schema#> .
-~~~
-
-The mapping to RDF includes the following core concepts:
-
-PatronAccount
-  : A patron account expressed as instance of `sioc:User`. The patron account
-    typically belongs to a person, connected to with `foaf:account`. The date
-    of expiration can be expressed with `particip:endDate`. Please note that
-    a patron account is not equal to a patron as indiviual person.
-Document
-  : An abstract work, a specific edition, or an item. Probably an instance of
-    `bibo:Document` or `frbr:Item`.
-Account state
-  : The current state of a patron account. Still to be discussed whether 
-    modeled as entity or as relationship. To keep things simple, only
-    active and inactive accounts might be enough.
-Document service
-  : An instance of a library service connected to a patron and a document.
-    Document services are returned by the PAIA core method [items](). This
-    entity is an instance of `daia:Service` and `ssso:Service`.
-Service status
-  : The current state of a (document) service is defined as an instance of a subclass
-    of `ssso:ServiceEvent` from the [Simple Service Status Ontology] (SSSO), which are:
-
-    * [ssso:ReservedService](http://purl.org/ontology/ssso#ReservedService): 
-      document service status 1 (reserved)
-    * [ssso:PreparedService](http://purl.org/ontology/ssso#PreparedService):
-      document service status 2 (ordered)
-    * [ssso:ExecutedService](http://purl.org/ontology/ssso#ExecutedService): 
-      document service status 3 (held)
-    * [ssso:ProvidedService](http://purl.org/ontology/ssso#ProvidedService): 
-      document service status 4 (provided)
-    * [ssso:RejectedService](http://purl.org/ontology/ssso#RejectedService): 
-      document service status 4 (rejected)
-
-    The specific type of service on an item can be indicated by a subclass of
-    `daia:Service` from the [Document Availability Information Ontology]
-    (DAIA) - this services may be refactored into a dedicated 
-    *library service ontology* (libso). By now the particular service types are:
-
-    * **loan** (borrow to use at home for a limited time)
-    * **access** (view/use within the boundaries of a library)
-    * **interloan** (get a document/copy mediated from another library)
-    * **openaccess** (get directed to the location of a publically available document)
-Fee
-  : An amount of money that has to be paid by a patron for some reason. Each fee 
-    is represented by the following properties of a `ssso:ServiceEvent` instance:
-    
-	* `dc:date` (or a more specific subproperty) for `fee.date`
-	* `schema:price` and `schema:priceCurrency` for `fee.amount`
-	* `dc:description` for `fee.about`
-	* Maybe `schema:itemOffered` to connect to a document or document service
-      (item and/or edition).
-
-    The type of fee is represented by a class from the [Document Service Ontology].
-
-
-# PAIA core extensions to non-document services
+## PAIA core extensions to non-document services
 
 A future version of PAIA may be extended to support services not related to
 documents. For instance a patron may reserve a cabin or some other facility. 
 The following methods may be added to PAIA core for this purpose:
 
-## services
+services
+  : List non-document services related to a patron - similar to method [items].
 
-List non-document services related to a patron - similar to method [items].
+servicetypes
+  : Get a list of services that a patron may request, each with URI, name, and
+    short description.
 
-## servictypes
-
-Get a list of services that a patron may request, each with URI, name, and
-short description.
-
-------
+-----
 
 # References
 
 ## Normative References
 
-Bradner, S. 1997. “RFC 2119: Key words for use in RFCs to Indicate Requirement Levels”.
-<http://tools.ietf.org/html/rfc2119>.
+* Bradner, S. 1997. “RFC 2119: Key words for use in RFCs to Indicate Requirement Levels”.
+  <http://tools.ietf.org/html/rfc2119>.
 
-Crockford, D. 2006. “RFC 6427: The application/json Media Type for JavaScript Object Notation (JSON)”.
-<http://tools.ietf.org/html/rfc4627>.
+* Crockford, D. 2006. “RFC 6427: The application/json Media Type for JavaScript Object Notation (JSON)”.
+  <http://tools.ietf.org/html/rfc4627>.
 
-Fielding, R. 1999. “RFC 2616: Hypertext Transfer Protocol”.
-<http://tools.ietf.org/html/rfc2616>.
+* Fielding, R. 1999. “RFC 2616: Hypertext Transfer Protocol”.
+  <http://tools.ietf.org/html/rfc2616>.
 
-D. Hardt. 2012. “RFC 6749: The OAuth 2.0 Authorization Framework”.
-<http://tools.ietf.org/html/rfc6749>.
+* D. Hardt. 2012. “RFC 6749: The OAuth 2.0 Authorization Framework”.
+  <http://tools.ietf.org/html/rfc6749>.
 
-Jones, M. and Hardt, D. 2012. “RFC 6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage”.
-<http://tools.ietf.org/html/rfc6750>.
+* Jones, M. and Hardt, D. 2012. “RFC 6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage”.
+  <http://tools.ietf.org/html/rfc6750>.
 
-Rescorla, E. 2000. “RFC 2818: HTTP over TLS.”
-<http://tools.ietf.org/html/rfc2818>.
+* Rescorla, E. 2000. “RFC 2818: HTTP over TLS.”
+  <http://tools.ietf.org/html/rfc2818>.
+
+* Voss, J. 2013. “Simple Service Status Ontology“.
+  <http://purl.org/ontology/ssso>. 
 
 ## Informative References
 
-Styles, Rob, Wallace, Chris and Moeller, Knud. 2008. “Participation schema“. 
-<http://vocab.org/participation/schema>.
+* 3M. 2006. “3M Standard Interchange Protocol Version 2.00“.
+  <http://mws9.3m.com/mws/mediawebserver.dyn?6666660Zjcf6lVs6EVs66S0LeCOrrrrQ->.
 
-Voss, J. 2012. “DAIA ontology“. 
-<http://purl.org/ontology/daia>. 
+* ILS-DI. 2008. “DLF ILS Discovery Interface Task Group (ILS-DI) Technical Recommendation - revision 1.1“
+  <http://old.diglib.org/architectures/ilsdi/>.
 
-Voss, J. 2013. “Simple Service Status Ontology“.
-<http://purl.org/ontology/ssso>. 
+* Katz, D. 2013. “ILS Driver (VuFind 2.x)“.
+  <http://vufind.org/wiki/vufind2:building_an_ils_driver>.
 
-Voss, J. 2013. “Document Service Ontology“.
-<http://gbv.github.io/dso/>.
+* NISO. 2010. “NISO Circulation Interchange Protocol (NCIP) - Z39.83-1-2008 Version 2.01“.
+  <http://www.ncip.info/>.
+
+* Styles, Rob, Wallace, Chris and Moeller, Knud. 2008. “Participation schema“. 
+  <http://vocab.org/participation/schema>.
+
+* Voss, J. 2012. “DAIA ontology“. 
+  <http://purl.org/ontology/daia>. 
+
+* Voss, J. 2013. “Document Service Ontology“.
+  <http://gbv.github.io/dso/>.
+
+## Revision history
+
+The current version of this document was last modified at GIT_REVISION_DATE
+with revision GIT_REVISION_HASH.
+
+GIT_CHANGES
+
 
 [Document Availability Information Ontology]: http://purl.org/ontology/daia
 
 [Simple Service Status Ontology]: http://purl.org/ontology/ssso
 [Document Service Ontology]: http://gbv.github.io/dso/
+
+
