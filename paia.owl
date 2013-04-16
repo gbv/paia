@@ -1,3 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rdf:RDF xmlns:bibo="http://purl.org/ontology/bibo/" xmlns:daia="http://purl.org/ontology/daia/" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:frbr="http://purl.org/vocab/frbr/core#" xmlns:particip="http://purl.org/vocab/participation/schema#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sioc="http://rdfs.org/sioc/ns#" xmlns:ssso="http://purl.org/ontology/ssso">
+<rdf:RDF xmlns:bibo="http://purl.org/ontology/bibo/" xmlns:daia="http://purl.org/ontology/daia/" xmlns:dso="http://purl.org/ontology/dso#" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:frbr="http://purl.org/vocab/frbr/core#" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:particip="http://purl.org/vocab/participation/schema#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:sioc="http://rdfs.org/sioc/ns#" xmlns:ssso="http://purl.org/ontology/ssso#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
+  <rdf:Description rdf:about="http://rdfs.org/sioc/ns#User">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://rdfs.org/sioc/ns#User">
+    <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/vocab/participation/schema#Role">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/account">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/account">
+    <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/account">
+    <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://rdfs.org/sioc/ns#account_of">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://rdfs.org/sioc/ns#account_of">
+    <rdfs:domain rdf:resource="http://rdfs.org/sioc/ns#User"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://rdfs.org/sioc/ns#account_of">
+    <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/accountName">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DataProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/accountName">
+    <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/accountName">
+    <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/mbox">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/mbox">
+    <rdfs:domain rdf:resource="http://rdfs.org/sioc/ns#Agent"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/mbox">
+    <rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/name">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DataProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/name">
+    <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/vocab/participation/schema#endDate">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DataProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/vocab/participation/schema#endDate">
+    <rdfs:domain rdf:resource="http://purl.org/vocab/participation/schema#Role"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/vocab/participation/schema#endDate">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#Date"/>
+  </rdf:Description>
 </rdf:RDF>

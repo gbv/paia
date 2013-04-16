@@ -4,6 +4,46 @@
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix frbr: <http://purl.org/vocab/frbr/core#> .
 @prefix sioc: <http://rdfs.org/sioc/ns#> .
-@prefix ssso: <http://purl.org/ontology/ssso> .
+@prefix ssso: <http://purl.org/ontology/ssso#> .
+@prefix dso: <http://purl.org/ontology/dso#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix particip: <http://purl.org/vocab/participation/schema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+particip:Role
+    a owl:Class .
+
+particip:endDate
+    a owl:DataProperty ;
+    rdfs:domain particip:Role ;
+    rdfs:range xsd:Date .
+
+sioc:User
+    a owl:Class ;
+    rdfs:subClassOf foaf:OnlineAccount .
+
+sioc:account_of
+    a owl:ObjectProperty ;
+    rdfs:domain sioc:User ;
+    rdfs:range foaf:Agent .
+
+foaf:account
+    a owl:ObjectProperty ;
+    rdfs:domain foaf:Agent ;
+    rdfs:range foaf:OnlineAccount .
+
+foaf:accountName
+    a owl:DataProperty ;
+    rdfs:domain foaf:OnlineAccount ;
+    rdfs:range rdfs:Literal .
+
+foaf:mbox
+    a owl:ObjectProperty ;
+    rdfs:domain sioc:Agent ;
+    rdfs:range owl:Thing .
+
+foaf:name
+    a owl:DataProperty ;
+    rdfs:range rdfs:Literal .
 
