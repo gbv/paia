@@ -694,8 +694,8 @@ WWW-Authentificate: Bearer realm="PAIA auth example"
 
 ~~~~ {.json}
 {
-  "code": "403",
-  "error": "access_denied"
+  "error": "access_denied",
+  "error_description": "invalid patron or password"
 }
 ~~~~
 
