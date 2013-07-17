@@ -1,26 +1,21 @@
 # Introduction
 
-The **Patrons Account Information API (PAIA)** is a HTTP based programming
-interface to access library patron information, such as loans, reservations,
-and fees.  Its primary goal is to provide patron access for discovery
-interfaces and other third-party applications to integrated library system, as
-easy and open as possible.
-
+{DOCUMENT_ABSTRACT}
 
 ## Synopsis
 
-The following table list all PAIA methods with their HTTP verb and the entities
-they act on. The response format is a JSON document, optionally wrapped as JSONP.
+PAIA defines six methods in [PAIA core] and three methods in [PAIA auth]. Each method
+is defined with an HTTP verb and an entity that the method acts on:
 
-  [PAIA core]                                      [PAIA auth]
-------------------------------------------------- ----------------------------------------
-  GET [patron]: general patron information         POST [login]: get access token
-  GET [items]: current loans, reservations …       POST [logout]: invalidate access token
-  POST [request]: new reservation, delivery …      POST [change]: modify credentials
-  POST [renew]: existing loans, reservations …     
-  POST [cancel]: requests, reservations …     
+  [PAIA core]                                       [PAIA auth]
+-------------------------------------------------- ----------------------------------------
+  GET [patron]: general patron information          POST [login]: get access token
+  GET [items]: current loans, reservations, …       POST [logout]: invalidate access token
+  POST [request]: new reservation, delivery, …      POST [change]: modify credentials
+  POST [renew]: existing loans, reservations, …     
+  POST [cancel]: requests, reservations, …     
   GET [fees]: paid and open charges
-------------------------------------------------- ----------------------------------------
+-------------------------------------------------- ----------------------------------------
 
 
 ## Status of this document
@@ -40,7 +35,7 @@ Updates and sources can be found in a public git repository at
 [paia.md](https://github.com/gbv/paia/blob/master/paia.md) is written in
 [Pandoc’s Markdown](http://johnmacfarlane.net/pandoc/demo/example9/pandocs-markdown.html).
 HTML version of the specification and PAIA ontology [in RDF/Turtle](paia.ttl) 
-and [in RDF/XML](paia.owl) are is generated from the master file with
+and [in RDF/XML](paia.owl) are generated from the master file with
 [makespec](https://github.com/jakobib/makespec). The text of the specification
 can be distributed freely under the terms of CC-BY-SA.
 
@@ -113,26 +108,25 @@ compromised by the client.
 
 ## Request and response format
 
-Each PAIA method is identified by an URL and a HTTP verb (GET or POST). Method
+Each PAIA method is identified by an URL and HTTP verb GET or POST. Method
 calls expect a set of request parameters and return a JSON object. Request
 parameters and JSON response of PAIA core can be [mapped to RDF](#paia-ontology).
 
 The special request parameter [`access token`](#access-tokens-and-scopes) 
 can be sent either as HTTP query parameter or in a HTTP request header. 
 
-For POST methods a request body MUST be included in JSON format in
-UTF-8. A Content-Type request header MUST be sent with `application/json;
-charset=utf-8` or `application/json`. A PAIA auth server SHOULD additionally
-accept URL-encoded HTTP POST request bodies with content type
-`application/x-www-form-urlencoded`.
+For POST methods a request body MUST be included in JSON format in UTF-8. A
+Content-Type request header MUST be sent with `application/json; charset=utf-8`
+or `application/json`.  A PAIA auth server SHOULD additionally accept
+URL-encoded HTTP POST request bodies with content type
+`application/x-www-form-urlencoded`. Request encoding ISO-8859-1 MAY be
+supported in addition to UTF-8 for these requests.
 
 The HTTP response content type of a PAIA response is a JSON object (HTTP header
-`Content-Type: application/json`), optionally wrapped as JSONP (HTTP header
-`Content-Type: application/javascript`). The charset MUST be included as part
-of the Content-Type header. The response charset is first determined by looking
-at the requests Accept-Charset header and second by its Accept header. If none
-of both headers contains a charset supported by the PAIA server, the server MUST
-use either either ISO-8859-1 or UTF-8. A PAIA server MUST at least support UTF-8.
+`Content-Type: application/json`) in UTF8, optionally wrapped as JSONP (HTTP
+header `Content-Type: application/javascript`). The charset SHOULD be included
+as part of the Content-Type header (`application/json; charset=utf-8` or
+`application/javascript; charset=utf-8`)
 
 Every request parameter and every response field is defined with
 
@@ -782,7 +776,7 @@ reused:
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 ~~~
 
-## patrons in RDF
+## Patrons in RDF
 
 [patrons in RDF]: #patrons-in-rdf
 
@@ -826,7 +820,7 @@ particip:endDate a owl:DataProperty ;   # relates a patron account to the date o
 # To keep things simple, only active and inactive accounts might be enough.
 ~~~
 
-## document services in RDF
+## Document services in RDF
 
 [document services in RDF]: #document-services-in-rdf
 
@@ -864,7 +858,7 @@ Service status
     * **interloan** (get a document/copy mediated from another library)
     * **openaccess** (get directed to the location of a publically available document)
 
-## fees in RDF
+## Fees in RDF
 
 [fees in RDF]: #fees-in-rdf
 
@@ -878,8 +872,9 @@ properties of a `ssso:ServiceEvent` instance:
 * Maybe `schema:itemOffered` to connect to a document or document service
   (item and/or edition).
 
-The type of fee is represented by a class from the [Document Service Ontology].
-
+The type of fee is represented by a class from the [Document Service Ontology] or
+by another subclass of class [ServiceEvent] from the [Simple Service Status Ontology].
+All URIs returned in `fee.feeid` SHOULD be resolvable as Linked Open Data.
 
 # Glossary
 
@@ -1027,15 +1022,14 @@ servicetypes
 
 ## Revision history
 
-The current version of this document was last modified at GIT_REVISION_DATE
-with revision GIT_REVISION_HASH.
+The current version of this document was last modified at {GIT_REVISION_DATE}
+with revision {GIT_REVISION_HASH}.
 
-GIT_CHANGES
-
+{GIT_CHANGES}
 
 [Document Availability Information Ontology]: http://purl.org/ontology/daia
-
 [Simple Service Status Ontology]: http://purl.org/ontology/ssso
 [Document Service Ontology]: http://gbv.github.io/dso/
 
+[ServiceEvent]: http://purl.org/ontology/ssso#ServiceEvent
 
