@@ -1,6 +1,6 @@
 # Introduction
 
-{DOCUMENT_ABSTRACT}
+{ABSTRACT}
 
 ## Synopsis
 
