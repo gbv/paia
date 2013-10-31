@@ -108,17 +108,17 @@ compromised by the client.
 
 ## Request and response format
 
-Each PAIA method is identified by an URL and HTTP verb GET or POST. Method
+Each PAIA method is identified by a URL and HTTP verb GET or POST. Method
 calls expect a set of request parameters and return a JSON object. Request
 parameters and JSON response of PAIA core can be [mapped to RDF](#paia-ontology).
 
 The special request parameter [`access token`](#access-tokens-and-scopes) 
-can be sent either as HTTP query parameter or in a HTTP request header. 
+can be sent either as an HTTP query parameter or in an HTTP request header.
 
 For POST methods a request body MUST be included in JSON format in UTF-8. A
 Content-Type request header MUST be sent with `application/json; charset=utf-8`
 or `application/json`.  A PAIA auth server SHOULD additionally accept
-URL-encoded HTTP POST request bodies with content type
+URL encoded HTTP POST request bodies with content type
 `application/x-www-form-urlencoded`. Request encoding ISO-8859-1 MAY be
 supported in addition to UTF-8 for these requests.
 
@@ -134,7 +134,7 @@ Every request parameter and every response field is defined with
 * the **ocurrence** (occ) of the parameter/field being one of
     * `0..1` (optional, non repeatable)
     * `1..1` (mandatory, non repeatable)
-    * `1..n` (mandatory, repeatbale)
+    * `1..n` (mandatory, repeatable)
     * `0..n` (optional, repeatable)
 * the **[data type](#data-types)** of the parameter/field.
 * a short description
@@ -147,7 +147,7 @@ Repeatable response fields are encoded as JSON arrays, for instance:
 { "fee" : [ { ... }, { ... } ] }
 ~~~~
 
-Hierarchical JSON structures in this document are refereced with a dot (`.`) 
+Hierarchical JSON structures in this document are referenced with a dot (`.`)
 as separator. For instance the subfield/parameter `item` of the `doc` element
 is referenced as `doc.item` and refers to the following JSON structure:
 
@@ -171,10 +171,10 @@ suppress_response_codes
  
 ## Access tokens and scopes
 
-All PAIA methods, with [login](#login) from PAIA auth as only exception,
-require an **access token** as special request parameter. The access token is a
-so called bearer token as described in RFC 6750. The access token can be send
-either as URL query parameter or in a HTTP header. For instance the following
+All PAIA methods, with [login](#login) from PAIA auth as the only exception,
+require an **access token** as a special request parameter. The access token is a
+so called bearer token as described in RFC 6750. The access token can be sent
+either as a URL query parameter or in an HTTP header. For instance the following
 requests both get information about patron `123` with access token
 `vF9dft4qmT`:
 
@@ -195,7 +195,7 @@ write_items
     [renew](#renew), and [cancel](#cancel) methods.
 
 For instance a particular token with scopes `read_patron` and `read_items` may
-be used to for read-only access to information about a patron, including its
+be used for read-only access to information about a patron, including its
 loans and requested items but not its fees.
 
 A PAIA server SHOULD send the following HTTP headers with every response:
@@ -208,7 +208,7 @@ X-Accepted-OAuth-Scopes
 For PAIA auth an additional scope is possible:
 
 change_password
-  : Change the password of a patron with PAIA auth [change](#change) method.
+  : Change the password of a patron with the PAIA auth [change](#change) method.
 
 A PAIA core server SHOULD NOT include the `change_password` scope in the
 `X-OAuth-Scopes` header because the scope is limited to PAIA auth. A PAIA auth
@@ -225,9 +225,9 @@ Document errors
     indicated by the `doc.error` response field.
 
 Request errors
-  : Malformed requests, failed authentification, unsupported methods, and
+  : Malformed requests, failed authentication, unsupported methods, and
     unexpected server errors such as backend downtime etc. MUST result in an 
-    error response. An error response is returned with a HTTP status code 
+    error response. An error response is returned with an HTTP status code
     4xx (client error) or 5xx (server error) as defined in RFC 2616, unless
     the request parameter `suppress_response_codes` is given.
 
@@ -257,7 +257,7 @@ PAIA service with a "realm" parameter:
 
 The following error responses are expected:[^errors]
 
-[^errors]: The error list was compiled from HTTP and OAuth 2.0 specifications,
+[^errors]: The error list was compiled from the HTTP and OAuth 2.0 specifications,
 [the Twitter API](https://dev.twitter.com/docs/error-codes-responses), [the
 StackExchange API](https://api.stackexchange.com/docs/error-handling), and [the
 GitHub API](http://developer.github.com/v3/#client-errors).
@@ -266,10 +266,10 @@ GitHub API](http://developer.github.com/v3/#client-errors).
  error                 code   description
 --------------------- ------ ------------------------------------------------------------------------
  not_found              404   Unknown request URL or unknown patron. Implementations SHOULD
-                              first check authentification and prefer error `invalid_grant` or
+                              first check authentication and prefer error `invalid_grant` or
                               `access_denied` to prevent leaking patron identifiers.
 
- not_implemented        501   Known but unspupported request URL (for instance a PAIA auth server
+ not_implemented        501   Known but unsupported request URL (for instance a PAIA auth server
                               server may not implement `http://example.org/core/change`)
 
  invalid_request        405   Unexpected HTTP verb (all but GET, POST, HEAD)
@@ -277,7 +277,7 @@ GitHub API](http://developer.github.com/v3/#client-errors).
  invalid_request        400   Malformed request (for instance error parsing JSON, unsupported
                               request content type, etc.)
  
- invalid_request        422   The request parameters could be parsed but they don’t match to the
+ invalid_request        422   The request parameters could be parsed but they don’t match the
                               request method (for instance missing fields, invalid values, etc.)
 
  invalid_grant          401   The access token was missing, invalid, or expired
@@ -286,15 +286,15 @@ GitHub API](http://developer.github.com/v3/#client-errors).
  
  access_denied          403   Wrong or missing credentials to get an access token
 
- internal_error         500   An unexpected error ocurred. This error corresponds to a bug in
+ internal_error         500   An unexpected error occurred. This error corresponds to a bug in
                               the implementation of a PAIA auth/core server
  
- service_unavailable    503   The request couldn’t be serviced because of a temporary failure
+ service_unavailable    503   The request couldn't be serviced because of a temporary failure
 
- bad_gateway            502   The request couldn’t be serviced because of a backend failure
+ bad_gateway            502   The request couldn't be serviced because of a backend failure
                               (for instance the library system’s database)
  
- gateway_timeout        504   The request couldn’t be serviced because of a backend failure
+ gateway_timeout        504   The request couldn't be serviced because of a backend failure
 --------------------- ------ ------------------------------------------------------------------------
 
 For instance the following response could result from a request with malformed URIs 
@@ -341,15 +341,15 @@ account state
     A PAIA server MAY define additional states which can be mapped to `1` by PAIA 
     clients. In JSON account states MUST be encoded as numbers instead of strings.
 service status
-  : A nonegative integer representing the current status in fulfillment of a 
+  : A nonnegative integer representing the current status in fulfillment of a
     service. In most cases the service is related to a document, so the service
 	status is a relation between a particular document and a particular patron. 
 	Possible values are:
 
     0. no relation (this applies to most combinations of document and patron, and
        it can be expected if no other state is given)
-    1. reserved (the document is not accesible for the user yet, but it will be)
-    2. ordered (the document is beeing made accesible for the user)
+    1. reserved (the document is not accessible for the user yet, but it will be)
+    2. ordered (the document is being made accessible for the user)
     3. held (the document is on loan by the patron)
     4. provided (the document is ready to be used by the patron)
     5. rejected
@@ -381,7 +381,7 @@ document
 
 
     For each document at least an item URI or an edition URI MUST be given.
-    Togther, item and edition URI MUST uniquely identify a document within 
+    Together, item and edition URI MUST uniquely identify a document within
     the set of documents related to a patron.
 
     The response fields `label`, `storage`, `storageid`, and `queue`
@@ -389,7 +389,7 @@ document
 
     An example of a document (with status 5=rejected) serialized in JSON is
     given below. In this case an arbitrary copy of a selected document was
-    requested and mapped to a particular copy that turned out to be not accesible:
+    requested and mapped to a particular copy that turned out to be not accessible:
 
     ~~~~ {.json}
     {
@@ -405,8 +405,8 @@ document
 
 # PAIA core
 
-Each API method of PAIA core is accessed at an URL that includes the
-URI-escaped patron identifier.
+Each API method of PAIA core is accessed at a URL that includes the
+URI escaped patron identifier.
 
 ## patron
 
@@ -427,7 +427,7 @@ response fields
 mapping to RDF
   : see [patrons in RDF]
 
-Additional field such as address may be added in a later revision.
+Additional fields such as address may be added in a later revision.
 
 **Example**
 
@@ -485,7 +485,7 @@ scope
 request parameters
   :  name            occ    data type   description
     --------------- ------ ----------- ------------------------------
-     doc             1..n               list of documents to renew
+     doc             1..n               list of documents requested
      doc.item        0..1   URI         URI of a particular item
      doc.edition     0..1   URI         URI of a particular edition
      doc.storage     0..1   string      Requested pickup location
@@ -498,13 +498,13 @@ response fields
     ------ ------ ----------- -----------------------------------------
 
 The response SHOULD include the same documents as requested. A client MAY also
-use the [items](#items) method to get the service status after renewal.
+use the [items](#items) method to get the service status after request.
 
 
 ## renew
 
 purpose
-  : renew one or more documents usually held by the patron. PAIA servers
+  : Renew one or more documents usually held by the patron. PAIA servers
     MAY also allow renewal of reserved, ordered, and provided documents.
 HTTP verb and URL
   : POST https://example.org/core/**{uri_escaped_patron_identifier}**/renew
@@ -537,7 +537,7 @@ scope
 request parameters
   :  name          occ    data type
     ------------- ------ ----------- -----------------------------
-     doc           1..n               list of documents to renew
+     doc           1..n               list of documents to cancel
      doc.item      0..1   URI         URI of a particular item
      doc.edition   0..1   URI         URI of a particular edition
     ------------- ------ ----------- -----------------------------
@@ -561,7 +561,7 @@ response fields
     ------------- ------ ----------- ----------------------------------------
      amount        0..1   money       Sum of all fees. May also be negative!
      fee           0..n               list of fees
-     fee.amount    1..1   money       amout of a single fee
+     fee.amount    1..1   money       amount of a single fee
      fee.date      0..1   date        date when the fee was claimed
      fee.about     0..1   string      textual information about the fee
      fee.item      0..1   URI         item that caused the fee
@@ -585,7 +585,7 @@ If a fee was caused by a document (`fee.item` or `fee.edition`), the value of
 
 # PAIA auth
 
-**PAIA auth** defines three methods for authentification based on username and
+**PAIA auth** defines three methods for authentication based on username and
 password. These methods can be used to get access tokens and patron
 identifiers, which are required to access **[PAIA core]** methods. There MAY be
 additional or alternative ways to distribute and manage access tokens and
@@ -689,7 +689,7 @@ HTTP/1.1 403 Forbidden
 Content-Type: application/json; charset=utf-8
 Cache-Control: no-store
 Pragma: no-cache
-WWW-Authentificate: Bearer realm="PAIA auth example"
+WWW-Authenticate: Bearer realm="PAIA auth example"
 ~~~~
 
 ~~~~ {.json}
@@ -757,7 +757,7 @@ response](#error-response) with error code `access_denied` (403) or error code
 
 # PAIA Ontology
 
-Primariliy defined as HTTP API, PAIA core includes an implicit conceptual data
+Primarily defined as an HTTP API, PAIA core includes an implicit conceptual data
 model, which can be mapped to RDF among other expressions. The expression of
 PAIA in RDF is in an early phase of discussion. The following ontologies may be
 reused:
@@ -780,8 +780,8 @@ reused:
 
 [patrons in RDF]: #patrons-in-rdf
 
-A patron account, as returned by PAIA core method [patron], is expressed as
-instance of `sioc:User`. The patron account typically belongs to a person,
+A patron account, as returned by the PAIA core method [patron], is expressed as
+an instance of `sioc:User`. The patron account typically belongs to a person,
 connected to with `foaf:account`. The date of expiration can be expressed with
 `particip:endDate`. Please note that a patron account is not equal to a patron
 as individual person.
@@ -850,13 +850,13 @@ Service status
 
     The specific type of service on an item can be indicated by a subclass of
     `daia:Service` from the [Document Availability Information Ontology]
-    (DAIA) - this services may be refactored into a dedicated 
+    (DAIA) - these services may be refactored into a dedicated
     *library service ontology* (libso). By now the particular service types are:
 
     * **loan** (borrow to use at home for a limited time)
     * **access** (view/use within the boundaries of a library)
     * **interloan** (get a document/copy mediated from another library)
-    * **openaccess** (get directed to the location of a publically available document)
+    * **openaccess** (get directed to the location of a publicly available document)
 
 ## Fees in RDF
 
@@ -866,7 +866,7 @@ A fee, as returned by the method [fees], is an amount of money that has to be
 paid by a patron for some reason. Each fee is represented by the following
 properties of a `ssso:ServiceEvent` instance:
     
-* `dc:date` (or a more specific subproperty) for `fee.date`
+* `dc:date` (or a more specific sub property) for `fee.date`
 * `schema:price` and `schema:priceCurrency` for `fee.amount`
 * `dc:description` for `fee.about`
 * Maybe `schema:itemOffered` to connect to a document or document service
@@ -880,7 +880,7 @@ All URIs returned in `fee.feeid` SHOULD be resolvable as Linked Open Data.
 
 access token
   : A confidential random string that must be sent with each PAIA request
-    for authentification.
+    for authentication.
 document
   : A concrete or abstract document, such as a work, or an edition.
 item
@@ -900,7 +900,7 @@ patron identifier
 
 Security of OAuth 2.0 with bearer tokens relies on correct application of
 HTTPS.  It is known that SSL certificate errors are often ignored just because
-of laziness. It MUST be clear to all implementors that this spoils the whole
+of laziness. It MUST be clear to all implementors that this breaks the
 chain of trust and is as secure as sending access tokens in plain text.
 
 To limit the risk of spoiled access tokens, PAIA servers SHOULD put limits on
@@ -908,7 +908,7 @@ the lifetime of access tokens and on the number of allowed requests per minute
 among other security limitations. 
 
 It is also known that several library systems allow weak passwords. For this reason
-PAIA auth servers MUST follow approriate security measures, such as protecting 
+PAIA auth servers MUST follow appropriate security measures, such as protecting
 against brute force attacks and blocking accounts with weak passwords or with
 passwords that have been sent unencrypted.
 
@@ -925,7 +925,7 @@ following table illustrates reasonable transitions of service status with time
 for a fixed patron. For instance some document held by another patron is first
 requested (0 → 1) with PAIA method [request](#request), made available after
 return (1 → 4), picked up (4 → 3), renewed after some time with PAIA method
-[renew](#renew) (4 → 4) and later returned (3 → 0).
+[renew](#renew) (3 → 3) and later returned (3 → 0).
 
   transition →      0              1: reserved     2: ordered    3: held   4: provided     5: rejected
  -------------- --------------- --------------- --------------- --------- --------------- ------------------------------------
