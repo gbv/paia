@@ -401,7 +401,7 @@ document
     }
     ~~~~
 
-    See [document services in RDF] for a mapping in RDF.
+    See [documents in RDF] for a mapping in RDF.
 
 # PAIA core
 
@@ -468,7 +468,7 @@ response fields
      doc    0..n   document    list of documents (order is irrelevant)
     ------ ------ ----------- -----------------------------------------
 mapping to RDF
-  : see [document services in RDF]
+  : see [documents in RDF]
 
 In most cases, each document will have an item URI for a particular copy, but
 users may also have requested an edition.
@@ -496,6 +496,8 @@ response fields
     ------ ------ ----------- -----------------------------------------
      doc    1..n   document    list of documents (order is irrelevant)
     ------ ------ ----------- -----------------------------------------
+mapping to RDF
+  : see [documents in RDF]
 
 The response SHOULD include the same documents as requested. A client MAY also
 use the [items](#items) method to get the service status after request.
@@ -521,6 +523,8 @@ response fields
     ------ ------ ----------- -----------------------------------------
      doc   1..n   document     list of documents (order is irrelevant)
     ----- ------ ------------ -----------------------------------------
+mapping to RDF
+  : see [documents in RDF]
 
 The response SHOULD include the same documents as requested. A client MAY also
 use the [items](#items) method to get the service status after renewal.
@@ -546,7 +550,8 @@ response fields
     ------ ------ ----------- -----------------------------------------
      doc    1..n   document    list of documents (order is irrelevant)
     ------ ------ ----------- -----------------------------------------
-
+mapping to RDF
+  : see [documents in RDF]
 
 ## fees
 
@@ -577,7 +582,7 @@ fee.  A PAIA server MUST return identical values of `fee.feetype` for identical
 `fee.feeid`.  The default value of `fee.feeid` is:
 
 * <http://purl.org/ontology/dso#DocumentService> if `fee.item` or `fee.edition` is set,
-* <http://purl.org/ontology/ssso#ServiceEvent> otherwise.
+* <http://purl.org/ontology/service#Service> otherwise (*experimental!*).
 
 If a fee was caused by a document (`fee.item` or `fee.edition`), the value of
 `fee.feeid` SHOULD be a class URI from the [Document Service Ontology].
@@ -757,72 +762,135 @@ response](#error-response) with error code `access_denied` (403) or error code
 
 # PAIA Ontology
 
-Primarily defined as an HTTP API, PAIA core includes an implicit conceptual data
-model, which can be mapped to RDF among other expressions. The expression of
-PAIA in RDF is in an early phase of discussion. The following ontologies may be
-reused:
+The information expressed by PAIA core responses in JSON, can also be expressed
+in RDF. The **PAIA Ontology** defines an RDF ontology for this purpose.
+
+PAIA Ontology reuses classes and properties from other ontologies and defines a
+small set of additional classes, properties, and individuals to express
+information about [patrons in RDF], [documents in RDF], and [fees in
+RDF]. 
+
+RDF Serializations of PAIA Ontology are available in RDF/Turtle
+([**`paia.ttl`**](./paia.ttl)) and in RDF/XML ([**`paia.owl`**](./paia.owl)).
+
+## Ontology metadata
+
+The URI namespace of PAIA ontology is [http://purl.org/ontology/paia#](http://purl.org/ontology/paia#).
+The namespace prefix `paia` is recommended. The URI of PAIA ontology as a whole is
+<http://purl.org/ontology/paia>.
+
+~~~ {.ttl}
+@prefix paia: <http://purl.org/ontology/paia#> .
+@base         <http://purl.org/ontology/paia> .
+
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+
+<> a owl:Ontology ;
+    dct:title "PAIA Ontology" ;
+    rdfs:label "PAIA" ;
+    vann:preferredNamespacePrefix "paia" ;
+    vann:preferredNamespaceUri "http://purl.org/ontology/paia#" .
+~~~
+
+~~~ {.ttl}
+@prefix cc:   <http://creativecommons.org/ns#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix voaf: <http://purl.org/vocommons/voaf#> .
+
+<>
+    dct:description "An ontology to express library patron information, such as loans, reservations, and fees."@en ;
+    dct:modified "{GIT_REVISION_DATE}"^^xsd:date ;
+    owl:versionInfo "{VERSION}" ;
+    cc:license <http://creativecommons.org/licenses/by/3.0/> ;
+    dct:creator "Jakob Voß" 
+    .
+~~~
+
+## PatronAccount
+
+[patrons in RDF]: #patronaccount
+
+A patron account, as returned by the PAIA core method [patron] is represented
+by an instance of the class **paia:PatronAccount**. Every patron account is
+also an instance of [sioc:User] (and therefore also of [foaf:OnlineAccount])
+and an instance of [particip:Role]. The date of expiration can be expressed
+with [particip:endDate]. The patron identifier is given with
+[foaf:AccountName]. 
+
+A patron account belongs to a person or another [foaf:Agent], connected to with
+[sioc:account_of] and [foaf:account]. The full name of a patron is given with
+[foaf:name] and its email address can be given with [foaf:mbox].
+
+~~~ {.ttl}
+@prefix sioc:     <http://rdfs.org/sioc/ns#> .
+@prefix foaf:     <http://xmlns.com/foaf/0.1/> .
+@prefix particip: <http://purl.org/vocab/participation/schema#> .
+
+paia:PatronAccount a owl:Class ;
+    rdfs:label "PatronAccount"@en ;
+    rdfs:subClassOf sioc:User, foaf:OnlineAccount, particip:Role ;
+    rdfs:seeAlso
+        sioc:account_of, foaf:account, particip:endDate, 
+        foaf:name, foaf:mbox 
+.
+~~~
+
+[sioc:User]: http://rdfs.org/sioc/ns#User
+[sioc:account_of]: http://rdfs.org/sioc/ns#account_of
+[foaf:OnlineAccount]: http://xmlns.com/foaf/0.1/OnlineAccount
+[foaf:Agent]: http://xmlns.com/foaf/0.1/Agent
+[foaf:account]: http://xmlns.com/foaf/0.1/account
+[foaf:name]: http://xmlns.com/foaf/0.1/name
+[foaf:mbox]: http://xmlns.com/foaf/0.1/mbox
+[particip:endDate]: http://purl.org/vocab/participation/schema#endDate
+[particip:Role]: http://purl.org/vocab/participation/schema#Role
+
+An instance of paia:patronAccount is assumed to be active, unless it is also
+an instance of **paia:InactivePatronAccount**.
+
+~~~ {.ttl}
+paia:InactivePatronAccount a owl:Class ;
+    rdfs:label "InactivePatronAccount"@en ;
+    rdfs:subClassOf paia:PatronAccount 
+.
+~~~~
+
+Reasons for inactivation can be given with property **paia:inactiveBecause**.
+The inactivation reasons **paia:AccountExpired** and **paia:OutstandingFees**
+SHOULD be linked to.
+
+~~~ {.ttl}
+paia:inactiveBecause a rdfs:Property ;
+    rdfs:label "inactiveBecause"@en ; 
+    rdfs:domain paia:InactivePatronAccount
+. 
+
+paia:AccountExpired a rdfs:Resource ; 
+    rdfs:label "AccountExpired"@en
+.
+paia:OutstandingFees a rdfs:Resource ;
+    rdfs:label "OutstandingFees"@en
+.
+~~~
+
+## Items in RDF
+
+[documents in RDF]: #documents-in-rdf
+
+Lists of documents, as returned by the PAIA core methods [items], [request],
+[renew], and [cancel], are represented as sets of document service events.
+
 
 ~~~ {.ttl}
 @prefix bibo: <http://purl.org/ontology/bibo/> .
 @prefix daia: <http://purl.org/ontology/daia/> .
-@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix frbr: <http://purl.org/vocab/frbr/core#> .
-@prefix sioc: <http://rdfs.org/sioc/ns#> .
 @prefix ssso: <http://purl.org/ontology/ssso#> .
 @prefix dso:  <http://purl.org/ontology/dso#> .
-@prefix owl:  <http://www.w3.org/2002/07/owl#> .
-@prefix particip: <http://purl.org/vocab/participation/schema#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 ~~~
-
-## Patrons in RDF
-
-[patrons in RDF]: #patrons-in-rdf
-
-A patron account, as returned by the PAIA core method [patron], is expressed as
-an instance of `sioc:User`. The patron account typically belongs to a person,
-connected to with `foaf:account`. The date of expiration can be expressed with
-`particip:endDate`. Please note that a patron account is not equal to a patron
-as individual person.
-
-~~~ {.ttl}
-sioc:User a owl:Class ;                 # a patron account
-    rdfs:subClassOf foaf:OnlineAccount .
-
-particip:Role a owl:Class .             # a patron account
-
-foaf:account a owl:ObjectProperty ;     # relates a patron to its account
-    rdfs:domain foaf:Agent ;
-    rdfs:range foaf:OnlineAccount .
-
-sioc:account_of a owl:ObjectProperty ;  # relates a patron account to its patron
-    rdfs:domain sioc:User ;
-    rdfs:range foaf:Agent .
-
-foaf:accountName a owl:DataProperty ;   # relates a patron account to its identifier
-    rdfs:domain foaf:OnlineAccount ;
-    rdfs:range rdfs:Literal .
-
-foaf:mbox a owl:ObjectProperty ;        # relates a patron account to an email address
-    rdfs:domain sioc:Agent ;
-    rdfs:range owl:Thing .
-
-foaf:name a owl:DataProperty ;          # relates a patron to its name
-    rdfs:range rdfs:Literal .
-
-particip:endDate a owl:DataProperty ;   # relates a patron account to the date of expiry
-    rdfs:domain particip:Role ;
-    rdfs:range xsd:Date .
-
-# TODO: relate patron account to its account state
-# Still to be discussed whether modeled as entity or as relationship. 
-# To keep things simple, only active and inactive accounts might be enough.
-~~~
-
-## Document services in RDF
-
-[document services in RDF]: #document-services-in-rdf
 
 The final mapping to RDF will probably include the following core concepts:
 
@@ -849,14 +917,19 @@ Service status
       document service status 4 (rejected)
 
     The specific type of service on an item can be indicated by a subclass of
-    `daia:Service` from the [Document Availability Information Ontology]
-    (DAIA) - these services may be refactored into a dedicated
-    *library service ontology* (libso). By now the particular service types are:
+    `dso:DocumentService` from the [Document Service Ontology] (DSO) or by
+    classes from a yet-to-be-created *library service ontology* (libso). 
+    By now the particular service types are:
 
-    * **loan** (borrow to use at home for a limited time)
-    * **access** (view/use within the boundaries of a library)
-    * **interloan** (get a document/copy mediated from another library)
-    * **openaccess** (get directed to the location of a publicly available document)
+    * [dso:Loan] (borrow to use at home for a limited time)
+    * [dso:Presentation] (view/use within the boundaries of a library)
+    * [dso:Interloan] (get a document/copy mediated from another library)
+    * [dso:OpenAccess] (get directed to the location of a publicly available document)
+
+[dso:Loan]: http://purl.org/ontology/dso#Loan
+[dso:Presentation]: http://purl.org/ontology/dso#Presentation
+[dso:Interloan]: http://purl.org/ontology/dso#Interloan
+[dso:OpenAccess]: http://purl.org/ontology/dso#OpenAccess
 
 ## Fees in RDF
 
