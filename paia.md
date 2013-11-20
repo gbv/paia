@@ -224,6 +224,18 @@ Document errors
     a document _do not result_ in an error response. Instead they are
     indicated by the `doc.error` response field.
 
+    For instance the following response, returned with HTTP status code 200, could
+    result from a [request] for an item given by an unknown URI:
+
+    ~~~~ {.json}
+    {
+      "doc": [ {
+        "item": "http://example.org/some/uri",
+        "error": "item URI not found"
+      } ]
+    }
+    ~~~~
+
 Request errors
   : Malformed requests, failed authentication, unsupported methods, and
     unexpected server errors such as backend downtime etc. MUST result in an 
@@ -307,6 +319,7 @@ For instance the following response could result from a request with malformed U
   "error_uri": "http://example.org/help/api"
 }
 ~~~~
+
 
 ## Data types
 
