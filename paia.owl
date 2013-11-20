@@ -1,63 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rdf:RDF xmlns:bibo="http://purl.org/ontology/bibo/" xmlns:daia="http://purl.org/ontology/daia/" xmlns:dso="http://purl.org/ontology/dso#" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:frbr="http://purl.org/vocab/frbr/core#" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:particip="http://purl.org/vocab/participation/schema#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:sioc="http://rdfs.org/sioc/ns#" xmlns:ssso="http://purl.org/ontology/ssso#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
-  <rdf:Description rdf:about="http://rdfs.org/sioc/ns#User">
+<rdf:RDF xmlns:dct="http://purl.org/dc/terms/" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:paia="http://purl.org/ontology/paia#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:vann="http://purl.org/vocab/vann/">
+  <rdf:Description rdf:about="http://purl.org/ontology/paia">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Ontology"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia">
+    <dct:title>PAIA Ontology</dct:title>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia">
+    <rdfs:label>PAIA</rdfs:label>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia">
+    <vann:preferredNamespacePrefix>paia</vann:preferredNamespacePrefix>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia">
+    <vann:preferredNamespaceUri>http://purl.org/ontology/paia#</vann:preferredNamespaceUri>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia">
+    <dct:description xml:lang="en">An ontology to express library patron information, such as loans, reservations, and fees.</dct:description>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia">
+    <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">{GIT_REVISION_DATE}</dct:modified>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia">
+    <owl:versionInfo>{VERSION}</owl:versionInfo>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia">
+    <ns0:license xmlns:ns0="http://creativecommons.org/ns#" rdf:resource="http://creativecommons.org/licenses/by/3.0/"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia">
+    <dct:creator>Jakob Voß</dct:creator>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#PatronAccount">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://rdfs.org/sioc/ns#User">
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#PatronAccount">
+    <rdfs:label xml:lang="en">PatronAccount</rdfs:label>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#PatronAccount">
+    <rdfs:subClassOf rdf:resource="http://rdfs.org/sioc/ns#User"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#PatronAccount">
     <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/vocab/participation/schema#Role">
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#PatronAccount">
+    <rdfs:subClassOf rdf:resource="http://purl.org/vocab/participation/schema#Role"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#PatronAccount">
+    <rdfs:seeAlso rdf:resource="http://rdfs.org/sioc/ns#account_of"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#PatronAccount">
+    <rdfs:seeAlso rdf:resource="http://xmlns.com/foaf/0.1/account"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#PatronAccount">
+    <rdfs:seeAlso rdf:resource="http://purl.org/vocab/participation/schema#endDate"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#PatronAccount">
+    <rdfs:seeAlso rdf:resource="http://xmlns.com/foaf/0.1/name"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#PatronAccount">
+    <rdfs:seeAlso rdf:resource="http://xmlns.com/foaf/0.1/mbox"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#InactivePatronAccount">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/account">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#InactivePatronAccount">
+    <rdfs:label xml:lang="en">InactivePatronAccount</rdfs:label>
   </rdf:Description>
-  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/account">
-    <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#InactivePatronAccount">
+    <rdfs:subClassOf rdf:resource="http://purl.org/ontology/paia#PatronAccount"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/account">
-    <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#inactiveBecause">
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Property"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://rdfs.org/sioc/ns#account_of">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#inactiveBecause">
+    <rdfs:label xml:lang="en">inactiveBecause</rdfs:label>
   </rdf:Description>
-  <rdf:Description rdf:about="http://rdfs.org/sioc/ns#account_of">
-    <rdfs:domain rdf:resource="http://rdfs.org/sioc/ns#User"/>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#inactiveBecause">
+    <rdfs:domain rdf:resource="http://purl.org/ontology/paia#InactivePatronAccount"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://rdfs.org/sioc/ns#account_of">
-    <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#AccountExpired">
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Resource"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/accountName">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DataProperty"/>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#AccountExpired">
+    <rdfs:label xml:lang="en">AccountExpired</rdfs:label>
   </rdf:Description>
-  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/accountName">
-    <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#OutstandingFees">
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Resource"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/accountName">
-    <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/mbox">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/mbox">
-    <rdfs:domain rdf:resource="http://rdfs.org/sioc/ns#Agent"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/mbox">
-    <rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/name">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DataProperty"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/name">
-    <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/vocab/participation/schema#endDate">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DataProperty"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/vocab/participation/schema#endDate">
-    <rdfs:domain rdf:resource="http://purl.org/vocab/participation/schema#Role"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/vocab/participation/schema#endDate">
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#Date"/>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#OutstandingFees">
+    <rdfs:label xml:lang="en">OutstandingFees</rdfs:label>
   </rdf:Description>
 </rdf:RDF>

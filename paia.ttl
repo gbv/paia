@@ -1,49 +1,54 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix paia: <http://purl.org/ontology/paia#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix cc: <http://creativecommons.org/ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix voaf: <http://purl.org/vocommons/voaf#> .
+@prefix sioc: <http://rdfs.org/sioc/ns#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix particip: <http://purl.org/vocab/participation/schema#> .
 @prefix bibo: <http://purl.org/ontology/bibo/> .
 @prefix daia: <http://purl.org/ontology/daia/> .
-@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix frbr: <http://purl.org/vocab/frbr/core#> .
-@prefix sioc: <http://rdfs.org/sioc/ns#> .
 @prefix ssso: <http://purl.org/ontology/ssso#> .
 @prefix dso: <http://purl.org/ontology/dso#> .
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix particip: <http://purl.org/vocab/participation/schema#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-particip:Role
-    a owl:Class .
+<http://purl.org/ontology/paia>
+    cc:license <http://creativecommons.org/licenses/by/3.0/> ;
+    dct:creator "Jakob Voß" ;
+    dct:description "An ontology to express library patron information, such as loans, reservations, and fees."@en ;
+    dct:modified "{GIT_REVISION_DATE}"^^xsd:date ;
+    dct:title "PAIA Ontology" ;
+    vann:preferredNamespacePrefix "paia" ;
+    vann:preferredNamespaceUri "http://purl.org/ontology/paia#" ;
+    a owl:Ontology ;
+    rdfs:label "PAIA" ;
+    owl:versionInfo "{VERSION}" .
 
-particip:endDate
-    a owl:DataProperty ;
-    rdfs:domain particip:Role ;
-    rdfs:range xsd:Date .
+paia:AccountExpired
+    a rdfs:Resource ;
+    rdfs:label "AccountExpired"@en .
 
-sioc:User
+paia:InactivePatronAccount
     a owl:Class ;
-    rdfs:subClassOf foaf:OnlineAccount .
+    rdfs:label "InactivePatronAccount"@en ;
+    rdfs:subClassOf paia:PatronAccount .
 
-sioc:account_of
-    a owl:ObjectProperty ;
-    rdfs:domain sioc:User ;
-    rdfs:range foaf:Agent .
+paia:OutstandingFees
+    a rdfs:Resource ;
+    rdfs:label "OutstandingFees"@en .
 
-foaf:account
-    a owl:ObjectProperty ;
-    rdfs:domain foaf:Agent ;
-    rdfs:range foaf:OnlineAccount .
+paia:PatronAccount
+    a owl:Class ;
+    rdfs:label "PatronAccount"@en ;
+    rdfs:seeAlso particip:endDate, sioc:account_of, foaf:account, foaf:mbox, foaf:name ;
+    rdfs:subClassOf particip:Role, sioc:User, foaf:OnlineAccount .
 
-foaf:accountName
-    a owl:DataProperty ;
-    rdfs:domain foaf:OnlineAccount ;
-    rdfs:range rdfs:Literal .
-
-foaf:mbox
-    a owl:ObjectProperty ;
-    rdfs:domain sioc:Agent ;
-    rdfs:range owl:Thing .
-
-foaf:name
-    a owl:DataProperty ;
-    rdfs:range rdfs:Literal .
+paia:inactiveBecause
+    a rdfs:Property ;
+    rdfs:domain paia:InactivePatronAccount ;
+    rdfs:label "inactiveBecause"@en .
 
