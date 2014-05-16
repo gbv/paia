@@ -222,10 +222,12 @@ Two classes of errors must be distinguished:
 Document errors
   : Unknown document URIs and failed attempts to request, renew, or cancel 
     a document _do not result_ in an error response. Instead they are
-    indicated by the `doc.error` response field.
+    indicated by the `doc.error` response field, which SHOULD contain a
+    human-readable error message. Form and type of document error messages
+    are not specified, so clients SHOULD use these strings for display only.
 
-    For instance the following response, returned with HTTP status code 200, could
-    result from a [request] for an item given by an unknown URI:
+    For instance the following response, returned with HTTP status code 200,
+    could result from a [request] for an item given by an unknown URI:
 
     ~~~~ {.json}
     {
@@ -235,6 +237,7 @@ Document errors
       } ]
     }
     ~~~~
+
 
 Request errors
   : Malformed requests, failed authentication, unsupported methods, and
