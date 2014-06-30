@@ -122,6 +122,9 @@ URL encoded HTTP POST request bodies with content type
 `application/x-www-form-urlencoded`. Request encoding ISO-8859-1 MAY be
 supported in addition to UTF-8 for these requests.
 
+Clients SHOULD include an approriate `User-Agent` request header with client
+name and version.
+
 The HTTP response content type of a PAIA response is a JSON object (HTTP header
 `Content-Type: application/json`) in UTF8, optionally wrapped as JSONP (HTTP
 header `Content-Type: application/javascript`). The charset SHOULD be included
