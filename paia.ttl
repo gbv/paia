@@ -20,13 +20,13 @@
     cc:license <http://creativecommons.org/licenses/by/3.0/> ;
     dct:creator "Jakob Voß" ;
     dct:description "An ontology to express library patron information, such as loans, reservations, and fees."@en ;
-    dct:modified "{GIT_REVISION_DATE}"^^xsd:date ;
+    dct:modified "2014-06-30"^^xsd:date ;
     dct:title "PAIA Ontology" ;
     vann:preferredNamespacePrefix "paia" ;
     vann:preferredNamespaceUri "http://purl.org/ontology/paia#" ;
     a owl:Ontology ;
     rdfs:label "PAIA" ;
-    owl:versionInfo "{VERSION}" .
+    owl:versionInfo "1.0.2" .
 
 paia:AccountExpired
     a rdfs:Resource ;

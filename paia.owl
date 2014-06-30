@@ -19,10 +19,10 @@
     <dct:description xml:lang="en">An ontology to express library patron information, such as loans, reservations, and fees.</dct:description>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia">
-    <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">{GIT_REVISION_DATE}</dct:modified>
+    <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2014-06-30</dct:modified>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia">
-    <owl:versionInfo>{VERSION}</owl:versionInfo>
+    <owl:versionInfo>1.0.2</owl:versionInfo>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia">
     <ns0:license xmlns:ns0="http://creativecommons.org/ns#" rdf:resource="http://creativecommons.org/licenses/by/3.0/"/>
