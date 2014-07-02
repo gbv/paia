@@ -453,6 +453,7 @@ Additional fields such as address may be added in a later revision.
 ~~~
 GET /core/123 HTTP/1.1
 Host: example.org
+User-Agent: MyPAIAClient/1.0
 Accept: application/json
 Authorization: Bearer a0dedc54bbfae4b
 ~~~
@@ -461,14 +462,14 @@ Authorization: Bearer a0dedc54bbfae4b
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 X-Accepted-OAuth-Scopes: read_patron
-X-OAuth-Scopes: read_patron, read_fees, read_items, write_items
+X-OAuth-Scopes: read_patron read_fees read_items write_items
 ~~~
 
 ~~~{.json}
 {
   "name": "Jane Q. Public", 
   "email": "jane@example.org",
-  "expires": "2013-05-18",
+  "expires": "2015-05-18",
   "status": 0
 }
 ~~~
@@ -676,6 +677,7 @@ response fields
 ~~~~
 POST /auth/login
 Host: example.org
+User-Agent: MyPAIAClient/1.0
 Accept: application/json
 Content-Type: application/json
 Content-Length: 85
@@ -692,6 +694,7 @@ Content-Length: 85
 ~~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
+X-OAuth-Scopes: read_patron read_fees read_items write_items
 Cache-Control: no-store
 Pragma: no-cache
 ~~~~
@@ -781,8 +784,10 @@ response](#error-response) with error code `access_denied` (403) or error code
 
 # PAIA Ontology
 
-The information expressed by PAIA core responses in JSON, can also be expressed
-in RDF. The **PAIA Ontology** defines an RDF ontology for this purpose.
+Information expressed by PAIA core responses in JSON, can be expressed in RDF
+as well. The **PAIA Ontology** defines an RDF ontology for this purpose.
+
+*The Ontology has not been finalized yet!*
 
 PAIA Ontology reuses classes and properties from other ontologies and defines a
 small set of additional classes, properties, and individuals to express
@@ -792,7 +797,7 @@ RDF].
 RDF Serializations of PAIA Ontology are available in RDF/Turtle
 ([**`paia.ttl`**](./paia.ttl)) and in RDF/XML ([**`paia.owl`**](./paia.owl)).
 
-## Ontology metadata
+## Namespaces and Ontology
 
 The URI namespace of PAIA ontology is [http://purl.org/ontology/paia#](http://purl.org/ontology/paia#).
 The namespace prefix `paia` is recommended. The URI of PAIA ontology as a whole is
@@ -801,36 +806,44 @@ The namespace prefix `paia` is recommended. The URI of PAIA ontology as a whole 
 ~~~ {.ttl}
 @prefix paia: <http://purl.org/ontology/paia#> .
 @base         <http://purl.org/ontology/paia> .
-
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix owl:  <http://www.w3.org/2002/07/owl#> .
-@prefix dct:  <http://purl.org/dc/terms/> .
-@prefix vann: <http://purl.org/vocab/vann/> .
-
-<> a owl:Ontology ;
-    dct:title "PAIA Ontology" ;
-    rdfs:label "PAIA" ;
-    vann:preferredNamespacePrefix "paia" ;
-    vann:preferredNamespaceUri "http://purl.org/ontology/paia#" .
 ~~~
 
-~~~ {.ttl}
-@prefix cc:   <http://creativecommons.org/ns#> .
-@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
-@prefix voaf: <http://purl.org/vocommons/voaf#> .
+The following namspace prefixes are used to refer to related ontologies:
 
-<>
+~~~ {.ttl}
+@prefix bibo:    <http://purl.org/ontology/bibo/> .
+@prefix cc:      <http://creativecommons.org/ns#> .
+@prefix daia:    <http://purl.org/ontology/daia/> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix dso:     <http://purl.org/ontology/dso#> .
+@prefix frbr:    <http://purl.org/vocab/frbr/core#> .
+@prefix holding: <http://purl.org/ontology/holding#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ssso:    <http://purl.org/ontology/ssso#> .
+@prefix vann:    <http://purl.org/vocab/vann/> .
+@prefix voaf:    <http://purl.org/vocommons/voaf#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+~~~
+
+PAIA Ontology is defined in RDF/Turtle as following:
+
+~~~ {.ttl}
+<> a owl:Ontology, voaf:Vocabulary ;
+    dct:title "PAIA Ontology"@en ;
+    rdfs:label "PAIA" ;
+    vann:preferredNamespacePrefix "paia" ;
+    vann:preferredNamespaceUri "http://purl.org/ontology/paia#" ;
     dct:description "An ontology to express library patron information, such as loans, reservations, and fees."@en ;
     dct:modified "{GIT_REVISION_DATE}"^^xsd:date ;
     owl:versionInfo "{VERSION}" ;
     cc:license <http://creativecommons.org/licenses/by/3.0/> ;
-    dct:creator "Jakob Voß" 
-    .
+    dct:creator "Jakob Voß" . 
 ~~~
 
-## PatronAccount
+## Patrons in RDF
 
-[patrons in RDF]: #patronaccount
+[patrons in RDF]: #patrons-in-rdf
 
 A patron account, as returned by the PAIA core method [patron] is represented
 by an instance of the class **paia:PatronAccount**. Every patron account is
@@ -851,12 +864,13 @@ A patron account belongs to a person or another [foaf:Agent], connected to with
 paia:PatronAccount a owl:Class ;
     rdfs:label "PatronAccount"@en ;
     rdfs:subClassOf sioc:User, foaf:OnlineAccount, particip:Role ;
+    rdfs:isDefinedBy <> ;
     rdfs:seeAlso
         sioc:account_of, foaf:account, particip:endDate, 
-        foaf:name, foaf:mbox 
-.
+        foaf:name, foaf:mbox . 
 ~~~
 
+[foaf:AccountName]: http://xmlns.com/foaf/0.1/AccountName
 [sioc:User]: http://rdfs.org/sioc/ns#User
 [sioc:account_of]: http://rdfs.org/sioc/ns#account_of
 [foaf:OnlineAccount]: http://xmlns.com/foaf/0.1/OnlineAccount
@@ -873,26 +887,25 @@ an instance of **paia:InactivePatronAccount**.
 ~~~ {.ttl}
 paia:InactivePatronAccount a owl:Class ;
     rdfs:label "InactivePatronAccount"@en ;
-    rdfs:subClassOf paia:PatronAccount 
-.
+    rdfs:isDefinedBy <> ;
+    rdfs:subClassOf paia:PatronAccount .
 ~~~~
 
-Reasons for inactivation can be given with property **paia:inactiveBecause**.
+Reasons for inactivation can be given with property **paia:inactivationReason**.
 The inactivation reasons **paia:AccountExpired** and **paia:OutstandingFees**
 SHOULD be linked to.
 
 ~~~ {.ttl}
-paia:inactiveBecause a rdfs:Property ;
-    rdfs:label "inactiveBecause"@en ; 
-    rdfs:domain paia:InactivePatronAccount
-. 
-
-paia:AccountExpired a rdfs:Resource ; 
-    rdfs:label "AccountExpired"@en
-.
+paia:inactivationReason a rdfs:Property ;
+    rdfs:label "inactivationReason"@en ; 
+    rdfs:isDefinedBy <> ;
+    rdfs:domain paia:InactivePatronAccount . 
+paia:AccountExpired a rdfs:Resource ;
+    rdfs:isDefinedBy <> ;
+    rdfs:label "AccountExpired"@en .
 paia:OutstandingFees a rdfs:Resource ;
-    rdfs:label "OutstandingFees"@en
-.
+    rdfs:isDefinedBy <> ;
+    rdfs:label "OutstandingFees"@en .
 ~~~
 
 ## Items in RDF
@@ -900,55 +913,57 @@ paia:OutstandingFees a rdfs:Resource ;
 [documents in RDF]: #documents-in-rdf
 
 Lists of documents, as returned by the PAIA core methods [items], [request],
-[renew], and [cancel], are represented as sets of document service events.
+[renew], and [cancel], are represented as sets of events. Each event is an
+instance of **[ssso:ServiceEvent]** from the [Simple Service Status Ontology]
+(SSSO) and an instance of of a specific document service class defined in the
+[Document Service Ontology] (DSO).
 
+The current [service status](#data-types) of a document service event is given
+by an instance-relationship (rdf:type) with one of the following classes:
+
+* [ssso:ReservedService](http://purl.org/ontology/ssso#ReservedService) 
+  for service status 1 (reserved)
+* [ssso:PreparedService](http://purl.org/ontology/ssso#PreparedService)
+  for service status 2 (ordered)
+* [ssso:ExecutedService](http://purl.org/ontology/ssso#ExecutedService) 
+  for service status 3 (held)
+* [ssso:ProvidedService](http://purl.org/ontology/ssso#ProvidedService) 
+  for service status 4 (provided)
+* [ssso:RejectedService](http://purl.org/ontology/ssso#RejectedService)
+  for service status 5 (rejected)
+
+The specific type of service is further given by in instance-relationship with on
+of the following classes (*this needs some clarification!*):
+
+* [dso:Loan] (borrow to use at home for a limited time)
+* [dso:Presentation] (view/use within the boundaries of a library)
+* [dso:Interloan] (get a document/copy mediated from another library)
+* [dso:OpenAccess] (get directed to the location of a publicly available document)
 
 ~~~ {.ttl}
-@prefix bibo: <http://purl.org/ontology/bibo/> .
-@prefix daia: <http://purl.org/ontology/daia/> .
-@prefix frbr: <http://purl.org/vocab/frbr/core#> .
-@prefix ssso: <http://purl.org/ontology/ssso#> .
-@prefix dso:  <http://purl.org/ontology/dso#> .
+ssso:ServiceEvent a owl:Class ;
+    rdfs:label "ServiceEvent"@en ;
+    rdfs:isDefinedBy <http://purl.org/ontology/ssso> .
+dso:DocumentService a owl:Class ;
+    rdfs:label "DocumentService"@en ;
+    rdfs:isDefinedBy <http://purl.org/ontology/dso> .
+dso:ServiceConsumer a owl:Class ;
+    rdfs:label "ServiceConsumer"@en ;
+    rdfs:isDefinedBy <http://purl.org/ontology/service> .
 ~~~
 
-The final mapping to RDF will probably include the following core concepts:
+The service event is connected to a patron as [service:ServiceConsumer] 
+(with property [service:consumedBy]) and to a document 
+(*with a property yet to be defined*).
 
-Document
-  : An abstract work, a specific edition, or an item. Probably an instance of
-    `bibo:Document` or `frbr:Item`.
-Document service
-  : An instance of a library service connected to a patron and a document.
-    Document services are returned by the PAIA core method [items](). This
-    entity is an instance of `daia:Service` and `ssso:Service`.
-Service status
-  : The current state of a (document) service is defined as an instance of a subclass
-    of `ssso:ServiceEvent` from the [Simple Service Status Ontology] (SSSO), which are:
 
-    * [ssso:ReservedService](http://purl.org/ontology/ssso#ReservedService): 
-      document service status 1 (reserved)
-    * [ssso:PreparedService](http://purl.org/ontology/ssso#PreparedService):
-      document service status 2 (ordered)
-    * [ssso:ExecutedService](http://purl.org/ontology/ssso#ExecutedService): 
-      document service status 3 (held)
-    * [ssso:ProvidedService](http://purl.org/ontology/ssso#ProvidedService): 
-      document service status 4 (provided)
-    * [ssso:RejectedService](http://purl.org/ontology/ssso#RejectedService): 
-      document service status 4 (rejected)
-
-    The specific type of service on an item can be indicated by a subclass of
-    `dso:DocumentService` from the [Document Service Ontology] (DSO) or by
-    classes from a yet-to-be-created *library service ontology* (libso). 
-    By now the particular service types are:
-
-    * [dso:Loan] (borrow to use at home for a limited time)
-    * [dso:Presentation] (view/use within the boundaries of a library)
-    * [dso:Interloan] (get a document/copy mediated from another library)
-    * [dso:OpenAccess] (get directed to the location of a publicly available document)
-
+[ssso:ServiceEvent]: http://purl.org/ontology/ssso#ServiceEvent
 [dso:Loan]: http://purl.org/ontology/dso#Loan
 [dso:Presentation]: http://purl.org/ontology/dso#Presentation
 [dso:Interloan]: http://purl.org/ontology/dso#Interloan
 [dso:OpenAccess]: http://purl.org/ontology/dso#OpenAccess
+[service:ServiceConsumer]: http://purl.org/ontology/service#ServiceConsumer
+[service:consumedBy]: http://purl.org/ontology/service#consumedBy
 
 ## Fees in RDF
 
@@ -1086,9 +1101,6 @@ servicetypes
 * Rescorla, E. 2000. “RFC 2818: HTTP over TLS.”
   <http://tools.ietf.org/html/rfc2818>.
 
-* Voss, J. 2013. “Simple Service Status Ontology“.
-  <http://purl.org/ontology/ssso>. 
-
 ## Informative References
 
 * 3M. 2006. “3M Standard Interchange Protocol Version 2.00“.
@@ -1100,6 +1112,9 @@ servicetypes
 * Katz, D. 2013. “ILS Driver (VuFind 2.x)“.
   <http://vufind.org/wiki/vufind2:building_an_ils_driver>.
 
+* Klee, C. and Voss, J. 2014. “Holding Ontology“. 
+  <http://purl.org/ontology/holding>. 
+
 * NISO. 2010. “NISO Circulation Interchange Protocol (NCIP) - Z39.83-1-2008 Version 2.01“.
   <http://www.ncip.info/>.
 
@@ -1108,6 +1123,9 @@ servicetypes
 
 * Voss, J. 2012. “DAIA ontology“. 
   <http://purl.org/ontology/daia>. 
+
+* Voss, J. 2013. “Simple Service Status Ontology“.
+  <http://purl.org/ontology/ssso>. 
 
 * Voss, J. 2013. “Document Service Ontology“.
   <http://gbv.github.io/dso/>.
