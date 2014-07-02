@@ -1,54 +1,75 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix paia: <http://purl.org/ontology/paia#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix dct: <http://purl.org/dc/terms/> .
-@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix bibo: <http://purl.org/ontology/bibo/> .
 @prefix cc: <http://creativecommons.org/ns#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix daia: <http://purl.org/ontology/daia/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix dso: <http://purl.org/ontology/dso#> .
+@prefix frbr: <http://purl.org/vocab/frbr/core#> .
+@prefix holding: <http://purl.org/ontology/holding#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ssso: <http://purl.org/ontology/ssso#> .
+@prefix vann: <http://purl.org/vocab/vann/> .
 @prefix voaf: <http://purl.org/vocommons/voaf#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix sioc: <http://rdfs.org/sioc/ns#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix particip: <http://purl.org/vocab/participation/schema#> .
-@prefix bibo: <http://purl.org/ontology/bibo/> .
-@prefix daia: <http://purl.org/ontology/daia/> .
-@prefix frbr: <http://purl.org/vocab/frbr/core#> .
-@prefix ssso: <http://purl.org/ontology/ssso#> .
-@prefix dso: <http://purl.org/ontology/dso#> .
+
+dso:DocumentService
+    a owl:Class ;
+    rdfs:isDefinedBy <http://purl.org/ontology/dso> ;
+    rdfs:label "DocumentService"@en .
+
+dso:ServiceConsumer
+    a owl:Class ;
+    rdfs:isDefinedBy <http://purl.org/ontology/service> ;
+    rdfs:label "ServiceConsumer"@en .
 
 <http://purl.org/ontology/paia>
     cc:license <http://creativecommons.org/licenses/by/3.0/> ;
     dct:creator "Jakob Voß" ;
     dct:description "An ontology to express library patron information, such as loans, reservations, and fees."@en ;
-    dct:modified "2014-06-30"^^xsd:date ;
-    dct:title "PAIA Ontology" ;
+    dct:modified "2014-07-02"^^xsd:date ;
+    dct:title "PAIA Ontology"@en ;
     vann:preferredNamespacePrefix "paia" ;
     vann:preferredNamespaceUri "http://purl.org/ontology/paia#" ;
-    a owl:Ontology ;
+    a voaf:Vocabulary, owl:Ontology ;
     rdfs:label "PAIA" ;
-    owl:versionInfo "1.0.2" .
+    owl:versionInfo "1.0.2rev1" .
 
 paia:AccountExpired
     a rdfs:Resource ;
+    rdfs:isDefinedBy <http://purl.org/ontology/paia> ;
     rdfs:label "AccountExpired"@en .
 
 paia:InactivePatronAccount
     a owl:Class ;
+    rdfs:isDefinedBy <http://purl.org/ontology/paia> ;
     rdfs:label "InactivePatronAccount"@en ;
     rdfs:subClassOf paia:PatronAccount .
 
 paia:OutstandingFees
     a rdfs:Resource ;
+    rdfs:isDefinedBy <http://purl.org/ontology/paia> ;
     rdfs:label "OutstandingFees"@en .
 
 paia:PatronAccount
     a owl:Class ;
+    rdfs:isDefinedBy <http://purl.org/ontology/paia> ;
     rdfs:label "PatronAccount"@en ;
     rdfs:seeAlso particip:endDate, sioc:account_of, foaf:account, foaf:mbox, foaf:name ;
     rdfs:subClassOf particip:Role, sioc:User, foaf:OnlineAccount .
 
-paia:inactiveBecause
+paia:inactivationReason
     a rdfs:Property ;
     rdfs:domain paia:InactivePatronAccount ;
-    rdfs:label "inactiveBecause"@en .
+    rdfs:isDefinedBy <http://purl.org/ontology/paia> ;
+    rdfs:label "inactivationReason"@en .
+
+ssso:ServiceEvent
+    a owl:Class ;
+    rdfs:isDefinedBy <http://purl.org/ontology/ssso> ;
+    rdfs:label "ServiceEvent"@en .
 

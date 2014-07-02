@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rdf:RDF xmlns:dct="http://purl.org/dc/terms/" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:paia="http://purl.org/ontology/paia#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:vann="http://purl.org/vocab/vann/">
+<rdf:RDF xmlns:bibo="http://purl.org/ontology/bibo/" xmlns:cc="http://creativecommons.org/ns#" xmlns:daia="http://purl.org/ontology/daia/" xmlns:dct="http://purl.org/dc/terms/" xmlns:dso="http://purl.org/ontology/dso#" xmlns:frbr="http://purl.org/vocab/frbr/core#" xmlns:holding="http://purl.org/ontology/holding#" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:paia="http://purl.org/ontology/paia#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:ssso="http://purl.org/ontology/ssso#" xmlns:vann="http://purl.org/vocab/vann/" xmlns:voaf="http://purl.org/vocommons/voaf#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
   <rdf:Description rdf:about="http://purl.org/ontology/paia">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Ontology"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia">
-    <dct:title>PAIA Ontology</dct:title>
+    <rdf:type rdf:resource="http://purl.org/vocommons/voaf#Vocabulary"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia">
+    <dct:title xml:lang="en">PAIA Ontology</dct:title>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia">
     <rdfs:label>PAIA</rdfs:label>
@@ -19,13 +22,13 @@
     <dct:description xml:lang="en">An ontology to express library patron information, such as loans, reservations, and fees.</dct:description>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia">
-    <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2014-06-30</dct:modified>
+    <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2014-07-02</dct:modified>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia">
-    <owl:versionInfo>1.0.2</owl:versionInfo>
+    <owl:versionInfo>1.0.2rev1</owl:versionInfo>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia">
-    <ns0:license xmlns:ns0="http://creativecommons.org/ns#" rdf:resource="http://creativecommons.org/licenses/by/3.0/"/>
+    <cc:license rdf:resource="http://creativecommons.org/licenses/by/3.0/"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia">
     <dct:creator>Jakob Voß</dct:creator>
@@ -44,6 +47,9 @@
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia#PatronAccount">
     <rdfs:subClassOf rdf:resource="http://purl.org/vocab/participation/schema#Role"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#PatronAccount">
+    <rdfs:isDefinedBy rdf:resource="http://purl.org/ontology/paia"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia#PatronAccount">
     <rdfs:seeAlso rdf:resource="http://rdfs.org/sioc/ns#account_of"/>
@@ -67,19 +73,28 @@
     <rdfs:label xml:lang="en">InactivePatronAccount</rdfs:label>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia#InactivePatronAccount">
+    <rdfs:isDefinedBy rdf:resource="http://purl.org/ontology/paia"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#InactivePatronAccount">
     <rdfs:subClassOf rdf:resource="http://purl.org/ontology/paia#PatronAccount"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/ontology/paia#inactiveBecause">
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#inactivationReason">
     <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Property"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/ontology/paia#inactiveBecause">
-    <rdfs:label xml:lang="en">inactiveBecause</rdfs:label>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#inactivationReason">
+    <rdfs:label xml:lang="en">inactivationReason</rdfs:label>
   </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/ontology/paia#inactiveBecause">
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#inactivationReason">
+    <rdfs:isDefinedBy rdf:resource="http://purl.org/ontology/paia"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#inactivationReason">
     <rdfs:domain rdf:resource="http://purl.org/ontology/paia#InactivePatronAccount"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia#AccountExpired">
     <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Resource"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#AccountExpired">
+    <rdfs:isDefinedBy rdf:resource="http://purl.org/ontology/paia"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia#AccountExpired">
     <rdfs:label xml:lang="en">AccountExpired</rdfs:label>
@@ -88,6 +103,36 @@
     <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Resource"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://purl.org/ontology/paia#OutstandingFees">
+    <rdfs:isDefinedBy rdf:resource="http://purl.org/ontology/paia"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/paia#OutstandingFees">
     <rdfs:label xml:lang="en">OutstandingFees</rdfs:label>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/ssso#ServiceEvent">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/ssso#ServiceEvent">
+    <rdfs:label xml:lang="en">ServiceEvent</rdfs:label>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/ssso#ServiceEvent">
+    <rdfs:isDefinedBy rdf:resource="http://purl.org/ontology/ssso"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/dso#DocumentService">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/dso#DocumentService">
+    <rdfs:label xml:lang="en">DocumentService</rdfs:label>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/dso#DocumentService">
+    <rdfs:isDefinedBy rdf:resource="http://purl.org/ontology/dso"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/dso#ServiceConsumer">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/dso#ServiceConsumer">
+    <rdfs:label xml:lang="en">ServiceConsumer</rdfs:label>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/ontology/dso#ServiceConsumer">
+    <rdfs:isDefinedBy rdf:resource="http://purl.org/ontology/service"/>
   </rdf:Description>
 </rdf:RDF>
