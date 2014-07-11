@@ -31,13 +31,13 @@ dso:ServiceConsumer
     cc:license <http://creativecommons.org/licenses/by/3.0/> ;
     dct:creator "Jakob Voß" ;
     dct:description "An ontology to express library patron information, such as loans, reservations, and fees."@en ;
-    dct:modified "2014-07-02"^^xsd:date ;
+    dct:modified "2014-07-11"^^xsd:date ;
     dct:title "PAIA Ontology"@en ;
     vann:preferredNamespacePrefix "paia" ;
     vann:preferredNamespaceUri "http://purl.org/ontology/paia#" ;
     a voaf:Vocabulary, owl:Ontology ;
     rdfs:label "PAIA" ;
-    owl:versionInfo "1.0.2rev1" .
+    owl:versionInfo "1.0.3" .
 
 paia:AccountExpired
     a rdfs:Resource ;
