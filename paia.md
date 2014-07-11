@@ -327,7 +327,7 @@ For instance the following response could result from a request with malformed U
 ~~~~
 
 
-## Data types
+## Simple data types
 
 The following data types are used to define request and response format:
 
@@ -340,6 +340,18 @@ boolean
     default but unknown!
 date
   : A date value in `YYYY-MM-DD` format.
+datetime
+  : A date value with mandatory timezone and optional time. The format is 
+    `YYYY-MM-DD`, optionally followed by `hh:mm:ss`, mandatorily followed by 
+    either `Z` for UTC or `+hh:mm` or `-hh:mm` for another timezone, where:
+
+    * YYYY indicates a year
+    * MM indicates a month
+    * DD indicates a day
+    * hh indicates an hour
+    * mm indicates a minute
+    * ss indicates a second
+
 money
   : A monetary value with currency (format `[0-9]+\.[0-9][0-9] [A-Z][A-Z][A-Z]`),
     for instance `0.80 USD`.
@@ -347,6 +359,7 @@ email
   : A syntactically correct email address.
 URI
   : A syntactically correct URI.
+
 account state
   : A nonnegative integer representing the current state of a patron account. 
     Possible values are:
@@ -359,6 +372,7 @@ account state
 
     A PAIA server MAY define additional states which can be mapped to `1` by PAIA 
     clients. In JSON account states MUST be encoded as numbers instead of strings.
+
 service status
   : A nonnegative integer representing the current status in fulfillment of a
     service. In most cases the service is related to a document, so the service
@@ -367,8 +381,8 @@ service status
 
     0. no relation (this applies to most combinations of document and patron, and
        it can be expected if no other state is given)
-    1. reserved (the document is not accessible for the user yet, but it will be)
-    2. ordered (the document is being made accessible for the user)
+    1. reserved (the document is not accessible for the patron yet, but it will be)
+    2. ordered (the document is being made accessible for the patron)
     3. held (the document is on loan by the patron)
     4. provided (the document is ready to be used by the patron)
     5. rejected
@@ -376,51 +390,69 @@ service status
     A PAIA server MUST NOT define any other service status. In JSON service status
     MUST be encoded as numbers instead of strings.
 
-document
-  : A key-value structure with the following fields
+## Document data type
 
-     name        occ    data type             description
-    ----------- ------ --------------------- ----------------------------------------------------------
-     status      1..1   service status        status (0, 1, 2, 3, 4, or 5)
-     item        0..1   URI                   URI of a particular copy
-     edition     0..1   URI                   URI of a the document (no particular copy)
-     requested   0..1   URI                   URI that was originally requested
-     about       0..1   string                textual description of the document
-     label       0..1   string                call number, shelf mark or similar item label
-     queue       0..1   nonnegative integer   number of waiting requests for the document or item
-     renewals    0..1   nonnegative integer   number of times the document has been renewed
-     reminder    0..1   nonnegative integer   number of times the patron has been reminded
-     duedate     0..1   date                  date of expiry of the service status (most times loan)
-     cancancel   0..1   boolean               whether an ordered or provided document can be canceled
-     canrenew    0..1   boolean               whether a document can be renewed
-     error       0..1   string                error message, for instance if a request was rejected
-     storage     0..1   string                location of the document
-     storageid   0..1   URI                   location URI
-    ----------- ------ --------------------- ----------------------------------------------------------
+A **document** is a key-value structure with the following fields
+
+ name        occ    data type             description
+----------- ------ --------------------- ----------------------------------------------------------
+ status      1..1   service status        status (0, 1, 2, 3, 4, or 5)
+ item        0..1   URI                   URI of a particular copy
+ edition     0..1   URI                   URI of a the document (no particular copy)
+ requested   0..1   URI                   URI that was originally requested
+ about       0..1   string                textual description of the document
+ label       0..1   string                call number, shelf mark or similar item label
+ queue       0..1   nonnegative integer   number of waiting requests for the document or item
+ renewals    0..1   nonnegative integer   number of times the document has been renewed
+ reminder    0..1   nonnegative integer   number of times the patron has been reminded
+ starttime   0..1   datetime              date and time when the status began  
+ endtime     0..1   datetime              date and time when the status will expire
+ duedate     0..1   date                  date when the current status will expire (*deprecated*)
+ cancancel   0..1   boolean               whether an ordered or provided document can be canceled
+ canrenew    0..1   boolean               whether a document can be renewed
+ error       0..1   string                error message, for instance if a request was rejected
+ storage     0..1   string                location of the document
+ storageid   0..1   URI                   location URI
+----------- ------ --------------------- ----------------------------------------------------------
 
 
-    For each document at least an item URI or an edition URI MUST be given.
-    Together, item and edition URI MUST uniquely identify a document within
-    the set of documents related to a patron.
+For each document at least an item URI or an edition URI MUST be given.
+Together, item and edition URI MUST uniquely identify a document within
+the set of documents related to a patron.
 
-    The response fields `label`, `storage`, `storageid`, and `queue`
-    correspond to properties in DAIA.
+The fields `starttime` and `endtime` MUST be interpreted as following:
 
-    An example of a document (with status 5=rejected) serialized in JSON is
-    given below. In this case an arbitrary copy of a selected document was
-    requested and mapped to a particular copy that turned out to be not accessible:
+ status   starttime                        endtime
+-------- -------------------------------- --------------------------------------------------------
+ 0        -                                -
+ 1        when the document was reserved   when the reserved document is expected to be available
+ 2        when the document was ordered    when the ordered document is expected to be available
+ 3        when the document was lend       when the loan period ends or ended (due)
+ 4        when the document is provided    when the provision will expire
+ 5        when the request was rejected    -
 
-    ~~~~ {.json}
-    {
-       "status":    5,
-       "item":      "http://example.org/items/barcode1234567",
-       "edition":   "http://example.org/documents/9876543",
-       "requested": "http://example.org/documents/9876543",
-       "error":     "sorry, we found out that our copy is lost!"
-    }
-    ~~~~
+Note that timezone information is mandatory in these fields.  The field
+`duedate` is deprecated. Clients SHOULD only use it as `endtime` if no
+`endtime` was given.
 
-    See [documents in RDF] for a mapping in RDF.
+The response fields `label`, `storage`, `storageid`, and `queue`
+correspond to properties in DAIA.
+
+An example of a document (with status 5=rejected) serialized in JSON is
+given below. In this case an arbitrary copy of a selected document was
+requested and mapped to a particular copy that turned out to be not accessible:
+
+~~~~ {.json}
+{
+   "status":    5,
+   "item":      "http://example.org/items/barcode1234567",
+   "edition":   "http://example.org/documents/9876543",
+   "requested": "http://example.org/documents/9876543",
+   "error":     "sorry, we found out that our copy is lost!"
+}
+~~~~
+
+See [documents in RDF] for a mapping in RDF.
 
 # PAIA core
 
@@ -912,11 +944,11 @@ paia:OutstandingFees a rdfs:Resource ;
 
 [documents in RDF]: #documents-in-rdf
 
-Lists of documents, as returned by the PAIA core methods [items], [request],
-[renew], and [cancel], are represented as sets of events. Each event is an
-instance of **[ssso:ServiceEvent]** from the [Simple Service Status Ontology]
-(SSSO) and an instance of of a specific document service class defined in the
-[Document Service Ontology] (DSO).
+Lists of [documents](#document-data-type), as returned by the PAIA core methods
+[items], [request], [renew], and [cancel], are represented as sets of events.
+Each event is an instance of **[ssso:ServiceEvent]** from the [Simple Service
+Status Ontology] (SSSO) and an instance of of a specific document service class
+defined in the [Document Service Ontology] (DSO).
 
 The current [service status](#data-types) of a document service event is given
 by an instance-relationship (rdf:type) with one of the following classes:
@@ -956,6 +988,13 @@ The service event is connected to a patron as [service:ServiceConsumer]
 (with property [service:consumedBy]) and to a document 
 (*with a property yet to be defined*).
 
+The `starttime` end `endtime` can be mapped to any of the following properties,
+among others:
+
+starttime
+  : schema:startDate, prov:prov:startedAtTime, prov:qualifiedStart
+endtime
+  : schema:endDate, prov:endedAtTime, prov:qualifiedEnd
 
 [ssso:ServiceEvent]: http://purl.org/ontology/ssso#ServiceEvent
 [dso:Loan]: http://purl.org/ontology/dso#Loan
