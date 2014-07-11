@@ -494,7 +494,7 @@ Authorization: Bearer a0dedc54bbfae4b
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 X-Accepted-OAuth-Scopes: read_patron
-X-OAuth-Scopes: read_patron read_fees read_items write_items
+X-OAuth-Scopes: read_fees read_items read_patron write_items
 ~~~
 
 ~~~{.json}
@@ -525,6 +525,52 @@ mapping to RDF
 In most cases, each document will have an item URI for a particular copy, but
 users may also have requested an edition.
 
+**Example**
+
+~~~
+GET /core/123/items HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Accept: application/json
+Authorization: Bearer a0dedc54bbfae4b
+~~~
+
+~~~
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-Accepted-OAuth-Scopes: read_patron
+X-OAuth-Scopes: read_items read_patron
+~~~
+
+~~~{.json}
+{
+  "doc": [{
+    "status": 3,
+    "item": "http://bib.example.org/105359165",
+    "edition": "http://bib.example.org/9782356",
+    "about": "Maurice Sendak (1963): Where the wild things are",
+    "label": "Y B SEN 101",
+    "queue": 0,
+    "renewals": 0,
+    "reminder": 0,
+    "starttime": "2014-05-08T12:37Z",
+    "endtime": "2014-06-09+00:00",
+    "duedate": "2014-06-09"
+    "cancancel": false,
+  },{
+    "status": 1,
+    "item": "http://bib.example.org/8861930",
+    "about": "Janet B. Pascal (2013): Who was Maurice Sendak?",
+    "label": "BIO SED 03",
+    "queue": 1,
+    "starttime": "2014-05-12T18:07Z",
+    "endtime": "2014-05-24Z",
+    "cancancel": true,
+    "storage": "pickup service desk",
+    "storageid": "http://bib.example.org/library/desk/7",
+  }]
+}
+~~~
 
 ## request
 
