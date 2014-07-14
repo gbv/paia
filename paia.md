@@ -339,18 +339,22 @@ boolean
   : Either true or false. Note that omitted boolean values are *not* false by 
     default but unknown!
 date
-  : A date value in `YYYY-MM-DD` format.
+  : A date value in `YYYY-MM-DD` format. A datetime value with time and timezone
+    SHOULD be used instead, if possible.
 datetime
-  : A date value with mandatory timezone and optional time. The format is 
-    `YYYY-MM-DD`, optionally followed by `hh:mm:ss`, mandatorily followed by 
-    either `Z` for UTC or `+hh:mm` or `-hh:mm` for another timezone, where:
+  : A date value in `YYY-MM-DD` format, optionally followed by a time value. A
+    time value consists of the letter `T` followed by `hh:mm:ss` format, and a 
+    timezone indicator (`Z` for UTC or `+hh:ss` or `-hh:ss`) where:
 
-    * YYYY indicates a year
-    * MM indicates a month
-    * DD indicates a day
-    * hh indicates an hour
-    * mm indicates a minute
-    * ss indicates a second
+    * `YYYY` indicates a year (`0001` through `9999`)
+    * `MM` indicates a month (`01` through `12`)
+    * `DD` indicates a day (`01` through `31`)
+    * `hh` indicates an hour (`00`and `23`)
+    * `mm` indicates a minute (`00` through `59`)
+    * `ss` indicates a second (`00` through `59`)
+
+    Examples of valid datetime values include `2015-03-20` (a date),
+    `2016-03-09T11:58:19+10:00`, and `2017-08-21T12:24:28-06:00`.
 
 money
   : A monetary value with currency (format `[0-9]+\.[0-9][0-9] [A-Z][A-Z][A-Z]`),
@@ -438,9 +442,13 @@ Note that timezone information is mandatory in these fields.  The field
 The response fields `label`, `storage`, `storageid`, and `queue`
 correspond to properties in DAIA.
 
-An example of a document (with status 5=rejected) serialized in JSON is
-given below. In this case an arbitrary copy of a selected document was
-requested and mapped to a particular copy that turned out to be not accessible:
+**Examples**
+
+An example of a documentserialized in JSON is given below. In this case a
+general document (`http://example.org/documents/9876543`) was requested an
+mapped to a particular copy (`http://example.org/items/barcode1234567`) by the
+PAIA server. The copy turned out to be lost, so the request was rejected
+(status 5) at 2014-07-12, 14:07 UTC.
 
 ~~~~ {.json}
 {
@@ -448,6 +456,7 @@ requested and mapped to a particular copy that turned out to be not accessible:
    "item":      "http://example.org/items/barcode1234567",
    "edition":   "http://example.org/documents/9876543",
    "requested": "http://example.org/documents/9876543",
+   "starttime": "2014-07-12T14:07Z",
    "error":     "sorry, we found out that our copy is lost!"
 }
 ~~~~
@@ -472,7 +481,7 @@ response fields
     --------- ------ --------------- ------------------------------
      name      1..1   string          full name of the patron
      email     0..1   email           email address of the patron
-     expires   0..1   date            date of patron account expiry
+     expires   0..1   datetime        patron account expiry
      status    0..1   account state   current state (0, 1, 2, or 3)
     --------- ------ --------------- -------------------------------
 mapping to RDF
@@ -554,7 +563,7 @@ X-OAuth-Scopes: read_items read_patron
     "renewals": 0,
     "reminder": 0,
     "starttime": "2014-05-08T12:37Z",
-    "endtime": "2014-06-09+00:00",
+    "endtime": "2014-06-09",
     "duedate": "2014-06-09"
     "cancancel": false,
   },{
@@ -564,7 +573,7 @@ X-OAuth-Scopes: read_items read_patron
     "label": "BIO SED 03",
     "queue": 1,
     "starttime": "2014-05-12T18:07Z",
-    "endtime": "2014-05-24Z",
+    "endtime": "2014-05-24",
     "cancancel": true,
     "storage": "pickup service desk",
     "storageid": "http://bib.example.org/library/desk/7",
