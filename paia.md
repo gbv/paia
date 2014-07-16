@@ -351,7 +351,7 @@ date
 datetime
   : A date value in `YYY-MM-DD` format, optionally followed by a time value. A
     time value consists of the letter `T` followed by `hh:mm:ss` format, and a 
-    timezone indicator (`Z` for UTC or `+mm:ss` or `-mm:ss`) where:
+    timezone indicator (`Z` for UTC or `+hh:mm` or `-hh:mm`) where:
 
     * `YYYY` indicates a year (`0001` through `9999`)
     * `MM` indicates a month (`01` through `12`)
