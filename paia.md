@@ -131,6 +131,13 @@ header `Content-Type: application/javascript`). The charset SHOULD be included
 as part of the Content-Type header (`application/json; charset=utf-8` or
 `application/javascript; charset=utf-8`)
 
+To support non-JSONP access to a PAIA server from any web application via
+Cross-Origin Resource Sharing (CORS), the PAIA server SHOULD always include the
+following HTTP response headers:
+
+    Access-Control-Allow-Origin: *
+    Access-Control-Expose-Headers: X-OAuth-Scopes X-Accepted-OAuth-Scopes
+
 Every request parameter and every response field is defined with
 
 * the **name** of the parameter/field
