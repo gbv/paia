@@ -37,7 +37,7 @@ dso:ServiceConsumer
     vann:preferredNamespaceUri "http://purl.org/ontology/paia#" ;
     a voaf:Vocabulary, owl:Ontology ;
     rdfs:label "PAIA" ;
-    owl:versionInfo "1.0.4rev2" .
+    owl:versionInfo "1.0.5" .
 
 paia:AccountExpired
     a rdfs:Resource ;
