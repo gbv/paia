@@ -571,7 +571,6 @@ X-OAuth-Scopes: read_items read_patron
     "reminder": 0,
     "starttime": "2014-05-08T12:37Z",
     "endtime": "2014-06-09",
-    "duedate": "2014-06-09"
     "cancancel": false,
   },{
     "status": 1,
