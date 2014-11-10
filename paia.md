@@ -485,16 +485,18 @@ scope
   : read_patron
 response fields
   :  name      occ    data type       description
-    --------- ------ --------------- ------------------------------
+    --------- ------ --------------- ---------------------------------
      name      1..1   string          full name of the patron
      email     0..1   email           email address of the patron
+     address   0..1   string          freeform address of the patron
      expires   0..1   datetime        patron account expiry
      status    0..1   account state   current state (0, 1, 2, or 3)
-    --------- ------ --------------- -------------------------------
+    --------- ------ --------------- --------------------------------
 mapping to RDF
   : see [patrons in RDF]
 
-Additional fields such as address may be added in a later revision.
+Application SHOULD refer to a specialized API, such as LDAP, to get more
+detailed patron information.
 
 **Example**
 
@@ -517,6 +519,7 @@ X-OAuth-Scopes: read_fees read_items read_patron write_items
 {
   "name": "Jane Q. Public", 
   "email": "jane@example.org",
+  "address": "Park Street 2, Springfield",
   "expires": "2015-05-18",
   "status": 0
 }
@@ -947,7 +950,10 @@ with [particip:endDate]. The patron identifier is given with
 
 A patron account belongs to a person or another [foaf:Agent], connected to with
 [sioc:account_of] and [foaf:account]. The full name of a patron is given with
-[foaf:name] and its email address can be given with [foaf:mbox].
+[foaf:name] and its email address can be given with [foaf:mbox]. The address
+field SHOULD NOT be mapped to RDF properties such as [schema:address] and
+[vcard:hasAddress] which expect a structured object instead of a plain literal
+value. The generic property [dbp:address] can be used instead.
 
 ~~~ {.ttl}
 @prefix sioc:     <http://rdfs.org/sioc/ns#> .
@@ -963,16 +969,19 @@ paia:PatronAccount a owl:Class ;
         foaf:name, foaf:mbox . 
 ~~~
 
+[dbp:address]: http://live.dbpedia.org/property/address
 [foaf:AccountName]: http://xmlns.com/foaf/0.1/AccountName
+[foaf:Agent]: http://xmlns.com/foaf/0.1/Agent
+[foaf:OnlineAccount]: http://xmlns.com/foaf/0.1/OnlineAccount
+[foaf:account]: http://xmlns.com/foaf/0.1/account
+[foaf:mbox]: http://xmlns.com/foaf/0.1/mbox
+[foaf:name]: http://xmlns.com/foaf/0.1/name
+[particip:Role]: http://purl.org/vocab/participation/schema#Role
+[particip:endDate]: http://purl.org/vocab/participation/schema#endDate
+[schema:address]: http://schema.org/address
 [sioc:User]: http://rdfs.org/sioc/ns#User
 [sioc:account_of]: http://rdfs.org/sioc/ns#account_of
-[foaf:OnlineAccount]: http://xmlns.com/foaf/0.1/OnlineAccount
-[foaf:Agent]: http://xmlns.com/foaf/0.1/Agent
-[foaf:account]: http://xmlns.com/foaf/0.1/account
-[foaf:name]: http://xmlns.com/foaf/0.1/name
-[foaf:mbox]: http://xmlns.com/foaf/0.1/mbox
-[particip:endDate]: http://purl.org/vocab/participation/schema#endDate
-[particip:Role]: http://purl.org/vocab/participation/schema#Role
+[vcard:hasAddress]: www.w3.org/TR/vcard-rdf/
 
 An instance of paia:patronAccount is assumed to be active, unless it is also
 an instance of **paia:InactivePatronAccount**.
