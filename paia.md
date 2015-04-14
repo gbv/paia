@@ -485,13 +485,14 @@ scope
   : read_patron
 response fields
   :  name      occ    data type       description
-    --------- ------ --------------- ---------------------------------
+    --------- ------ --------------- ----------------------------------------------
      name      1..1   string          full name of the patron
      email     0..1   email           email address of the patron
      address   0..1   string          freeform address of the patron
      expires   0..1   datetime        patron account expiry
      status    0..1   account state   current state (0, 1, 2, or 3)
-    --------- ------ --------------- --------------------------------
+     type      0..n   URI             list of custom URIs to identify patron types
+    --------- ------ --------------- ----------------------------------------------
 mapping to RDF
   : see [patrons in RDF]
 
@@ -521,7 +522,8 @@ X-OAuth-Scopes: read_fees read_items read_patron write_items
   "email": "jane@example.org",
   "address": "Park Street 2, Springfield",
   "expires": "2015-05-18",
-  "status": 0
+  "status": 0,
+  "type": ["http://example.org/usertypes/default"]
 }
 ~~~
 
