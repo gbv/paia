@@ -96,7 +96,9 @@ additional methods at these base URLs and it MUST NOT propagate additional
 methods at these base URLs as belonging to PAIA.
 
 In the following, the base URL <https://example.org/core/> is used for PAIA
-core and <https://example.org/auth/> for PAIA auth. 
+core and <https://example.org/auth/> for PAIA auth. PAIA auth and PAIA core
+base URLs are not required to share a common host, nor to include the URL path
+`core/` or `auth/`.
 
 Authentification in PAIA is based on **OAuth 2.0** (RFC 6749) with bearer
 tokens (RFC 6750) over HTTPS (RFC 2818).  For security reasons, PAIA methods
