@@ -221,9 +221,13 @@ change_password
   : Change the password of a patron with the PAIA auth [change](#change) method.
 
 A PAIA core server SHOULD NOT include the `change_password` scope in the
-`X-OAuth-Scopes` header because the scope is limited to PAIA auth. A PAIA auth
-server MAY send `X-OAuth-Scopes` and `X-Accepted-OAuth-Scopes` headers with
-both PAIA auth scopes and PAIA core scopes.
+`X-OAuth-Scopes` header because the scope is limited to PAIA auth. 
+
+A PAIA auth server MAY send `X-OAuth-Scopes` and `X-Accepted-OAuth-Scopes`
+headers with both PAIA auth scopes and PAIA core scopes.
+
+A PAIA server MAY include more scopes in `X-OAuth-Scopes` and in the list of
+scopes of a [login](#login) request and/or response.
 
 ## Error response
 
