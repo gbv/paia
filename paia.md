@@ -164,8 +164,12 @@ suppress_response_codes
 
 ## HTTP headers
  
-Clients SHOULD include an approriate `User-Agent` request header with client
-name and version.
+Clients SHOULD send an approriate `User-Agent` request header with client
+name and version. 
+
+Clients MAY send an `Accept-Language` header to indicate preferred languages of
+textual response fields.  A PAIA server SHOULD include a `Content-Language`
+header to indicate the language of textual response fields.
 
 The HTTP response content type of a PAIA response is a JSON object (HTTP header
 `Content-Type: application/json`) in UTF8, optionally wrapped as JSONP (HTTP
