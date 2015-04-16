@@ -34,8 +34,7 @@ Updates and sources can be found in a public git repository at
 <http://github.com/gbv/paia>. The master file
 [paia.md](https://github.com/gbv/paia/blob/master/paia.md) is written in
 [Pandoc’s Markdown](http://johnmacfarlane.net/pandoc/demo/example9/pandocs-markdown.html).
-HTML version of the specification and PAIA ontology [in RDF/Turtle](paia.ttl) 
-and [in RDF/XML](paia.owl) are generated from the master file with
+HTML version of the specification is generated from the master file with
 [makespec](https://github.com/jakobib/makespec). The text of the specification
 can be distributed freely under the terms of CC-BY-SA.
 
@@ -110,7 +109,8 @@ compromised by the client.
 
 Each PAIA method is identified by a URL and HTTP verb GET or POST. Method
 calls expect a set of request parameters and return a JSON object. Request
-parameters and JSON response of PAIA core can be [mapped to RDF](#paia-ontology).
+parameters and JSON response of PAIA core can be mapped to RDF as defined by
+by [PAIA Ontology].
 
 The special request parameter [`access token`](#access-tokens-and-scopes) 
 can be sent either as an HTTP query parameter or in an HTTP request header.
@@ -468,8 +468,6 @@ PAIA server. The copy turned out to be lost, so the request was rejected
 }
 ~~~~
 
-See [documents in RDF] for a mapping in RDF.
-
 # PAIA core
 
 Each API method of PAIA core is accessed at a URL that includes the
@@ -493,8 +491,6 @@ response fields
      status    0..1   account state   current state (0, 1, 2, or 3)
      type      0..n   URI             list of custom URIs to identify patron types
     --------- ------ --------------- ----------------------------------------------
-mapping to RDF
-  : see [patrons in RDF]
 
 Application SHOULD refer to a specialized API, such as LDAP, to get more
 detailed patron information.
@@ -540,8 +536,6 @@ response fields
     ------ ------ ----------- -----------------------------------------
      doc    0..n   document    list of documents (order is irrelevant)
     ------ ------ ----------- -----------------------------------------
-mapping to RDF
-  : see [documents in RDF]
 
 In most cases, each document will have an item URI for a particular copy, but
 users may also have requested an edition.
@@ -614,8 +608,6 @@ response fields
     ------ ------ ----------- -----------------------------------------
      doc    1..n   document    list of documents (order is irrelevant)
     ------ ------ ----------- -----------------------------------------
-mapping to RDF
-  : see [documents in RDF]
 
 The response SHOULD include the same documents as requested. A client MAY also
 use the [items](#items) method to get the service status after request.
@@ -641,8 +633,6 @@ response fields
     ------ ------ ----------- -----------------------------------------
      doc   1..n   document     list of documents (order is irrelevant)
     ----- ------ ------------ -----------------------------------------
-mapping to RDF
-  : see [documents in RDF]
 
 The response SHOULD include the same documents as requested. A client MAY also
 use the [items](#items) method to get the service status after renewal.
@@ -668,8 +658,6 @@ response fields
     ------ ------ ----------- -----------------------------------------
      doc    1..n   document    list of documents (order is irrelevant)
     ------ ------ ----------- -----------------------------------------
-mapping to RDF
-  : see [documents in RDF]
 
 ## fees
 
@@ -692,8 +680,6 @@ response fields
      fee.feetype   0..1   string      textual description of the type of fee
      fee.feeid     0..1   URI         URI of the type of fee
     ------------- ------ ----------- ----------------------------------------
-mapping to RDF
-  : see [fees in RDF]
 
 If given, `fee.feetype` MUST NOT refer to the individual fee but to the type of
 fee.  A PAIA server MUST return identical values of `fee.feetype` for identical
@@ -703,8 +689,7 @@ fee.  A PAIA server MUST return identical values of `fee.feetype` for identical
 * <http://purl.org/ontology/service#Service> otherwise (*experimental!*).
 
 If a fee was caused by a document (`fee.item` or `fee.edition`), the value of
-`fee.feeid` SHOULD be a class URI from the [Document Service Ontology].
-
+`fee.feeid` SHOULD be a class URI from the [Document Service Ontology](http://gbv.github.io/dso/).
 
 # PAIA auth
 
@@ -879,221 +864,6 @@ A PAIA server MAY reject this method and return an [error
 response](#error-response) with error code `access_denied` (403) or error code
 `not_implemented` (501). On success, the patron identifier is returned.
 
-
-# PAIA Ontology
-
-Information expressed by PAIA core responses in JSON, can be expressed in RDF
-as well. The **PAIA Ontology** defines an RDF ontology for this purpose.
-
-*The Ontology has not been finalized yet!*
-
-PAIA Ontology reuses classes and properties from other ontologies and defines a
-small set of additional classes, properties, and individuals to express
-information about [patrons in RDF], [documents in RDF], and [fees in
-RDF]. 
-
-RDF Serializations of PAIA Ontology are available in RDF/Turtle
-([**`paia.ttl`**](./paia.ttl)) and in RDF/XML ([**`paia.owl`**](./paia.owl)).
-
-## Namespaces and Ontology
-
-The URI namespace of PAIA ontology is [http://purl.org/ontology/paia#](http://purl.org/ontology/paia#).
-The namespace prefix `paia` is recommended. The URI of PAIA ontology as a whole is
-<http://purl.org/ontology/paia>.
-
-~~~ {.ttl}
-@prefix paia: <http://purl.org/ontology/paia#> .
-@base         <http://purl.org/ontology/paia> .
-~~~
-
-The following namspace prefixes are used to refer to related ontologies:
-
-~~~ {.ttl}
-@prefix bibo:    <http://purl.org/ontology/bibo/> .
-@prefix cc:      <http://creativecommons.org/ns#> .
-@prefix daia:    <http://purl.org/ontology/daia/> .
-@prefix dct:     <http://purl.org/dc/terms/> .
-@prefix dso:     <http://purl.org/ontology/dso#> .
-@prefix frbr:    <http://purl.org/vocab/frbr/core#> .
-@prefix holding: <http://purl.org/ontology/holding#> .
-@prefix owl:     <http://www.w3.org/2002/07/owl#> .
-@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix ssso:    <http://purl.org/ontology/ssso#> .
-@prefix vann:    <http://purl.org/vocab/vann/> .
-@prefix voaf:    <http://purl.org/vocommons/voaf#> .
-@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
-~~~
-
-PAIA Ontology is defined in RDF/Turtle as following:
-
-~~~ {.ttl}
-<> a owl:Ontology, voaf:Vocabulary ;
-    dct:title "PAIA Ontology"@en ;
-    rdfs:label "PAIA" ;
-    vann:preferredNamespacePrefix "paia" ;
-    vann:preferredNamespaceUri "http://purl.org/ontology/paia#" ;
-    dct:description "An ontology to express library patron information, such as loans, reservations, and fees."@en ;
-    dct:modified "{GIT_REVISION_DATE}"^^xsd:date ;
-    owl:versionInfo "{VERSION}" ;
-    cc:license <http://creativecommons.org/licenses/by/3.0/> ;
-    dct:creator "Jakob Voß" . 
-~~~
-
-## Patrons in RDF
-
-[patrons in RDF]: #patrons-in-rdf
-
-A patron account, as returned by the PAIA core method [patron] is represented
-by an instance of the class **paia:PatronAccount**. Every patron account is
-also an instance of [sioc:User] (and therefore also of [foaf:OnlineAccount])
-and an instance of [particip:Role]. The date of expiration can be expressed
-with [particip:endDate]. The patron identifier is given with
-[foaf:AccountName]. 
-
-A patron account belongs to a person or another [foaf:Agent], connected to with
-[sioc:account_of] and [foaf:account]. The full name of a patron is given with
-[foaf:name] and its email address can be given with [foaf:mbox]. The address
-field SHOULD NOT be mapped to RDF properties such as [schema:address] and
-[vcard:hasAddress] which expect a structured object instead of a plain literal
-value. The generic property [dbp:address] can be used instead.
-
-~~~ {.ttl}
-@prefix sioc:     <http://rdfs.org/sioc/ns#> .
-@prefix foaf:     <http://xmlns.com/foaf/0.1/> .
-@prefix particip: <http://purl.org/vocab/participation/schema#> .
-
-paia:PatronAccount a owl:Class ;
-    rdfs:label "PatronAccount"@en ;
-    rdfs:subClassOf sioc:User, foaf:OnlineAccount, particip:Role ;
-    rdfs:isDefinedBy <> ;
-    rdfs:seeAlso
-        sioc:account_of, foaf:account, particip:endDate, 
-        foaf:name, foaf:mbox . 
-~~~
-
-[dbp:address]: http://live.dbpedia.org/property/address
-[foaf:AccountName]: http://xmlns.com/foaf/0.1/AccountName
-[foaf:Agent]: http://xmlns.com/foaf/0.1/Agent
-[foaf:OnlineAccount]: http://xmlns.com/foaf/0.1/OnlineAccount
-[foaf:account]: http://xmlns.com/foaf/0.1/account
-[foaf:mbox]: http://xmlns.com/foaf/0.1/mbox
-[foaf:name]: http://xmlns.com/foaf/0.1/name
-[particip:Role]: http://purl.org/vocab/participation/schema#Role
-[particip:endDate]: http://purl.org/vocab/participation/schema#endDate
-[schema:address]: http://schema.org/address
-[sioc:User]: http://rdfs.org/sioc/ns#User
-[sioc:account_of]: http://rdfs.org/sioc/ns#account_of
-[vcard:hasAddress]: www.w3.org/TR/vcard-rdf/
-
-An instance of paia:patronAccount is assumed to be active, unless it is also
-an instance of **paia:InactivePatronAccount**.
-
-~~~ {.ttl}
-paia:InactivePatronAccount a owl:Class ;
-    rdfs:label "InactivePatronAccount"@en ;
-    rdfs:isDefinedBy <> ;
-    rdfs:subClassOf paia:PatronAccount .
-~~~~
-
-Reasons for inactivation can be given with property **paia:inactivationReason**.
-The inactivation reasons **paia:AccountExpired** and **paia:OutstandingFees**
-SHOULD be linked to.
-
-~~~ {.ttl}
-paia:inactivationReason a rdfs:Property ;
-    rdfs:label "inactivationReason"@en ; 
-    rdfs:isDefinedBy <> ;
-    rdfs:domain paia:InactivePatronAccount . 
-paia:AccountExpired a rdfs:Resource ;
-    rdfs:isDefinedBy <> ;
-    rdfs:label "AccountExpired"@en .
-paia:OutstandingFees a rdfs:Resource ;
-    rdfs:isDefinedBy <> ;
-    rdfs:label "OutstandingFees"@en .
-~~~
-
-## Items in RDF
-
-[documents in RDF]: #documents-in-rdf
-
-Lists of [documents](#document-data-type), as returned by the PAIA core methods
-[items], [request], [renew], and [cancel], are represented as sets of events.
-Each event is an instance of **[ssso:ServiceEvent]** from the [Simple Service
-Status Ontology] (SSSO) and an instance of of a specific document service class
-defined in the [Document Service Ontology] (DSO).
-
-The current [service status](#data-types) of a document service event is given
-by an instance-relationship (rdf:type) with one of the following classes:
-
-* [ssso:ReservedService](http://purl.org/ontology/ssso#ReservedService) 
-  for service status 1 (reserved)
-* [ssso:PreparedService](http://purl.org/ontology/ssso#PreparedService)
-  for service status 2 (ordered)
-* [ssso:ExecutedService](http://purl.org/ontology/ssso#ExecutedService) 
-  for service status 3 (held)
-* [ssso:ProvidedService](http://purl.org/ontology/ssso#ProvidedService) 
-  for service status 4 (provided)
-* [ssso:RejectedService](http://purl.org/ontology/ssso#RejectedService)
-  for service status 5 (rejected)
-
-The specific type of service is further given by in instance-relationship with on
-of the following classes (*this needs some clarification!*):
-
-* [dso:Loan] (borrow to use at home for a limited time)
-* [dso:Presentation] (view/use within the boundaries of a library)
-* [dso:Interloan] (get a document/copy mediated from another library)
-* [dso:OpenAccess] (get directed to the location of a publicly available document)
-
-~~~ {.ttl}
-ssso:ServiceEvent a owl:Class ;
-    rdfs:label "ServiceEvent"@en ;
-    rdfs:isDefinedBy <http://purl.org/ontology/ssso> .
-dso:DocumentService a owl:Class ;
-    rdfs:label "DocumentService"@en ;
-    rdfs:isDefinedBy <http://purl.org/ontology/dso> .
-dso:ServiceConsumer a owl:Class ;
-    rdfs:label "ServiceConsumer"@en ;
-    rdfs:isDefinedBy <http://purl.org/ontology/service> .
-~~~
-
-The service event is connected to a patron as [service:ServiceConsumer] 
-(with property [service:consumedBy]) and to a document 
-(*with a property yet to be defined*).
-
-The `starttime` end `endtime` can be mapped to any of the following properties,
-among others:
-
-starttime
-  : schema:startDate, prov:prov:startedAtTime, prov:qualifiedStart
-endtime
-  : schema:endDate, prov:endedAtTime, prov:qualifiedEnd
-
-[ssso:ServiceEvent]: http://purl.org/ontology/ssso#ServiceEvent
-[dso:Loan]: http://purl.org/ontology/dso#Loan
-[dso:Presentation]: http://purl.org/ontology/dso#Presentation
-[dso:Interloan]: http://purl.org/ontology/dso#Interloan
-[dso:OpenAccess]: http://purl.org/ontology/dso#OpenAccess
-[service:ServiceConsumer]: http://purl.org/ontology/service#ServiceConsumer
-[service:consumedBy]: http://purl.org/ontology/service#consumedBy
-
-## Fees in RDF
-
-[fees in RDF]: #fees-in-rdf
-
-A fee, as returned by the method [fees], is an amount of money that has to be
-paid by a patron for some reason. Each fee is represented by the following
-properties of a `ssso:ServiceEvent` instance:
-    
-* `dc:date` (or a more specific sub property) for `fee.date`
-* `schema:price` and `schema:priceCurrency` for `fee.amount`
-* `dc:description` for `fee.about`
-* Maybe `schema:itemOffered` to connect to a document or document service
-  (item and/or edition).
-
-The type of fee is represented by a class from the [Document Service Ontology] or
-by another subclass of class [ServiceEvent] from the [Simple Service Status Ontology].
-All URIs returned in `fee.feeid` SHOULD be resolvable as Linked Open Data.
-
 # Glossary
 
 access token
@@ -1223,23 +993,13 @@ servicetypes
 * Katz, D. 2013. “ILS Driver (VuFind 2.x)“.
   <http://vufind.org/wiki/vufind2:building_an_ils_driver>.
 
-* Klee, C. and Voss, J. 2014. “Holding Ontology“. 
-  <http://purl.org/ontology/holding>. 
-
 * NISO. 2010. “NISO Circulation Interchange Protocol (NCIP) - Z39.83-1-2008 Version 2.01“.
   <http://www.ncip.info/>.
 
-* Styles, Rob, Wallace, Chris and Moeller, Knud. 2008. “Participation schema“. 
-  <http://vocab.org/participation/schema>.
+* Voß, J. 2015. “PAIA Ontology“.
+  <http://gbv.github.io/paia-rdf/>.
 
-* Voss, J. 2012. “DAIA ontology“. 
-  <http://purl.org/ontology/daia>. 
-
-* Voss, J. 2013. “Simple Service Status Ontology“.
-  <http://purl.org/ontology/ssso>. 
-
-* Voss, J. 2013. “Document Service Ontology“.
-  <http://gbv.github.io/dso/>.
+[PAIA Ontology]: http://gbv.github.io/paia-rdf/
 
 ## Revision history
 
@@ -1247,10 +1007,3 @@ The current version of this document was last modified at {GIT_REVISION_DATE}
 with revision {GIT_REVISION_HASH}.
 
 {GIT_CHANGES}
-
-[Document Availability Information Ontology]: http://purl.org/ontology/daia
-[Simple Service Status Ontology]: http://purl.org/ontology/ssso
-[Document Service Ontology]: http://gbv.github.io/dso/
-
-[ServiceEvent]: http://purl.org/ontology/ssso#ServiceEvent
-
