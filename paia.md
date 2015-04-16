@@ -49,8 +49,7 @@ can be distributed freely under the terms of CC-BY-SA.
   for instance a mobile app or a web application.
 * [Comment](https://github.com/gbv/paia/issues) on the specification and point
   to errors.
-* Suggest [useful apps and mashups](https://github.com/gbv/paia/wiki/Use-cases) 
-  that make use of PAIA.
+* Suggest use-cases, apps, and mashups that make use of PAIA.
 
 
 ## Conformance requirements
@@ -79,7 +78,7 @@ method request, as defined in this document.
 [change]: #change
 
 
-# General 
+## Foundation 
 
 PAIA consists of two independent parts:
 
@@ -107,40 +106,14 @@ errors; otherwise access token (PAIA core) or even password (PAIA auth) are
 compromised by the client.
 
 
-## Request and response format
+# Request and response format
 
 Each PAIA method is identified by a URL and HTTP verb GET or POST. Method
-calls expect a set of request parameters and return a JSON object. Request
-parameters and JSON response of PAIA core can be mapped to RDF as defined by
-by [PAIA Ontology].
+calls expect a set of request parameters, given as [URL query fields],
+[HTTP headers], or [HTTP message body] and return a JSON object.
 
-The special request parameter [`access token`](#access-tokens-and-scopes) 
-can be sent either as an HTTP query parameter or in an HTTP request header.
-
-For POST methods a request body MUST be included in JSON format in UTF-8. A
-Content-Type request header MUST be sent with `application/json; charset=utf-8`
-or `application/json`.  A PAIA auth server SHOULD additionally accept
-URL encoded HTTP POST request bodies with content type
-`application/x-www-form-urlencoded`. Request encoding ISO-8859-1 MAY be
-supported in addition to UTF-8 for these requests.
-
-Clients SHOULD include an approriate `User-Agent` request header with client
-name and version.
-
-The HTTP response content type of a PAIA response is a JSON object (HTTP header
-`Content-Type: application/json`) in UTF8, optionally wrapped as JSONP (HTTP
-header `Content-Type: application/javascript`). The charset SHOULD be included
-as part of the Content-Type header (`application/json; charset=utf-8` or
-`application/javascript; charset=utf-8`)
-
-To support non-JSONP access to a PAIA server from any web application via
-Cross-Origin Resource Sharing (CORS), the PAIA server SHOULD always include the
-following HTTP response headers:
-
-    Access-Control-Allow-Origin: *
-    Access-Control-Expose-Headers: X-OAuth-Scopes X-Accepted-OAuth-Scopes
-
-Every request parameter and every response field is defined with
+Parameters and fields of request and response format are defined in this
+document with:
 
 * the **name** of the parameter/field
 * the **ocurrence** (occ) of the parameter/field being one of
@@ -148,12 +121,15 @@ Every request parameter and every response field is defined with
     * `1..1` (mandatory, non repeatable)
     * `1..n` (mandatory, repeatable)
     * `0..n` (optional, repeatable)
-* the **[data type](#data-types)** of the parameter/field.
+* the **data type** of the parameter/field
+  ([simple data types](#simple-data-types) or [document data type](#document-data-type)).
 * a short description
 
-Simple parameter names and response fields consist of lowercase letters `a-z` only.
+Simple parameter names and response fields consist of lowercase letters `a-z`
+only.
 
-Repeatable response fields are encoded as JSON arrays, for instance:
+Repeatable response fields are encoded as JSON arrays with irrelevant order,
+for instance:
 
 ~~~~ {.json}
 { "fee" : [ { ... }, { ... } ] }
@@ -167,11 +143,17 @@ is referenced as `doc.item` and refers to the following JSON structure:
 { "doc" : [ { "item" : "..." } ] }
 ~~~~
 
+Most parts of PAIA core request parameters and JSON response can be mapped to
+RDF as defined by [PAIA Ontology].
 
-## Special request parameters
+## URL query fields
 
-The following special request parameters can be added to any request as URL query parameters:
+The following special request parameters can be added to any request as URL
+query fields:
 
+access_token:
+  : An [access token](#access-tokens-and-scopes) can be sent either as URL 
+    query parameter or as HTTP request header.
 callback
   : A JavaScript callback method name to return JSONP instead of JSON. The
     callback MUST only contain alphanumeric characters and underscores. If a
@@ -180,7 +162,39 @@ suppress_response_codes
   : If this parameter is present, *all* responses MUST be returned with a 
     200 OK status code, even [error responses](#error-response).
 
+## HTTP headers
  
+Clients SHOULD include an approriate `User-Agent` request header with client
+name and version.
+
+The HTTP response content type of a PAIA response is a JSON object (HTTP header
+`Content-Type: application/json`) in UTF8, optionally wrapped as JSONP (HTTP
+header `Content-Type: application/javascript`). The charset SHOULD be included
+as part of the Content-Type header (`application/json; charset=utf-8` or
+`application/javascript; charset=utf-8`)
+
+[Scopes](#access-token-and-scopes) SHOULD be returned with HTTP response
+headers `X-OAuth-Scopes` and `X-Accepted-OAuth-Scopes.
+
+To support non-JSONP access to a PAIA server from any web application via
+Cross-Origin Resource Sharing (CORS), the PAIA server SHOULD always include the
+following HTTP response headers:
+
+    Access-Control-Allow-Origin: *
+    Access-Control-Expose-Headers: X-OAuth-Scopes X-Accepted-OAuth-Scopes
+
+A [request error](#error-response) response MAY further include the HTTP
+response header `WWW-Authentificate`.
+
+## HTTP message body
+
+All POST requests MUST include a HTTP message body in JSON format in UTF-8. A
+Content-Type request header MUST be sent with `application/json; charset=utf-8`
+or `application/json`.  A PAIA auth server SHOULD additionally accept URL
+encoded HTTP POST request bodies with content type
+`application/x-www-form-urlencoded`. Request encoding ISO-8859-1 MAY be
+supported in addition to UTF-8 for these requests.
+
 ## Access tokens and scopes
 
 All PAIA methods, with [login](#login) from PAIA auth as the only exception,
@@ -339,7 +353,6 @@ For instance the following response could result from a request with malformed U
 }
 ~~~~
 
-
 ## Simple data types
 
 The following data types are used to define request and response format:
@@ -473,6 +486,8 @@ PAIA server. The copy turned out to be lost, so the request was rejected
    "error":     "sorry, we found out that our copy is lost!"
 }
 ~~~~
+
+
 
 # PAIA core
 
