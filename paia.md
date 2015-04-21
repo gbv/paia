@@ -637,13 +637,12 @@ scope
   : write_item
 request parameters
   :  name            occ    data type   description
-    --------------- ------ ----------- ------------------------------
+    --------------- ------ ----------- ----------------------------------------
      doc             1..n               list of documents requested
      doc.item        0..1   URI         URI of a particular item
      doc.edition     0..1   URI         URI of a particular edition
-     doc.storage     0..1   string      Requested pickup location
-     doc.storageid   0..1   URI         Requested pickup location
-    --------------- ------ ----------- ------------------------------
+     doc.storageid   0..1   URI         Requested pickup location (deprecated)
+    --------------- ------ ----------- ----------------------------------------
 response fields
   :  name   occ    data type   description
     ------ ------ ----------- -----------------------------------------
@@ -1063,6 +1062,7 @@ included at <https://github.com/gbv/paia/releases> with release notes.
 * added mandatory HTTP OPTIONS and optional HTTP HEAD requests 
 * extended CORS headers (`Access-Control-...`)
 * fixed name of `WWW-Authenticate` header
+* removed request field `doc.storage` and deprecate field `doc.storageid`
 * improved documentation
 
 #### 1.0.8 (2015-04-16)  {.unnumbered}
