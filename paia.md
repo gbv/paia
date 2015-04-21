@@ -30,9 +30,11 @@ SIP2, \[X]SLNP,[^SLNP] DLF-ILS recommendations, and VuFind ILS.
   to patron information, among other functionality. OCLC does not allow 
   publication of the specification or public use of SLNP.
 
-Updates and sources can be found in a public git repository at
-<http://github.com/gbv/paia>. See the [revision history] for changes. The
-master file [paia.md](https://github.com/gbv/paia/blob/master/paia.md) is
+All sources and updates can be found in a public git repository at
+<http://github.com/gbv/paia>. See the list of [releases] at
+<https://github.com/gbv/paia/releases> for functional changes.
+
+The master file [paia.md](https://github.com/gbv/paia/blob/master/paia.md) is
 written in [Pandoc’s Markdown].  HTML version of the specification is generated
 from the master file with [makespec](https://github.com/jakobib/makespec). The
 specification can be distributed freely under the terms of CC-BY-SA.
@@ -900,7 +902,7 @@ patron
 patron identifier
   : A Unicode string that identifies a library patron account.
 
-# Security Considerations
+# Security considerations
 
 Security of OAuth 2.0 with bearer tokens relies on correct application of
 HTTPS.  It is known that SSL certificate errors are often ignored just because
@@ -1024,5 +1026,42 @@ servicetypes
 
 The current version of this document was last modified at {GIT_REVISION_DATE}
 with revision {GIT_REVISION_HASH}.
+
+### Releases {.unnumbered}
+
+Releases with functional changes are tagged with a version number and
+included at <https://github.com/gbv/paia/releases> with release notes.
+
+#### 1.0.8 (2015-04-16)  {.unnumbered}
+
+* support content-negotiation for languages (issue #32)
+* allow additional scopes not part of PAIA
+* split PAIA ontology from PAIA specification
+
+#### 1.0.7 (2015-04-14) {.unnumbered}
+
+* added patron field `type`
+
+#### 1.0.6 (2014-11-10) {.unnumbered}
+
+* added patron field `address`
+
+#### 1.0.5 (2014-07-16)  {.unnumbered}
+
+* added CORS HTTP headers
+
+#### 1.0.4 (2014-07-14) {.unnumbered}
+
+* extended definition of datetime fields
+
+#### 1.0.3 (2014-07-11) {.unnumbered}
+
+* added document fields `starttime` and `endtime`
+
+#### 1.0.1 (2013-11-20) {.unnumbered}
+
+* added `User-Agent` header
+
+### Full changelog {.unnumbered}
 
 {GIT_CHANGES}
