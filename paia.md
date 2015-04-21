@@ -2,20 +2,21 @@
 
 {ABSTRACT}
 
+
 ## Synopsis
 
-PAIA defines six methods in [PAIA core] and three methods in [PAIA auth]. Each method
-is defined with an HTTP verb and an entity that the method acts on:
+PAIA consists of two independent parts:
 
-  [PAIA core]                                       [PAIA auth]
--------------------------------------------------- ----------------------------------------
-  GET [patron]: general patron information          POST [login]: get access token
-  GET [items]: current loans, reservations, …       POST [logout]: invalidate access token
-  POST [request]: new reservation, delivery, …      POST [change]: modify credentials
-  POST [renew]: existing loans, reservations, …     
-  POST [cancel]: requests, reservations, …     
-  GET [fees]: paid and open charges
--------------------------------------------------- ----------------------------------------
+* **[PAIA core]** defines six basic [API methods] to look up loaned and reserved
+  [items], to [request] and [cancel] loans and reservations, and to look up 
+  [fees] and general [patron] information.
+
+* **[PAIA auth]** defines three authentification [API methods] ([login], 
+  [logout], and password [change]) to get or invalidate an [access token], and to
+  modify credentials.
+
+Authentification in PAIA is based on **OAuth 2.0** (RFC 6749) with bearer
+tokens (RFC 6750) over HTTPS (RFC 2818).  
 
 
 ## Status of this document
@@ -70,127 +71,39 @@ method request, as defined in this document.
 [logout]: #logout
 [change]: #change
 
+[access token]: #access-tokens-and-scopes
+[scopes]: #access-token-and-scopes
 
-## Foundation 
 
-PAIA consists of two independent parts:
+# Basics
 
-* **[PAIA core]** defines six basic methods to look up loaned and reserved 
-  [items], to [request] and [cancel] loans and reservations, and to look up 
-  [fees] and general [patron] information.
+## API methods
 
-* **[PAIA auth]** defines three authentification methods ([login], [logout], 
-  and password [change]) to get access tokens, required by PAIA core.
+Each API method is accessed at a unique URL with a HTTP verb GET or POST:
 
-Each method is accessed at an URL with a common base URL for PAIA core methods
-and common base URL for PAIA auth methods. A server SHOULD NOT provide
-additional methods at these base URLs and it MUST NOT propagate additional
-methods at these base URLs as belonging to PAIA.
+  [PAIA core]                                       [PAIA auth]
+-------------------------------------------------- ----------------------------------------
+  GET [patron]: general patron information          POST [login]: get access token
+  GET [items]: current loans, reservations, …       POST [logout]: invalidate access token
+  POST [request]: new reservation, delivery, …      POST [change]: modify credentials
+  POST [renew]: existing loans, reservations, …     
+  POST [cancel]: requests, reservations, …     
+  GET [fees]: paid and open charges
+-------------------------------------------------- ----------------------------------------
+
+API method URLs share a common base URL for PAIA core methods and common base
+URL for PAIA auth methods.  A server SHOULD NOT provide additional methods at
+these base URLs and it MUST NOT propagate additional methods at these base URLs
+as belonging to PAIA.  Base URLs of PAIA auth and PAIA core are not required to
+share a common host, nor to include the URL path `core/` or `auth/`.
 
 In the following, the base URL <https://example.org/core/> is used for PAIA
-core and <https://example.org/auth/> for PAIA auth. PAIA auth and PAIA core
-base URLs are not required to share a common host, nor to include the URL path
-`core/` or `auth/`.
+core and <https://example.org/auth/> for PAIA auth. 
 
-Authentification in PAIA is based on **OAuth 2.0** (RFC 6749) with bearer
-tokens (RFC 6750) over HTTPS (RFC 2818).  For security reasons, PAIA methods
-MUST be requested via HTTPS only. A PAIA client MUST NOT ignore SSL certificate
-errors; otherwise access token (PAIA core) or even password (PAIA auth) are
-compromised by the client.
+For security reasons, PAIA methods MUST be requested via HTTPS only. A PAIA
+client MUST NOT ignore SSL certificate errors; otherwise access token (PAIA
+core) or even password (PAIA auth) are compromised by the client.
 
-
-# Request and response format
-
-Each PAIA method is identified by a URL and HTTP verb GET or POST. Method
-calls expect a set of request parameters, given as [URL query fields],
-[HTTP headers], or [HTTP message body] and return a JSON object.
-
-Parameters and fields of request and response format are defined in this
-document with:
-
-* the **name** of the parameter/field
-* the **ocurrence** (occ) of the parameter/field being one of
-    * `0..1` (optional, non repeatable)
-    * `1..1` (mandatory, non repeatable)
-    * `1..n` (mandatory, repeatable)
-    * `0..n` (optional, repeatable)
-* the **data type** of the parameter/field
-  ([simple data types](#simple-data-types) or [document data type](#document-data-type)).
-* a short description
-
-Simple parameter names and response fields consist of lowercase letters `a-z`
-only.
-
-Repeatable response fields are encoded as JSON arrays with irrelevant order,
-for instance:
-
-~~~~ {.json}
-{ "fee" : [ { ... }, { ... } ] }
-~~~~
-
-Hierarchical JSON structures in this document are referenced with a dot (`.`)
-as separator. For instance the subfield/parameter `item` of the `doc` element
-is referenced as `doc.item` and refers to the following JSON structure:
-
-~~~~ {.json}
-{ "doc" : [ { "item" : "..." } ] }
-~~~~
-
-Most parts of PAIA core request parameters and JSON response can be mapped to
-RDF as defined by [PAIA Ontology].
-
-## URL query fields
-
-The following special request parameters can be added to any request as URL
-query fields:
-
-access_token:
-  : An [access token](#access-tokens-and-scopes) can be sent either as URL 
-    query parameter or as HTTP request header.
-callback
-  : A JavaScript callback method name to return JSONP instead of JSON. The
-    callback MUST only contain alphanumeric characters and underscores. If a
-    callback is given, the response content type MUST be `application/javascript`.
-suppress_response_codes
-  : If this parameter is present, *all* responses MUST be returned with a 
-    200 OK status code, even [error responses](#error-response).
-
-## HTTP headers
- 
-Clients SHOULD send an approriate `User-Agent` request header with client
-name and version. 
-
-Clients MAY send an `Accept-Language` header to indicate preferred languages of
-textual response fields.  A PAIA server SHOULD include a `Content-Language`
-header to indicate the language of textual response fields.
-
-The HTTP response content type of a PAIA response is a JSON object (HTTP header
-`Content-Type: application/json`) in UTF8, optionally wrapped as JSONP (HTTP
-header `Content-Type: application/javascript`). The charset SHOULD be included
-as part of the Content-Type header (`application/json; charset=utf-8` or
-`application/javascript; charset=utf-8`)
-
-[Scopes](#access-token-and-scopes) SHOULD be returned with HTTP response
-headers `X-OAuth-Scopes` and `X-Accepted-OAuth-Scopes.
-
-To support non-JSONP access to a PAIA server from any web application via
-Cross-Origin Resource Sharing (CORS), the PAIA server SHOULD always include the
-following HTTP response headers:
-
-    Access-Control-Allow-Origin: *
-    Access-Control-Expose-Headers: X-OAuth-Scopes X-Accepted-OAuth-Scopes
-
-A [request error](#error-response) response MAY further include the HTTP
-response header `WWW-Authentificate`.
-
-## HTTP message body
-
-All POST requests MUST include a HTTP message body in JSON format in UTF-8. A
-Content-Type request header MUST be sent with `application/json; charset=utf-8`
-or `application/json`.  A PAIA auth server SHOULD additionally accept URL
-encoded HTTP POST request bodies with content type
-`application/x-www-form-urlencoded`. Request encoding ISO-8859-1 MAY be
-supported in addition to UTF-8 for these requests.
 
 ## Access tokens and scopes
 
@@ -221,17 +134,99 @@ For instance a particular token with scopes `read_patron` and `read_items` may
 be used for read-only access to information about a patron, including its
 loans and requested items but not its fees.
 
-A PAIA server SHOULD send the following HTTP headers with every response:
-
-X-OAuth-Scopes
-  : A space-separated list of scopes, the current token has authorized
-X-Accepted-OAuth-Scopes
-  : A space-separated list of scopes, the current method checks for
-
 For PAIA auth an additional scope is possible:
 
 change_password
   : Change the password of a patron with the PAIA auth [change](#change) method.
+
+
+## Request and response format
+
+Each API method call expects a set of request parameters, given as [URL query
+fields], [HTTP headers], or [HTTP message body] and return a JSON object. Most
+parts of PAIA core request parameters and JSON response can be mapped to RDF as
+defined by [PAIA Ontology].
+
+Request parameters and fields of response objects are defined in this document
+with:
+
+* the **name** of the parameter/field
+* the **ocurrence** (occ) of the parameter/field being one of
+    * `0..1` (optional, non repeatable)
+    * `1..1` (mandatory, non repeatable)
+    * `1..n` (mandatory, repeatable)
+    * `0..n` (optional, repeatable)
+* the **data type** of the parameter/field
+  ([simple data types](#simple-data-types) or [document data type](#document-data-type)).
+* a short description
+
+Simple parameter names and response fields consist of lowercase letters `a-z`
+only.
+
+Repeatable response fields are encoded as JSON arrays with irrelevant order,
+for instance:
+
+~~~~ {.json}
+{ "fee" : [ { ... }, { ... } ] }
+~~~~
+
+Hierarchical JSON structures in this document are referenced with a dot (`.`)
+as separator. For instance the subfield/parameter `item` of the `doc` element
+is referenced as `doc.item` and refers to the following JSON structure:
+
+~~~~ {.json}
+{ "doc" : [ { "item" : "..." } ] }
+~~~~
+
+
+## URL query fields
+
+The following special request parameters can be added to any request as URL
+query fields:
+
+access_token
+  : An [access token] can be sent either as URL query parameter or as HTTP
+    request header.
+callback
+  : A JavaScript callback method name to return JSONP instead of JSON. The
+    callback MUST only contain alphanumeric characters and underscores. If a
+    callback is given, the response content type MUST be `application/javascript`.
+suppress_response_codes
+  : If this parameter is present, *all* responses MUST be returned with a 
+    200 OK status code, even [request errors](#request-errors).
+
+## HTTP headers
+ 
+Clients SHOULD send an approriate `User-Agent` request header with client
+name and version. 
+
+Clients MAY send an `Accept-Language` header to indicate preferred languages of
+textual response fields.  A PAIA server SHOULD include a `Content-Language`
+header to indicate the language of textual response fields.
+
+The HTTP response content type of a PAIA response is a JSON object (HTTP header
+`Content-Type: application/json`) in UTF8, optionally wrapped as JSONP (HTTP
+header `Content-Type: application/javascript`). The charset SHOULD be included
+as part of the Content-Type header (`application/json; charset=utf-8` or
+`application/javascript; charset=utf-8`)
+
+To support non-JSONP access to a PAIA server from any web application via
+Cross-Origin Resource Sharing (CORS), the PAIA server SHOULD always include the
+following HTTP response headers:
+
+    Access-Control-Allow-Origin: *
+    Access-Control-Expose-Headers: X-OAuth-Scopes X-Accepted-OAuth-Scopes
+
+A [request error](#request-errors) response MAY further include the HTTP
+response header `WWW-Authentificate` to indicate need and type of
+authentification.
+
+A PAIA server SHOULD send the following HTTP headers with every response:
+
+X-OAuth-Scopes
+  : A space-separated list of [scopes], the current token has authorized
+X-Accepted-OAuth-Scopes
+  : A space-separated list of [scopes], the current method checks for
 
 A PAIA core server SHOULD NOT include the `change_password` scope in the
 `X-OAuth-Scopes` header because the scope is limited to PAIA auth. 
@@ -242,38 +237,24 @@ headers with both PAIA auth scopes and PAIA core scopes.
 A PAIA server MAY include more scopes in `X-OAuth-Scopes` and in the list of
 scopes of a [login](#login) request and/or response.
 
-## Error response
+## HTTP message body
 
-Two classes of errors must be distinguished:
+All POST requests MUST include a HTTP message body in JSON format in UTF-8. The
+`Content-Type` request header MUST be sent with value `application/json;
+charset=utf-8` or `application/json`.  A PAIA auth server SHOULD additionally
+accept URL encoded HTTP POST request bodies with content type
+`application/x-www-form-urlencoded`. Request encoding ISO-8859-1 MAY be
+supported in addition to UTF-8 for these requests.
 
-Document errors
-  : Unknown document URIs and failed attempts to request, renew, or cancel 
-    a document _do not result_ in an error response. Instead they are
-    indicated by the `doc.error` response field, which SHOULD contain a
-    human-readable error message. Form and type of document error messages
-    are not specified, so clients SHOULD use these strings for display only.
+## Request errors
 
-    For instance the following response, returned with HTTP status code 200,
-    could result from a [request] for an item given by an unknown URI:
+Malformed requests, failed authentication, unsupported methods, and unexpected
+server errors such as backend downtime etc. MUST result in an error response.
+An error response is returned with an HTTP status code 4xx (client error) or
+5xx (server error) as defined in RFC 2616, unless the request parameter
+`suppress_response_codes` is given.
 
-    ~~~~ {.json}
-    {
-      "doc": [ {
-        "item": "http://example.org/some/uri",
-        "error": "item URI not found"
-      } ]
-    }
-    ~~~~
-
-
-Request errors
-  : Malformed requests, failed authentication, unsupported methods, and
-    unexpected server errors such as backend downtime etc. MUST result in an 
-    error response. An error response is returned with an HTTP status code
-    4xx (client error) or 5xx (server error) as defined in RFC 2616, unless
-    the request parameter `suppress_response_codes` is given.
-
-The following section only covers request errors.
+[Document errors](#document-data-type) MUST NOT result in a request error.
 
 The response body of a request error is a JSON object with the following fields
 (compatible with OAuth error response):
@@ -465,6 +446,24 @@ Note that timezone information is mandatory in these fields.  The field
 The response fields `label`, `storage`, `storageid`, and `queue`
 correspond to properties in DAIA.
 
+Unknown document URIs and failed attempts to request, renew, or cancel a
+document MUST NOT result in a [request error](#request-errors). Instead they
+are indicated by the `doc.error` response field, which SHOULD contain a
+human-readable error message. Form and type of document error messages are not
+specified, so clients SHOULD use these strings for display only.
+
+For instance the following response, returned with HTTP status code 200,
+could result from a [request] for an item given by an unknown URI:
+
+~~~~ {.json}
+{
+  "doc": [ {
+    "item": "http://example.org/some/uri",
+    "error": "item URI not found"
+  } ]
+}
+~~~~
+
 **Examples**
 
 An example of a documentserialized in JSON is given below. In this case a
@@ -483,7 +482,6 @@ PAIA server. The copy turned out to be lost, so the request was rejected
    "error":     "sorry, we found out that our copy is lost!"
 }
 ~~~~
-
 
 
 # PAIA core
