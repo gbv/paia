@@ -11,11 +11,11 @@ PAIA consists of two independent parts:
   [items], to [request] and [cancel] loans and reservations, and to look up 
   [fees] and general [patron] information.
 
-* **[PAIA auth]** defines three authentification [API methods] ([login], 
+* **[PAIA auth]** defines three authentication [API methods] ([login], 
   [logout], and password [change]) to get or invalidate an [access token], and to
   modify credentials.
 
-Authentification in PAIA is based on **OAuth 2.0** (RFC 6749) with bearer
+Authentication in PAIA is based on **OAuth 2.0** (RFC 6749) with bearer
 tokens (RFC 6750) over HTTPS (RFC 2818).  
 
 
@@ -91,6 +91,9 @@ Each API method is accessed at a unique URL with a HTTP verb GET or POST:
   GET [fees]: paid and open charges
 -------------------------------------------------- ----------------------------------------
 
+All API method URLs MUST also be accessible with HTTP verb OPTIONS. All API
+methods with HTTP verb GET MAY also be accessible with HTTP verb HEAD.
+
 API method URLs share a common base URL for PAIA core methods and common base
 URL for PAIA auth methods.  A server SHOULD NOT provide additional methods at
 these base URLs and it MUST NOT propagate additional methods at these base URLs
@@ -107,7 +110,7 @@ core) or even password (PAIA auth) are compromised by the client.
 
 ## Access tokens and scopes
 
-All PAIA methods, with [login](#login) from PAIA auth as the only exception,
+All PAIA API methods, except PAI auth [login](#login) and HTTP OPTIONS requests
 require an **access token** as a special request parameter. The access token is a
 so called bearer token as described in RFC 6750. The access token can be sent
 either as a URL query parameter or in an HTTP header. For instance the following
@@ -134,10 +137,13 @@ For instance a particular token with scopes `read_patron` and `read_items` may
 be used for read-only access to information about a patron, including its
 loans and requested items but not its fees.
 
-For PAIA auth an additional scope is possible:
+For PAIA auth there is an additional scope:
 
 change_password
   : Change the password of a patron with the PAIA auth [change](#change) method.
+
+A PAIA auth server MAY support additional scopes to share an access token with
+other services.
 
 
 ## Request and response format
@@ -195,47 +201,65 @@ suppress_response_codes
   : If this parameter is present, *all* responses MUST be returned with a 
     200 OK status code, even [request errors](#request-errors).
 
+
 ## HTTP headers
- 
-Clients SHOULD send an approriate `User-Agent` request header with client
-name and version. 
 
-Clients MAY send an `Accept-Language` header to indicate preferred languages of
-textual response fields.  A PAIA server SHOULD include a `Content-Language`
-header to indicate the language of textual response fields.
+### Request headers {.unnumbered}
 
-The HTTP response content type of a PAIA response is a JSON object (HTTP header
-`Content-Type: application/json`) in UTF8, optionally wrapped as JSONP (HTTP
-header `Content-Type: application/javascript`). The charset SHOULD be included
-as part of the Content-Type header (`application/json; charset=utf-8` or
-`application/javascript; charset=utf-8`)
+The following HTTP request headers SHOULD or MAY be sent by PAIA clients in
+particular:
 
-To support non-JSONP access to a PAIA server from any web application via
-Cross-Origin Resource Sharing (CORS), the PAIA server SHOULD always include the
-following HTTP response headers:
+User-Agent
+  : SHOULD be sent with an appropriate client name and version number
+Accept
+  : SHOULD be sent with value `application/json`
+Authorization
+  : MAY be sent to provide an [access token]
+Accept-Language
+  : MAY be sent to indicate preferred languages of textual response fields
 
-    Access-Control-Allow-Origin: *
-    Access-Control-Expose-Headers: X-OAuth-Scopes X-Accepted-OAuth-Scopes
+A OPTIONS preflight request for Cross-Origin Resource Sharing (CORS) MUST
+include the cross-origin request headers:
 
-A [request error](#request-errors) response MAY further include the HTTP
-response header `WWW-Authentificate` to indicate need and type of
-authentification.
+Origin
+  : Where the cross-origin request originates from
+Access-Control-Request-Method 
+  : The HTTP verb of the actual request (GET or POST)
+Access-Control-Request-Headers
+  : The value `Authorization` if access tokens are sent as HTTP headers
 
-A PAIA server SHOULD send the following HTTP headers with every response:
+Note that PAIA specification does not require clients to respect CORS rules.
+CORS preflight requests in browsers can be avoided by using request format
+`application/x-www-form-urlencoded` and omitting the request headers `Accept`
+and `Authorization`.
 
+### Response headers {.unnumbered}
+
+Both PAIA core and PAIA auth servers SHOULD include the following HTTP response
+headers:
+
+Content-Language
+  : The language of textual response fields
+Content-Type
+  : The value `application/json` or `application/json; charset=utf-8` for 
+    JSON response; the value `application/javascript` or 
+    `application/javascript; charset=utf-8` for JSONP response
 X-OAuth-Scopes
-  : A space-separated list of [scopes], the current token has authorized
+  : A space-separated list of [scopes], the current token has authorized,
+    not limited to PAIA scopes. The `change_password` scope MAY be omitted 
+    in PAIA core responses.
 X-Accepted-OAuth-Scopes
   : A space-separated list of [scopes], the current method checks for
-
-A PAIA core server SHOULD NOT include the `change_password` scope in the
-`X-OAuth-Scopes` header because the scope is limited to PAIA auth. 
-
-A PAIA auth server MAY send `X-OAuth-Scopes` and `X-Accepted-OAuth-Scopes`
-headers with both PAIA auth scopes and PAIA core scopes.
-
-A PAIA server MAY include more scopes in `X-OAuth-Scopes` and in the list of
-scopes of a [login](#login) request and/or response.
+Access-Control-Expose-Headers
+  : The value `X-OAuth-Scopes X-Accepted-OAuth-Scopes`
+Access-Control-Allow-Origin
+  : The value `*` or another origin domain in response to a `Origin` request
+    header.
+WWW-Authenticate
+  : The value `Bearer` for [request errors](#request-errors) with status 401
+Allow
+  : A list of supported HTTP verbs (e.g. `GET, HEAD, OPTIONS`) for 
+    [request errors](#request-errors) with status 405
 
 ## HTTP message body
 
@@ -275,8 +299,9 @@ The response header of a request error MUST include a `WWW-Authenticate` header 
 indicate the need of providing a proper access token. The field MAY include a short name of the 
 PAIA service with a "realm" parameter:
 
-    WWW-Authentificate: Bearer
-    WWW-Authentificate: Bearer realm="PAIA Core"
+    WWW-Authenticate: Bearer
+    WWW-Authenticate
+    : Bearer realm="PAIA Core"
 
 The following error responses are expected:[^errors]
 
@@ -295,7 +320,7 @@ GitHub API](http://developer.github.com/v3/#client-errors).
  not_implemented        501   Known but unsupported request URL (for instance a PAIA auth server
                               server may not implement `http://example.org/core/change`)
 
- invalid_request        405   Unexpected HTTP verb (all but GET, POST, HEAD)
+ invalid_request        405   Unexpected HTTP verb
 
  invalid_request        400   Malformed request (for instance error parsing JSON, unsupported
                               request content type, etc.)
@@ -995,6 +1020,9 @@ servicetypes
 * Jones, M. and Hardt, D. 2012. “RFC 6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage”.
   <http://tools.ietf.org/html/rfc6750>.
 
+* van Kesteren, Anne. 2014. “Cross-Origin Resource Sharing”
+  <http://www.w3.org/TR/cors/>
+
 * Rescorla, E. 2000. “RFC 2818: HTTP over TLS.”
   <http://tools.ietf.org/html/rfc2818>.
 
@@ -1029,6 +1057,13 @@ with revision {GIT_REVISION_HASH}.
 
 Releases with functional changes are tagged with a version number and
 included at <https://github.com/gbv/paia/releases> with release notes.
+
+#### 1.1.0 (2015-04-21) {.unnumbered}
+
+* added mandatory HTTP OPTIONS and optional HTTP HEAD requests 
+* extended CORS headers (`Access-Control-...`)
+* fixed name of `WWW-Authenticate` header
+* improved documentation
 
 #### 1.0.8 (2015-04-16)  {.unnumbered}
 
