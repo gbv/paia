@@ -31,25 +31,16 @@ SIP2, \[X]SLNP,[^SLNP] DLF-ILS recommendations, and VuFind ILS.
   publication of the specification or public use of SLNP.
 
 Updates and sources can be found in a public git repository at
-<http://github.com/gbv/paia>. The master file
-[paia.md](https://github.com/gbv/paia/blob/master/paia.md) is written in
-[Pandoc’s Markdown](http://johnmacfarlane.net/pandoc/demo/example9/pandocs-markdown.html).
-HTML version of the specification is generated from the master file with
-[makespec](https://github.com/jakobib/makespec). The text of the specification
-can be distributed freely under the terms of CC-BY-SA.
+<http://github.com/gbv/paia>. See the [revision history] for changes. The
+master file [paia.md](https://github.com/gbv/paia/blob/master/paia.md) is
+written in [Pandoc’s Markdown].  HTML version of the specification is generated
+from the master file with [makespec](https://github.com/jakobib/makespec). The
+specification can be distributed freely under the terms of CC-BY-SA.
 
+Additional information and references about PAIA can be found in the public
+PAIA Wiki at <https://github.com/gbv/paia/wiki>.
 
-## How to contribute
-
-* Implement a PAIA server for your library system - either directly to 
-  the core, or as wrapper above existing protocols (SIP2, SLNP, NCIP), or
-  based on screen-scraping.
-* Urge libraries to implement a public PAIA server for their patrons.
-* Implement a PAIA client that makes use of patron account information - 
-  for instance a mobile app or a web application.
-* [Comment](https://github.com/gbv/paia/issues) on the specification and point
-  to errors.
-* Suggest use-cases, apps, and mashups that make use of PAIA.
+[Pandoc’s Markdown]: http://johnmacfarlane.net/pandoc/demo/example9/pandocs-markdown.html
 
 
 ## Conformance requirements
@@ -1023,6 +1014,9 @@ servicetypes
 
 * Voß, J. 2015. “PAIA Ontology“.
   <http://gbv.github.io/paia-rdf/>.
+
+* “PAIA Wiki“.
+  <https://github.com/gbv/paia/wiki>
 
 [PAIA Ontology]: http://gbv.github.io/paia-rdf/
 
