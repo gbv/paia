@@ -1049,8 +1049,19 @@ servicetypes
 
 ## Revision history
 
-The current version of this document was last modified at {GIT_REVISION_DATE}
-with revision {GIT_REVISION_HASH}.
+This is version **{VERSION}** of PAIA specification, last modified at
+{GIT_REVISION_DATE} with revision {GIT_REVISION_HASH}.
+
+Version numbers follow [Semantic Versioning](http://semver.org/)]: each number
+consists of three numbers, optionally followed by `+` and a suffix:
+
+* The major version (first number) is increased if changes require
+  a modification of PAIA clients
+* The minor version (second number) is increased if changes require
+  a modification a PAIA servers
+* The patch version (third number) is increased for backwards compatible
+  fixes or extensions, such as the introduction of new optional fields
+* The optional suffix indicates informal changes in documentation
 
 ### Releases {.unnumbered}
 
