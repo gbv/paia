@@ -31,7 +31,7 @@ SIP2, \[X]SLNP,[^SLNP] DLF-ILS recommendations, and VuFind ILS.
   publication of the specification or public use of SLNP.
 
 All sources and updates can be found in a public git repository at
-<http://github.com/gbv/paia>. See the list of [releases] at
+<http://github.com/gbv/paia>. See the [list of releases](#releases) at
 <https://github.com/gbv/paia/releases> for functional changes.
 
 The master file [paia.md](https://github.com/gbv/paia/blob/master/paia.md) is
