@@ -1,3 +1,5 @@
+# Patrons Account Information API (PAIA) [![](https://img.shields.io/github/release/gbv/paia.svg)](https://github.com/gbv/paia/releases)
+
 The **Patrons Account Information API (PAIA)** is a HTTP based programming
 interface to access library patron information, such as loans, reservations,
 and fees. See <http://gbv.github.com/paia/> for the current version and
