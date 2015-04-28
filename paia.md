@@ -195,8 +195,7 @@ access_token
     request header.
 callback
   : A JavaScript callback method name to return JSONP instead of JSON. The
-    callback MUST only contain alphanumeric characters and underscores. If a
-    callback is given, the response content type MUST be `application/javascript`.
+    callback MUST only contain alphanumeric characters and underscores.
 suppress_response_codes
   : If this parameter is present, *all* responses MUST be returned with a 
     200 OK status code, even [request errors](#request-errors).
@@ -217,6 +216,9 @@ Authorization
   : MAY be sent to provide an [access token]
 Accept-Language
   : MAY be sent to indicate preferred languages of textual response fields
+Content-Type
+  : SHOULD be sent for HTTP POST with value `application/json` or 
+    for PAIA core and `application/x-www-form-urlencoded` for PAIA auth.
 
 A OPTIONS preflight request for Cross-Origin Resource Sharing (CORS) MUST
 include the cross-origin request headers:
@@ -263,12 +265,20 @@ Allow
 
 ## HTTP message body
 
-All POST requests MUST include a HTTP message body in JSON format in UTF-8. The
-`Content-Type` request header MUST be sent with value `application/json;
-charset=utf-8` or `application/json`.  A PAIA auth server SHOULD additionally
-accept URL encoded HTTP POST request bodies with content type
-`application/x-www-form-urlencoded`. Request encoding ISO-8859-1 MAY be
-supported in addition to UTF-8 for these requests.
+All POST requests MUST include a HTTP message body.
+
+* For PAIA core the message body MUST be sent in JSON format with content type
+  `application/json`. A PAIA core server MAY also support message body as URL 
+  encoded query string.
+
+* For PAIA auth the message body MUST be sent as URL encoded query string
+  with content type `application/x-www-form-urlencoded`. A PAIA auth server 
+  MAY also support message body in JSON.
+
+A PAIA Server MUST also accept the explicit charset UTF8 (content type
+`application/json; charset=utf-8` or `application/x-www-form-urlencoded;
+charset=utf-8`). A PAIA Server MAY support additional request charsets such as
+ISO-8859-1.
 
 ## Request errors
 
@@ -300,8 +310,7 @@ indicate the need of providing a proper access token. The field MAY include a sh
 PAIA service with a "realm" parameter:
 
     WWW-Authenticate: Bearer
-    WWW-Authenticate
-    : Bearer realm="PAIA Core"
+    WWW-Authenticate: Bearer realm="PAIA Core"
 
 The following error responses are expected:[^errors]
 
@@ -1052,7 +1061,7 @@ servicetypes
 This is version **{VERSION}** of PAIA specification, last modified at
 {GIT_REVISION_DATE} with revision {GIT_REVISION_HASH}.
 
-Version numbers follow [Semantic Versioning](http://semver.org/)]: each number
+Version numbers follow [Semantic Versioning](http://semver.org/): each number
 consists of three numbers, optionally followed by `+` and a suffix:
 
 * The major version (first number) is increased if changes require
@@ -1067,6 +1076,11 @@ consists of three numbers, optionally followed by `+` and a suffix:
 
 Releases with functional changes are tagged with a version number and
 included at <https://github.com/gbv/paia/releases> with release notes.
+
+#### 1.2.0 (2015-04-28) {.unnumbered}
+
+* PAIA auth MUST support content type `application/x-www-form-urlencoded`
+  to align with OAuth 2.0 (issue #50)
 
 #### 1.1.0 (2015-04-21) {.unnumbered}
 
