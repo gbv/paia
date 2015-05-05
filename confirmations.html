@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="generator" content="pandoc" />
   <meta name="author" content="Jakob Voß" />
-  <meta name="date" content="2015-05-04" />
+  <meta name="date" content="2015-05-05" />
   <title>Patrons Account Information API (PAIA)</title>
    <!--[if lt IE 9]>
     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
@@ -55,7 +55,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <header>
 <h1 class="title">Patrons Account Information API (PAIA)</h1>
 <h3 class="author">Jakob Voß</h3>
-<h4 class="date">2015-05-04 (version 1.2.0+1-dirty)</h4>
+<h4 class="date">2015-05-05 (version 1.2.0+2)</h4>
 </header>
 
 <h1>Table of Contents</h1>
@@ -112,7 +112,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <h2><span class="header-section-number">1.1</span> Synopsis</h2>
 <p>PAIA consists of two independent parts:</p>
 <ul>
-<li><p><strong><a href="#paia-core">PAIA core</a></strong> defines six basic <a href="#api-methods">API methods</a> to look up loaned and reserved <a href="#items">items</a>, to <a href="#request">request</a> and <a href="#cancel">cancel</a> loans and reservations, and to look up <a href="#fees">fees</a> and general <a href="#patron">patron</a> information.</p></li>
+<li><p><strong><a href="#paia-core">PAIA core</a></strong> defines six basic <a href="#api-methods">API methods</a> to look up loaned and reserved <a href="#items">items</a>, to <a href="#request">request</a> and <a href="#cancel">cancel</a> loans and reservations, and to look up <a href="#Fees">fees</a> and general <a href="#patron">patron</a> information.</p></li>
 <li><p><strong><a href="#paia-auth">PAIA auth</a></strong> defines three authentication <a href="#api-methods">API methods</a> (<a href="#login">login</a>, <a href="#logout">logout</a>, and password <a href="#change">change</a>) to get or invalidate an <a href="#access-tokens-and-scopes">access token</a>, and to modify credentials.</p></li>
 </ul>
 <p>Authentication in PAIA is based on <strong>OAuth 2.0</strong> (RFC 6749) with bearer tokens (RFC 6750) over HTTPS (RFC 2818).</p>
@@ -120,8 +120,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <section id="status-of-this-document" class="level2">
 <h2><span class="header-section-number">1.2</span> Status of this document</h2>
 <p>This specification has been created collaboratively based on use cases and taking into account existing related standards and products of integrated library systems (ILS), such as NISO Circulation Interchange Protocol (NCIP), SIP2, [X]SLNP,<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> DLF-ILS recommendations, and VuFind ILS.</p>
-<p>All sources and updates can be found in a public git repository at <a href="http://github.com/gbv/paia">http://github.com/gbv/paia</a>. See the <a href="#releases">list of releases</a> at <a href="https://github.com/gbv/paia/releases">https://github.com/gbv/paia/releases</a> for functional changes.</p>
-<p>The master file <a href="https://github.com/gbv/paia/blob/master/paia.md">paia.md</a> is written in <a href="http://johnmacfarlane.net/pandoc/demo/example9/pandocs-markdown.html">Pandoc’s Markdown</a>. HTML version of the specification is generated from the master file with <a href="https://github.com/jakobib/makespec">makespec</a>. The specification can be distributed freely under the terms of CC-BY-SA.</p>
+<p>All sources and updates can be found in a public git repository at <a href="http://github.com/gbv/paia">http://github.com/gbv/paia</a>. See the <a href="#releases">list of releases</a> at <a href="https://github.com/gbv/paia/releases">https://github.com/gbv/paia/releases</a> for functional changes. The master file <a href="https://github.com/gbv/paia/blob/master/paia.md">paia.md</a> is written in <a href="http://johnmacfarlane.net/pandoc/demo/example9/pandocs-markdown.html">Pandoc’s Markdown</a>. HTML version of the specification is generated from the master file with <a href="https://github.com/jakobib/makespec">makespec</a>. The specification can be distributed freely under the terms of CC-BY-SA.</p>
 <p>Additional information and references about PAIA can be found in the public PAIA Wiki at <a href="https://github.com/gbv/paia/wiki">https://github.com/gbv/paia/wiki</a>.</p>
 </section>
 <section id="conformance-requirements" class="level2">
@@ -164,14 +163,14 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <td></td>
 </tr>
 <tr class="even">
-<td>GET <a href="#fees">fees</a>: paid and open charges</td>
+<td>GET <a href="#Fees">fees</a>: paid and open charges</td>
 <td></td>
 </tr>
 </tbody>
 </table>
 <p>All API method URLs MUST also be accessible with HTTP verb OPTIONS. All API methods with HTTP verb GET MAY also be accessible with HTTP verb HEAD.</p>
-<p>API method URLs share a common base URL for PAIA core methods and common base URL for PAIA auth methods. A server SHOULD NOT provide additional methods at these base URLs and it MUST NOT propagate additional methods at these base URLs as belonging to PAIA. Base URLs of PAIA auth and PAIA core are not required to share a common host, nor to include the URL path <code>core/</code> or <code>auth/</code>.</p>
-<p>In the following, the base URL <a href="https://example.org/core/">https://example.org/core/</a> is used for PAIA core and <a href="https://example.org/auth/">https://example.org/auth/</a> for PAIA auth.</p>
+<p>API method URLs share a common base URL for PAIA core methods and common base URL for PAIA auth methods. A server SHOULD NOT provide additional methods at these base URLs and it MUST NOT propagate additional methods at these base URLs as belonging to PAIA.</p>
+<p>Base URLs of PAIA auth and PAIA core are not required to share a common host, nor to include the URL path <code>core/</code> or <code>auth/</code>. In the following, the base URL <a href="https://example.org/core/">https://example.org/core/</a> is used for PAIA core and <a href="https://example.org/auth/">https://example.org/auth/</a> for PAIA auth.</p>
 <p>For security reasons, PAIA methods MUST be requested via HTTPS only. A PAIA client MUST NOT ignore SSL certificate errors; otherwise access token (PAIA core) or even password (PAIA auth) are compromised by the client.</p>
 </section>
 <section id="access-tokens-and-scopes" class="level2">
@@ -185,7 +184,7 @@ curl -H https://example.org/core/123?access_token=vF9dft4qmT</code></pre>
 <dd>Get patron information by the <a href="#patron">patron</a> method.
 </dd>
 <dt>read_fees</dt>
-<dd>Get fees of a patron by the <a href="#fees">fees</a> method.
+<dd>Get fees of a patron by the <a href="#Fees">fees</a> method.
 </dd>
 <dt>read_items</dt>
 <dd>Get a patron’s item information by the <a href="#items">items</a> method.
@@ -205,7 +204,7 @@ curl -H https://example.org/core/123?access_token=vF9dft4qmT</code></pre>
 </section>
 <section id="request-and-response-format" class="level2">
 <h2><span class="header-section-number">2.3</span> Request and response format</h2>
-<p>Each API method call expects a set of request parameters, given as <a href="#url-query-fields">URL query fields</a>, <a href="#http-headers">HTTP headers</a>, or <a href="#http-message-body">HTTP message body</a> and return a JSON object. Most parts of PAIA core request parameters and JSON response can be mapped to RDF as defined by <a href="http://gbv.github.io/paia-rdf/">PAIA Ontology</a>.</p>
+<p>Each API method call expects a set of request parameters, given as <a href="#url-query-fields">URL query fields</a>, <a href="#http-headers">HTTP headers</a>, or <a href="#http-message-body">HTTP message body</a> and return a JSON object. Most parts of PAIA core request parameters and JSON response can be mapped to RDF as defined by the <a href="http://gbv.github.io/paia-rdf/">PAIA Ontology</a>.</p>
 <p>Request parameters and fields of response objects are defined in this document with:</p>
 <ul>
 <li>the <strong>name</strong> of the parameter/field</li>
@@ -311,8 +310,8 @@ curl -H https://example.org/core/123?access_token=vF9dft4qmT</code></pre>
 <h2><span class="header-section-number">2.6</span> HTTP message body</h2>
 <p>All POST requests MUST include a HTTP message body.</p>
 <ul>
-<li><p>For PAIA core the message body MUST be sent in JSON format with content type <code>application/json</code>. A PAIA core server MAY also support message body as URL encoded query string.</p></li>
-<li><p>For PAIA auth the message body MUST be sent as URL encoded query string with content type <code>application/x-www-form-urlencoded</code>. A PAIA auth server MAY also support message body in JSON.</p></li>
+<li><p>For <a href="#paia-core">PAIA core</a> the message body MUST be sent in JSON format with content type <code>application/json</code>. A PAIA core server MAY also support message body as URL encoded query string.</p></li>
+<li><p>For <a href="#paia-auth">PAIA auth</a> the message body MUST be sent as URL encoded query string with content type <code>application/x-www-form-urlencoded</code>. A PAIA auth server MAY also support message body in JSON.</p></li>
 </ul>
 <p>A PAIA Server MUST also accept the explicit charset UTF8 (content type <code>application/json; charset=utf-8</code> or <code>application/x-www-form-urlencoded; charset=utf-8</code>). A PAIA Server MAY support additional request charsets such as ISO-8859-1.</p>
 </section>
@@ -438,7 +437,7 @@ WWW-Authenticate: Bearer realm=&quot;PAIA Core&quot;</code></pre>
 </tr>
 </tbody>
 </table>
-<p>For instance the following response could result from a request with malformed URIs</p>
+<p>For instance the following response could result from a request with malformed URIs:</p>
 <pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
   <span class="dt">&quot;error&quot;</span><span class="fu">:</span> <span class="st">&quot;invalid_request&quot;</span><span class="fu">,</span>
   <span class="dt">&quot;code&quot;</span><span class="fu">:</span> <span class="st">&quot;422&quot;</span><span class="fu">,</span>
@@ -510,11 +509,12 @@ WWW-Authenticate: Bearer realm=&quot;PAIA Core&quot;</code></pre>
 </section>
 <section id="conditions-and-confirmations" class="level2">
 <h2><span class="header-section-number">2.9</span> Conditions and confirmations</h2>
-<p>Conditions can be used to transport additional parameters to requests, renewals, and cancel requests. A <strong>condition</strong> is a key-value structure that maps condition types to condition settings. A <strong>condition type</strong> is an URI that identifies the purpose of a condition.</p>
+<p>Conditions and confirmations can be used to transport additional parameters to <a href="#paia-auth">PAIA auth</a> methods <a href="#request">request</a>, <a href="#renew">renew</a>, and <a href="#cancel">cancel</a>.</p>
+<p>A <strong>condition</strong> is a key-value structure that maps condition types to condition settings. A <strong>condition type</strong> is an URI that identifies the purpose of a condition.</p>
 <p>A PAIA server SHOULD support at least the following two condition types:</p>
 <ul>
-<li><a href="http://purl.org/ontology/paia#feeCondition">http://purl.org/ontology/paia#feeCondition</a> to select a simple fee</li>
-<li><a href="http://purl.org/ontology/paia#storageCondition">http://purl.org/ontology/paia#storageCondition</a> to select a document location</li>
+<li><a href="http://purl.org/ontology/paia#FeeCondition">http://purl.org/ontology/paia#FeeCondition</a> to select a simple fee</li>
+<li><a href="http://purl.org/ontology/paia#StorageCondition">http://purl.org/ontology/paia#StorageCondition</a> to select a document location</li>
 </ul>
 <p>A PAIA client MUST be able to handle arbitrary condition type URIs.</p>
 <p>A <strong>condition setting</strong> is a key-value structure with the following keys:</p>
@@ -583,9 +583,9 @@ WWW-Authenticate: Bearer realm=&quot;PAIA Core&quot;</code></pre>
 <p>The value of <code>default</code>, if this field is not given, MUST be taken as <code>true</code> if no <code>id</code> is given or as <code>false</code> if an <code>id</code> is given.</p>
 <p>Values of <code>amout</code> matching the regular expression <code>/^0+\.00/</code> MUST be treated equal to no amount and vice versa.</p>
 <p><strong>Example</strong></p>
-<p>The following condition consists of two condition types. The condition setting to confirm a fee consists of one option which is not marked aso default for this condition type. The condition setting to select a document location consists of three condition options and a client is allowed to select one or many of them (<code>multiple</code> is <code>true</code>). One of the options implies is marked as default and one of the options implies a fee.</p>
+<p>The following condition consists of two condition types. The condition setting to confirm a fee consists of one option which is not marked aso default for this condition type. The condition setting to select a document location consists of three condition options and a client is allowed to select one or many of them (<code>multiple</code> is <code>true</code>). One of the options implies is marked as default and one of the options implies a fee:</p>
 <pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
-  <span class="dt">&quot;http://purl.org/ontology/paia#feeConfirmation&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+  <span class="dt">&quot;http://purl.org/ontology/paia#FeeCondition&quot;</span><span class="fu">:</span> <span class="fu">{</span>
     <span class="dt">&quot;option&quot;</span><span class="fu">:</span> <span class="ot">[</span> 
       <span class="fu">{</span>
         <span class="dt">&quot;amount&quot;</span><span class="fu">:</span> <span class="st">&quot;0.50 EUR&quot;</span><span class="fu">,</span>
@@ -594,7 +594,7 @@ WWW-Authenticate: Bearer realm=&quot;PAIA Core&quot;</code></pre>
       <span class="fu">}</span> 
     <span class="ot">]</span> 
   <span class="fu">},</span>
-  <span class="dt">&quot;http://purl.org/ontology/paia#storageConfirmation&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+  <span class="dt">&quot;http://purl.org/ontology/paia#StorageCondition&quot;</span><span class="fu">:</span> <span class="fu">{</span>
     <span class="dt">&quot;multiple&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span>
     <span class="dt">&quot;option&quot;</span><span class="fu">:</span> <span class="ot">[</span>
       <span class="fu">{</span>
@@ -626,29 +626,29 @@ WWW-Authenticate: Bearer realm=&quot;PAIA Core&quot;</code></pre>
 <p><strong>Examples</strong></p>
 <p>For instance the default confirmation to the example condition given above is</p>
 <pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
-  <span class="dt">&quot;http://purl.org/ontology/paia#storageConfirmation&quot;</span><span class="fu">:</span> <span class="ot">[</span>
+  <span class="dt">&quot;http://purl.org/ontology/paia#StorageCondition&quot;</span><span class="fu">:</span> <span class="ot">[</span>
     <span class="st">&quot;http://example.org/locations/pickup-desk&quot;</span><span class="ot">,</span>
   <span class="ot">]</span>
 <span class="fu">}</span></code></pre>
 <p>which is equivalent to</p>
 <pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
-  <span class="dt">&quot;http://purl.org/ontology/paia#storageConfirmation&quot;</span><span class="fu">:</span> <span class="kw">true</span>
+  <span class="dt">&quot;http://purl.org/ontology/paia#StorageCondition&quot;</span><span class="fu">:</span> <span class="kw">true</span>
 <span class="fu">}</span></code></pre>
 <p>A valid confirmation that mets the condition would be</p>
 <pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
-  <span class="dt">&quot;http://purl.org/ontology/paia#storageConfirmation&quot;</span><span class="fu">:</span> <span class="ot">[</span>
+  <span class="dt">&quot;http://purl.org/ontology/paia#StorageCondition&quot;</span><span class="fu">:</span> <span class="ot">[</span>
     <span class="st">&quot;http://example.org/locations/pickup-desk&quot;</span><span class="ot">,</span>
   <span class="ot">]</span><span class="fu">,</span>
-  <span class="dt">&quot;http://purl.org/ontology/paia#feeConfirmation&quot;</span><span class="fu">:</span> <span class="kw">true</span>
+  <span class="dt">&quot;http://purl.org/ontology/paia#FeeCondition&quot;</span><span class="fu">:</span> <span class="kw">true</span>
 <span class="fu">}</span></code></pre>
 <p>This partial confirmation does not met the condition</p>
 <pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
-  <span class="dt">&quot;http://purl.org/ontology/paia#feeConfirmation&quot;</span><span class="fu">:</span> <span class="kw">true</span>
+  <span class="dt">&quot;http://purl.org/ontology/paia#FeeCondition&quot;</span><span class="fu">:</span> <span class="kw">true</span>
 <span class="fu">}</span></code></pre>
 </section>
 <section id="documents" class="level2">
 <h2><span class="header-section-number">2.10</span> Documents</h2>
-<p>A <strong>document</strong> is a key-value structure with the following fields</p>
+<p>A <strong>document</strong> is a key-value structure with the following fields:</p>
 <table>
 <thead>
 <tr class="header">
@@ -752,26 +752,20 @@ WWW-Authenticate: Bearer realm=&quot;PAIA Core&quot;</code></pre>
 <tr class="even">
 <td>condition</td>
 <td style="text-align: left;">0..1</td>
-<td>condition</td>
-<td>condition (only in responses send by a PAIA server)</td>
+<td><a href="#conditions-and-confirmations">condition</a></td>
+<td>condition (only in responses to <a href="#request">request</a>, <a href="#renew">renew</a>, or <a href="#cancel">cancel</a>)</td>
 </tr>
 <tr class="odd">
-<td>confirm</td>
-<td style="text-align: left;">0..1</td>
-<td>confirmation</td>
-<td>confirmation (only in requests send by a PAIA client)</td>
-</tr>
-<tr class="even">
 <td>storage</td>
 <td style="text-align: left;">0..1</td>
 <td>string</td>
-<td>location of the document</td>
+<td>textual description of location of the document</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>storageid</td>
 <td style="text-align: left;">0..1</td>
 <td>URI</td>
-<td>location URI</td>
+<td>URI of location of the document</td>
 </tr>
 </tbody>
 </table>
@@ -907,7 +901,7 @@ WWW-Authenticate: Bearer realm=&quot;PAIA Core&quot;</code></pre>
 </table>
 </dd>
 </dl>
-<p>Application SHOULD refer to a specialized API, such as LDAP, to get more detailed patron information.</p>
+<p>PAIA server documentation SHOULD refer to a specialized API, such as LDAP, to get more detailed patron information.</p>
 <p><strong>Example</strong></p>
 <pre><code>GET /core/123 HTTP/1.1
 Host: example.org
@@ -945,7 +939,7 @@ X-OAuth-Scopes: read_fees read_items read_patron write_items</code></pre>
 <tr class="header">
 <th style="text-align: center;">name</th>
 <th style="text-align: center;">occ</th>
-<th style="text-align: center;">data type</th>
+<th style="text-align: right;">data type</th>
 <th style="text-align: center;">description</th>
 </tr>
 </thead>
@@ -953,14 +947,14 @@ X-OAuth-Scopes: read_fees read_items read_patron write_items</code></pre>
 <tr class="odd">
 <td>doc</td>
 <td>0..n</td>
-<td>document</td>
+<td style="text-align: right;"><a href="#documents">document</a></td>
 <td>list of documents (order is irrelevant)</td>
 </tr>
 </tbody>
 </table>
 </dd>
 </dl>
-<p>In most cases, each document will have an item URI for a particular copy, but users may also have requested an edition.</p>
+<p>In most cases, each document will refer to a particular copy (<code>doc.item</code>), but users may also have requested (<code>doc.requested</code>) and/or reserved (<code>doc.edition</code>) an edition.</p>
 <p><strong>Example</strong></p>
 <pre><code>GET /core/123/items HTTP/1.1
 Host: example.org
@@ -1016,34 +1010,40 @@ X-OAuth-Scopes: read_items read_patron</code></pre>
 <tr class="header">
 <th style="text-align: center;">name</th>
 <th style="text-align: center;">occ</th>
-<th style="text-align: center;">data type</th>
-<th style="text-align: center;">description</th>
+<th style="text-align: left;">data type</th>
+<th style="text-align: left;">description</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>doc</td>
 <td>1..n</td>
-<td></td>
-<td>list of documents requested</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">list of documents requested</td>
 </tr>
 <tr class="even">
 <td>doc.item</td>
 <td>0..1</td>
-<td>URI</td>
-<td>URI of a particular item</td>
+<td style="text-align: left;">URI</td>
+<td style="text-align: left;">URI of a particular item</td>
 </tr>
 <tr class="odd">
 <td>doc.edition</td>
 <td>0..1</td>
-<td>URI</td>
-<td>URI of a particular edition</td>
+<td style="text-align: left;">URI</td>
+<td style="text-align: left;">URI of a particular edition</td>
 </tr>
 <tr class="even">
+<td>doc.confirm</td>
+<td>0..1</td>
+<td style="text-align: left;"><a href="#conditions-and-confirmations">confirmation</a></td>
+<td style="text-align: left;">Confirmation</td>
+</tr>
+<tr class="odd">
 <td>doc.storageid</td>
 <td>0..1</td>
-<td>URI</td>
-<td>Requested pickup location (deprecated)</td>
+<td style="text-align: left;">URI</td>
+<td style="text-align: left;">Requested document location (deprecated)</td>
 </tr>
 </tbody>
 </table>
@@ -1062,7 +1062,7 @@ X-OAuth-Scopes: read_items read_patron</code></pre>
 <tr class="odd">
 <td>doc</td>
 <td>1..n</td>
-<td>document</td>
+<td><a href="#documents">document</a></td>
 <td>list of documents (order is irrelevant)</td>
 </tr>
 </tbody>
@@ -1070,6 +1070,12 @@ X-OAuth-Scopes: read_items read_patron</code></pre>
 </dd>
 </dl>
 <p>The response SHOULD include the same documents as requested. A client MAY also use the <a href="#items">items</a> method to get the service status after request.</p>
+<p>The field <code>doc.storageid</code> is deprecated and MUST be ignored if <code>doc.confirm</code> is given. Otherwise a PAIA core server SHOULD map the value of <code>doc.storageid</code> (e.g <code>http://example.org/a/location</code>) with a corresponding confirmation in <code>doc.confirm</code>:</p>
+<pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
+  <span class="dt">&quot;http://purl.org/ontology/paia#StorageCondition&quot;</span><span class="fu">:</span> <span class="ot">[</span>
+    <span class="st">&quot;http://example.org/a/location&quot;</span>
+  <span class="ot">]</span>
+<span class="fu">}</span></code></pre>
 </section>
 <section id="renew" class="level2">
 <h2><span class="header-section-number">3.4</span> renew</h2>
@@ -1104,6 +1110,12 @@ X-OAuth-Scopes: read_items read_patron</code></pre>
 <td style="text-align: left;">URI</td>
 <td>URI of a particular edition</td>
 </tr>
+<tr class="even">
+<td>doc.confirm</td>
+<td>0..1</td>
+<td style="text-align: left;"><a href="#conditions-and-confirmations">confirmation</a></td>
+<td>Confirmation</td>
+</tr>
 </tbody>
 </table>
 </dd>
@@ -1113,7 +1125,7 @@ X-OAuth-Scopes: read_items read_patron</code></pre>
 <tr class="header">
 <th style="text-align: center;">name</th>
 <th style="text-align: center;">occ</th>
-<th style="text-align: center;">data type</th>
+<th style="text-align: right;">data type</th>
 <th style="text-align: center;">description</th>
 </tr>
 </thead>
@@ -1121,7 +1133,7 @@ X-OAuth-Scopes: read_items read_patron</code></pre>
 <tr class="odd">
 <td>doc</td>
 <td>1..n</td>
-<td>document</td>
+<td style="text-align: right;"><a href="#documents">document</a></td>
 <td>list of documents (order is irrelevant)</td>
 </tr>
 </tbody>
@@ -1171,6 +1183,12 @@ X-OAuth-Scopes: read_items read_patron</code></pre>
 <td>URI</td>
 <td style="text-align: left;">URI of a particular edition</td>
 </tr>
+<tr class="even">
+<td>doc.confirm</td>
+<td>0..1</td>
+<td><a href="#conditions-and-confirmations">confirmation</a></td>
+<td style="text-align: left;">Confirmation</td>
+</tr>
 </tbody>
 </table>
 </dd>
@@ -1180,7 +1198,7 @@ X-OAuth-Scopes: read_items read_patron</code></pre>
 <tr class="header">
 <th style="text-align: center;">name</th>
 <th style="text-align: center;">occ</th>
-<th style="text-align: center;">data type</th>
+<th style="text-align: left;">data type</th>
 <th style="text-align: center;">description</th>
 </tr>
 </thead>
@@ -1188,7 +1206,7 @@ X-OAuth-Scopes: read_items read_patron</code></pre>
 <tr class="odd">
 <td>doc</td>
 <td>1..n</td>
-<td>document</td>
+<td style="text-align: left;"><a href="#documents">document</a></td>
 <td>list of documents (order is irrelevant)</td>
 </tr>
 </tbody>
@@ -1223,7 +1241,7 @@ X-OAuth-Scopes: read_items read_patron</code></pre>
 <td>amount</td>
 <td>0..1</td>
 <td>money</td>
-<td>Sum of all fees. May also be negative!</td>
+<td>sum of all fees. May also be negative!</td>
 </tr>
 <tr class="even">
 <td>fee</td>
@@ -1277,12 +1295,8 @@ X-OAuth-Scopes: read_items read_patron</code></pre>
 </table>
 </dd>
 </dl>
-<p>If given, <code>fee.feetype</code> MUST NOT refer to the individual fee but to the type of fee. A PAIA server MUST return identical values of <code>fee.feetype</code> for identical <code>fee.feeid</code>. The default value of <code>fee.feeid</code> is:</p>
-<ul>
-<li><a href="http://purl.org/ontology/dso#DocumentService">http://purl.org/ontology/dso#DocumentService</a> if <code>fee.item</code> or <code>fee.edition</code> is set,</li>
-<li><a href="http://purl.org/ontology/service#Service">http://purl.org/ontology/service#Service</a> otherwise (<em>experimental!</em>).</li>
-</ul>
-<p>If a fee was caused by a document (<code>fee.item</code> or <code>fee.edition</code>), the value of <code>fee.feeid</code> SHOULD be a class URI from the <a href="http://gbv.github.io/dso/">Document Service Ontology</a>.</p>
+<p>If given, <code>fee.feetype</code> MUST NOT refer to the individual fee but to the type of fee. A PAIA server MUST return identical values of <code>fee.feetype</code> for identical <code>fee.feeid</code>.</p>
+<p>If a fee was caused by a document (<code>fee.item</code> or <code>fee.edition</code> is set) then <code>fee.feeid</code> SHOULD be taken as <a href="http://purl.org/ontology/dso#DocumentService">http://purl.org/ontology/dso#DocumentService</a> if not given and SHOULD be a class URI from the <a href="http://gbv.github.io/dso/">Document Service Ontology</a> otherwise.</p>
 </section>
 </section>
 <section id="paia-auth" class="level1">
@@ -1708,12 +1722,13 @@ WWW-Authenticate: Bearer realm=&quot;PAIA auth example&quot;</code></pre>
 <li><p>Katz, D. 2013. “ILS Driver (VuFind 2.x)“. <a href="http://vufind.org/wiki/vufind2:building_an_ils_driver">http://vufind.org/wiki/vufind2:building_an_ils_driver</a>.</p></li>
 <li><p>NISO. 2010. “NISO Circulation Interchange Protocol (NCIP) - Z39.83-1-2008 Version 2.01“. <a href="http://www.ncip.info/">http://www.ncip.info/</a>.</p></li>
 <li><p>Voß, J. 2015. “PAIA Ontology“. <a href="http://gbv.github.io/paia-rdf/">http://gbv.github.io/paia-rdf/</a>.</p></li>
+<li><p>Voß, J. 2014. “Document Service Ontology“ <a href="http://purl.org/ontology/dso">http://purl.org/ontology/dso</a>.</p></li>
 <li><p>“PAIA Wiki“. <a href="https://github.com/gbv/paia/wiki">https://github.com/gbv/paia/wiki</a></p></li>
 </ul>
 </section>
 <section id="revision-history" class="level2">
 <h2><span class="header-section-number">8.3</span> Revision history</h2>
-<p>This is version <strong>1.2.0+1-dirty</strong> of PAIA specification, last modified at 2015-05-04 with revision <a href="http://github.com/gbv/paia/commit/9ec2429dac36250dc30b3c28a41bc50f29c2f77d">9ec2429</a>.</p>
+<p>This is version <strong>1.2.0+2</strong> of PAIA specification, last modified at 2015-05-05 with revision <a href="http://github.com/gbv/paia/commit/38b945c037831d27a8a22d9534e1a8ea3915b17b">38b945c</a>.</p>
 <p>Version numbers follow <a href="http://semver.org/">Semantic Versioning</a>: each number consists of three numbers, optionally followed by <code>+</code> and a suffix:</p>
 <ul>
 <li>The major version (first number) is increased if changes require a modification of PAIA clients</li>
@@ -1724,6 +1739,14 @@ WWW-Authenticate: Bearer realm=&quot;PAIA auth example&quot;</code></pre>
 <section id="releases" class="level3 unnumbered">
 <h3>Releases</h3>
 <p>Releases with functional changes are tagged with a version number and included at <a href="https://github.com/gbv/paia/releases">https://github.com/gbv/paia/releases</a> with release notes.</p>
+<section id="unpublished" class="level4">
+<h4><span class="header-section-number">8.3.0.1</span> 1.3.0 (unpublished)</h4>
+<ul>
+<li>introduced conditions and confirmations</li>
+<li>improved documentation</li>
+<li>removed experimental reference to service ontology</li>
+</ul>
+</section>
 <section id="section" class="level4 unnumbered">
 <h4>1.2.0 (2015-04-28)</h4>
 <ul>
@@ -1788,7 +1811,8 @@ WWW-Authenticate: Bearer realm=&quot;PAIA auth example&quot;</code></pre>
 <section id="full-changelog" class="level3 unnumbered">
 <h3>Full changelog</h3>
 <ul>
-<li><a href="paia-9ec2429.html"><code>2015-05-04 15:43:53 +0200</code></a>: <a href="http://github.com/gbv/paia/commit/9ec2429dac36250dc30b3c28a41bc50f29c2f77d">started to specify confirmations</a></li>
+<li><a href="paia-38b945c.html"><code>2015-05-05 09:09:26 +0200</code></a>: <a href="http://github.com/gbv/paia/commit/38b945c037831d27a8a22d9534e1a8ea3915b17b">better documentation, removed service ontology</a></li>
+<li><a href="paia-85fc434.html"><code>2015-05-04 15:59:20 +0200</code></a>: <a href="http://github.com/gbv/paia/commit/85fc434dce288c0f1f0355a2472afb7d3cb35a47">started to specify confirmations</a></li>
 <li><a href="paia-623865b.html"><code>2015-04-28 09:57:09 +0200</code></a>: <a href="http://github.com/gbv/paia/commit/623865b2b60a520e2e284e7c95c568196a12f7ca">PAIA auth requires application/x-www-form-urlencoded (#50)</a></li>
 <li><a href="paia-35f2a4e.html"><code>2015-04-21 15:19:10 +0200</code></a>: <a href="http://github.com/gbv/paia/commit/35f2a4e4de414d34de598e66a1fbf44f1dbb3287">document semantic versioning</a></li>
 <li><a href="paia-ca90aa7.html"><code>2015-04-21 14:45:40 +0200</code></a>: <a href="http://github.com/gbv/paia/commit/ca90aa737e20058a1091a17fd4b24222004dc91e">remove request field doc.storage, deprecate doc.storageid</a></li>
@@ -1837,7 +1861,6 @@ WWW-Authenticate: Bearer realm=&quot;PAIA auth example&quot;</code></pre>
 <li><a href="paia-060b5df.html"><code>2012-11-19 11:27:31 +0100</code></a>: <a href="http://github.com/gbv/paia/commit/060b5dff61bd5bec9b1cda8015e6d5109f5411e9">make URL-encoded HTTP POST optional</a></li>
 <li><a href="paia-ab9ed62.html"><code>2012-11-19 10:56:33 +0100</code></a>: <a href="http://github.com/gbv/paia/commit/ab9ed626f8cac011c0b8f07cdbf2c0470bc613e0">Transitions of document states exemplified</a></li>
 <li><a href="paia-39e7ddc.html"><code>2012-11-19 09:58:00 +0100</code></a>: <a href="http://github.com/gbv/paia/commit/39e7ddc716492ad7c07f23307c7adda0388bec02">issue #5, #6, and #7</a></li>
-<li><a href="paia-c748734.html"><code>2012-11-19 09:14:06 +0100</code></a>: <a href="http://github.com/gbv/paia/commit/c748734bb6fc62fd1de2764c05a19b0b8613470c">full example</a></li>
 </ul>
 </section>
 </section>
