@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="generator" content="pandoc" />
   <meta name="author" content="Jakob Voß" />
-  <meta name="date" content="2015-05-05" />
+  <meta name="date" content="2015-05-06" />
   <title>Patrons Account Information API (PAIA)</title>
    <!--[if lt IE 9]>
     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
@@ -55,7 +55,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <header>
 <h1 class="title">Patrons Account Information API (PAIA)</h1>
 <h3 class="author">Jakob Voß</h3>
-<h4 class="date">2015-05-05 (version 1.2.0+2)</h4>
+<h4 class="date">2015-05-06 (version 1.2.0+4)</h4>
 </header>
 
 <h1>Table of Contents</h1>
@@ -556,21 +556,21 @@ WWW-Authenticate: Bearer realm=&quot;PAIA Core&quot;</code></pre>
 <tbody>
 <tr class="odd">
 <td>id</td>
-<td style="text-align: right;">0..1</td>
+<td style="text-align: right;">1..1</td>
 <td style="text-align: right;">URI</td>
 <td>unique identifier of this option</td>
 </tr>
 <tr class="even">
-<td>amount</td>
-<td style="text-align: right;">0..1</td>
-<td style="text-align: right;">money</td>
-<td>fee implied by chosing this option</td>
-</tr>
-<tr class="odd">
 <td>about</td>
 <td style="text-align: right;">1..1</td>
 <td style="text-align: right;">string</td>
 <td>textual description or label of this option</td>
+</tr>
+<tr class="odd">
+<td>amount</td>
+<td style="text-align: right;">0..1</td>
+<td style="text-align: right;">money</td>
+<td>fee implied by chosing this option</td>
 </tr>
 <tr class="even">
 <td>default</td>
@@ -580,7 +580,13 @@ WWW-Authenticate: Bearer realm=&quot;PAIA Core&quot;</code></pre>
 </tr>
 </tbody>
 </table>
-<p>The value of <code>default</code>, if this field is not given, MUST be taken as <code>true</code> if no <code>id</code> is given or as <code>false</code> if an <code>id</code> is given.</p>
+<p>A PAIA server MUST return identical values of <code>about</code> for identical <code>id</code> and identical content language. PAIA clients MAY override the value of <code>about</code> based on <code>id</code> and a preferred language.</p>
+<p>A PAIA server SHOULD use the following condition option ids for simple fees of type <a href="http://purl.org/ontology/paia#FeeCondition">http://purl.org/ontology/paia#FeeCondition</a>:</p>
+<ul>
+<li><a href="http://purl.org/ontology/paia#RequestFee">http://purl.org/ontology/paia#RequestFee</a> for simple fees caused by a document <a href="#request">request</a></li>
+<li><a href="http://purl.org/ontology/paia#RenewFee">http://purl.org/ontology/paia#RenewFee</a> for simple fees caused by a document <a href="#renew">renew</a></li>
+<li><a href="http://purl.org/ontology/paia#CancelFee">http://purl.org/ontology/paia#CancelFee</a> for simple fees caused by a document <a href="#cancel">cancel</a></li>
+</ul>
 <p>Values of <code>amout</code> matching the regular expression <code>/^0+\.00/</code> MUST be treated equal to no amount and vice versa.</p>
 <p><strong>Example</strong></p>
 <p>The following condition consists of two condition types. The condition setting to confirm a fee consists of one option which is not marked aso default for this condition type. The condition setting to select a document location consists of three condition options and a client is allowed to select one or many of them (<code>multiple</code> is <code>true</code>). One of the options implies is marked as default and one of the options implies a fee:</p>
@@ -588,8 +594,9 @@ WWW-Authenticate: Bearer realm=&quot;PAIA Core&quot;</code></pre>
   <span class="dt">&quot;http://purl.org/ontology/paia#FeeCondition&quot;</span><span class="fu">:</span> <span class="fu">{</span>
     <span class="dt">&quot;option&quot;</span><span class="fu">:</span> <span class="ot">[</span> 
       <span class="fu">{</span>
+        <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;http://purl.org/ontology/paia#RequestFee&quot;</span><span class="fu">,</span>
+        <span class="dt">&quot;about&quot;</span><span class="fu">:</span> <span class="st">&quot;document request implies a fee&quot;</span><span class="fu">,</span>
         <span class="dt">&quot;amount&quot;</span><span class="fu">:</span> <span class="st">&quot;0.50 EUR&quot;</span><span class="fu">,</span>
-        <span class="dt">&quot;about&quot;</span><span class="fu">:</span> <span class="st">&quot;request implies a fee&quot;</span><span class="fu">,</span>
         <span class="dt">&quot;default&quot;</span><span class="fu">:</span> <span class="kw">false</span>
       <span class="fu">}</span> 
     <span class="ot">]</span> 
@@ -615,14 +622,11 @@ WWW-Authenticate: Bearer realm=&quot;PAIA Core&quot;</code></pre>
   <span class="fu">}</span>
 <span class="fu">}</span></code></pre>
 <p>A condition send by a PAIA server MUST include all condition types and condition settings also if some of them have already been confirmed. It’s up to the client how to show multiple confirmations (step-by-step, all-in-one-screen…).</p>
-<p>A condition can be met by a matching confirmation that selects possible options. A <strong>confirmation</strong> as a key-value structure that maps condition types to selected options. A selection option is</p>
-<ul>
-<li><p>either a list of ids selected from possible options (<code>option.id</code>). If <code>multiple</code> is set to <code>true</code> for this confirmation type, the list can contain multiple items. A PAIA server MAY also interprete the order of ids as preference.</p></li>
-<li><p>or the value <code>true</code> to select all default values (if there is a default) or select any value (if there is no default)</p></li>
-</ul>
-<p>A PAIA server SHOULD ignore all unknown or additional condition types and all unknown option ids in a confirmation.</p>
+<p>A condition can be met by a matching confirmation that selects possible options. A <strong>confirmation</strong> as a key-value structure that maps condition types to lists of selected condition option ids.</p>
+<p>If <code>multiple</code> is set to <code>true</code> for a given confirmation type, the list of ids MUST be interpreted as unordered set. Otherwise the list MAY also be interpreted as order of preferences.</p>
+<p>A PAIA server SHOULD ignore all unknown or additional condition types and all unknown or inapplicable option ids in a confirmation. A condition type without applicable option ids (for instance an empty list) in a confirmation MUST be ignored.</p>
 <p>If no confirmation is given by a PAIA client as part of a <a href="#documents">document</a>, its value MUST be taken equal to a selection of all default values.</p>
-<p>A confirmation MUST include all condition types for a given document. To not select any default confirmation options, a client can send an empty object (<code>{ }</code>).</p>
+<p>A confirmation MUST include all condition types for a given document. To not select any default confirmation options, a PAIA client can send an empty object (<code>{ }</code>).</p>
 <p><strong>Examples</strong></p>
 <p>For instance the default confirmation to the example condition given above is</p>
 <pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
@@ -630,20 +634,20 @@ WWW-Authenticate: Bearer realm=&quot;PAIA Core&quot;</code></pre>
     <span class="st">&quot;http://example.org/locations/pickup-desk&quot;</span><span class="ot">,</span>
   <span class="ot">]</span>
 <span class="fu">}</span></code></pre>
-<p>which is equivalent to</p>
-<pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
-  <span class="dt">&quot;http://purl.org/ontology/paia#StorageCondition&quot;</span><span class="fu">:</span> <span class="kw">true</span>
-<span class="fu">}</span></code></pre>
 <p>A valid confirmation that mets the condition would be</p>
 <pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
   <span class="dt">&quot;http://purl.org/ontology/paia#StorageCondition&quot;</span><span class="fu">:</span> <span class="ot">[</span>
     <span class="st">&quot;http://example.org/locations/pickup-desk&quot;</span><span class="ot">,</span>
   <span class="ot">]</span><span class="fu">,</span>
-  <span class="dt">&quot;http://purl.org/ontology/paia#FeeCondition&quot;</span><span class="fu">:</span> <span class="kw">true</span>
+  <span class="dt">&quot;http://purl.org/ontology/paia#FeeCondition&quot;</span><span class="fu">:</span> <span class="ot">[</span>
+    <span class="st">&quot;http://purl.org/ontology/paia#RequestFee&quot;</span>
+  <span class="ot">]</span>
 <span class="fu">}</span></code></pre>
 <p>This partial confirmation does not met the condition</p>
 <pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
-  <span class="dt">&quot;http://purl.org/ontology/paia#FeeCondition&quot;</span><span class="fu">:</span> <span class="kw">true</span>
+  <span class="dt">&quot;http://purl.org/ontology/paia#FeeCondition&quot;</span><span class="fu">:</span> <span class="ot">[</span>
+    <span class="st">&quot;http://purl.org/ontology/paia#RequestFee&quot;</span>
+  <span class="ot">]</span>
 <span class="fu">}</span></code></pre>
 </section>
 <section id="documents" class="level2">
@@ -770,6 +774,7 @@ WWW-Authenticate: Bearer realm=&quot;PAIA Core&quot;</code></pre>
 </tbody>
 </table>
 <p>For each document at least an item URI or an edition URI MUST be given. Together, item and edition URI MUST uniquely identify a document within the set of documents related to a patron.</p>
+<p>If both <code>storage</code> and <code>storageid</code> are given, a PAIA server MUST return identical values of <code>storage</code> for identical <code>id</code> and identical content language. PAIA clients MAY override the value of <code>storage</code> based on <code>storageid</code> and a preferred language.</p>
 <p>A document with <code>condition</code> MUST also have an <code>error</code> (for instance “confirmation required”). This allows PAIA clients to fully ignore conditions and treat same as document errors.</p>
 <p>The fields <code>starttime</code> and <code>endtime</code> MUST be interpreted as following:</p>
 <table>
@@ -1295,7 +1300,7 @@ X-OAuth-Scopes: read_items read_patron</code></pre>
 </table>
 </dd>
 </dl>
-<p>If given, <code>fee.feetype</code> MUST NOT refer to the individual fee but to the type of fee. A PAIA server MUST return identical values of <code>fee.feetype</code> for identical <code>fee.feeid</code>.</p>
+<p>If given, <code>fee.feetype</code> MUST NOT refer to the individual fee but to the type of fee. A PAIA server MUST return identical values of <code>fee.feetype</code> for identical <code>fee.feeid</code> and identical content language. PAIA clients MAY override the value of <code>fee.feetype</code> based on <code>fee.feeid</code> and a preferred language.</p>
 <p>If a fee was caused by a document (<code>fee.item</code> or <code>fee.edition</code> is set) then <code>fee.feeid</code> SHOULD be taken as <a href="http://purl.org/ontology/dso#DocumentService">http://purl.org/ontology/dso#DocumentService</a> if not given and SHOULD be a class URI from the <a href="http://gbv.github.io/dso/">Document Service Ontology</a> otherwise.</p>
 </section>
 </section>
@@ -1728,7 +1733,7 @@ WWW-Authenticate: Bearer realm=&quot;PAIA auth example&quot;</code></pre>
 </section>
 <section id="revision-history" class="level2">
 <h2><span class="header-section-number">8.3</span> Revision history</h2>
-<p>This is version <strong>1.2.0+2</strong> of PAIA specification, last modified at 2015-05-05 with revision <a href="http://github.com/gbv/paia/commit/38b945c037831d27a8a22d9534e1a8ea3915b17b">38b945c</a>.</p>
+<p>This is version <strong>1.2.0+4</strong> of PAIA specification, last modified at 2015-05-06 with revision <a href="http://github.com/gbv/paia/commit/83afc21ae7476f98ce8aa7815061789ae2dcac03">83afc21</a>.</p>
 <p>Version numbers follow <a href="http://semver.org/">Semantic Versioning</a>: each number consists of three numbers, optionally followed by <code>+</code> and a suffix:</p>
 <ul>
 <li>The major version (first number) is increased if changes require a modification of PAIA clients</li>
@@ -1743,7 +1748,7 @@ WWW-Authenticate: Bearer realm=&quot;PAIA auth example&quot;</code></pre>
 <h4><span class="header-section-number">8.3.0.1</span> 1.3.0 (unpublished)</h4>
 <ul>
 <li>introduced conditions and confirmations</li>
-<li>improved documentation</li>
+<li>clarified uniqueness of storage/fee/condition id and textual description</li>
 <li>removed experimental reference to service ontology</li>
 </ul>
 </section>
@@ -1811,6 +1816,8 @@ WWW-Authenticate: Bearer realm=&quot;PAIA auth example&quot;</code></pre>
 <section id="full-changelog" class="level3 unnumbered">
 <h3>Full changelog</h3>
 <ul>
+<li><a href="paia-83afc21.html"><code>2015-05-06 14:30:49 +0200</code></a>: <a href="http://github.com/gbv/paia/commit/83afc21ae7476f98ce8aa7815061789ae2dcac03">clarify uniqueness of storage/fee/condition id and textual description</a></li>
+<li><a href="paia-682712b.html"><code>2015-05-06 12:55:36 +0200</code></a>: <a href="http://github.com/gbv/paia/commit/682712babcf9ead8bd5748a603f577c3148b0970">make condition option id mandatory</a></li>
 <li><a href="paia-38b945c.html"><code>2015-05-05 09:09:26 +0200</code></a>: <a href="http://github.com/gbv/paia/commit/38b945c037831d27a8a22d9534e1a8ea3915b17b">better documentation, removed service ontology</a></li>
 <li><a href="paia-85fc434.html"><code>2015-05-04 15:59:20 +0200</code></a>: <a href="http://github.com/gbv/paia/commit/85fc434dce288c0f1f0355a2472afb7d3cb35a47">started to specify confirmations</a></li>
 <li><a href="paia-623865b.html"><code>2015-04-28 09:57:09 +0200</code></a>: <a href="http://github.com/gbv/paia/commit/623865b2b60a520e2e284e7c95c568196a12f7ca">PAIA auth requires application/x-www-form-urlencoded (#50)</a></li>
@@ -1859,8 +1866,6 @@ WWW-Authenticate: Bearer realm=&quot;PAIA auth example&quot;</code></pre>
 <li><a href="paia-9670f7a.html"><code>2012-12-02 10:05:51 +0100</code></a>: <a href="http://github.com/gbv/paia/commit/9670f7a892823d939af933f135bf600c83792c6a">started with PAIA ontology</a></li>
 <li><a href="paia-d6564f0.html"><code>2012-11-30 10:41:22 +0100</code></a>: <a href="http://github.com/gbv/paia/commit/d6564f01ae2600519ff4375b600475b10edcd274">change_password scope (issue #10)</a></li>
 <li><a href="paia-060b5df.html"><code>2012-11-19 11:27:31 +0100</code></a>: <a href="http://github.com/gbv/paia/commit/060b5dff61bd5bec9b1cda8015e6d5109f5411e9">make URL-encoded HTTP POST optional</a></li>
-<li><a href="paia-ab9ed62.html"><code>2012-11-19 10:56:33 +0100</code></a>: <a href="http://github.com/gbv/paia/commit/ab9ed626f8cac011c0b8f07cdbf2c0470bc613e0">Transitions of document states exemplified</a></li>
-<li><a href="paia-39e7ddc.html"><code>2012-11-19 09:58:00 +0100</code></a>: <a href="http://github.com/gbv/paia/commit/39e7ddc716492ad7c07f23307c7adda0388bec02">issue #5, #6, and #7</a></li>
 </ul>
 </section>
 </section>
