@@ -33,11 +33,10 @@ SIP2, \[X]SLNP,[^SLNP] DLF-ILS recommendations, and VuFind ILS.
 
 All sources and updates can be found in a public git repository at
 <http://github.com/gbv/paia>. See the [list of releases](#releases) at
-<https://github.com/gbv/paia/releases> for functional changes.
-
-The master file [paia.md](https://github.com/gbv/paia/blob/master/paia.md) is
-written in [Pandoc’s Markdown].  HTML version of the specification is generated
-from the master file with [makespec](https://github.com/jakobib/makespec). The
+<https://github.com/gbv/paia/releases> for functional changes. The master file
+[paia.md](https://github.com/gbv/paia/blob/master/paia.md) is written in
+[Pandoc’s Markdown].  HTML version of the specification is generated from the
+master file with [makespec](https://github.com/jakobib/makespec). The
 specification can be distributed freely under the terms of CC-BY-SA.
 
 Additional information and references about PAIA can be found in the public
@@ -66,7 +65,7 @@ method request, as defined in this document.
 [renew]: #renew
 [request]: #request
 [cancel]: #cancel
-[fees]: #fees
+[fees]: #Fees
 [login]: #login
 [logout]: #logout
 [change]: #change
@@ -97,11 +96,12 @@ methods with HTTP verb GET MAY also be accessible with HTTP verb HEAD.
 API method URLs share a common base URL for PAIA core methods and common base
 URL for PAIA auth methods.  A server SHOULD NOT provide additional methods at
 these base URLs and it MUST NOT propagate additional methods at these base URLs
-as belonging to PAIA.  Base URLs of PAIA auth and PAIA core are not required to
-share a common host, nor to include the URL path `core/` or `auth/`.
+as belonging to PAIA.
 
-In the following, the base URL <https://example.org/core/> is used for PAIA
-core and <https://example.org/auth/> for PAIA auth. 
+Base URLs of PAIA auth and PAIA core are not required to share a common host,
+nor to include the URL path `core/` or `auth/`. In the following, the base URL
+<https://example.org/core/> is used for PAIA core and
+<https://example.org/auth/> for PAIA auth. 
 
 For security reasons, PAIA methods MUST be requested via HTTPS only. A PAIA
 client MUST NOT ignore SSL certificate errors; otherwise access token (PAIA
@@ -126,7 +126,7 @@ An access token is valid for a limited set of actions, referred to as
 read_patron
   : Get patron information by the [patron](#patron) method.
 read_fees
-  : Get fees of a patron by the [fees](#fees) method.
+  : Get fees of a patron by the [fees](#Fees) method.
 read_items
   : Get a patron’s item information by the [items](#items) method.
 write_items
@@ -151,7 +151,7 @@ other services.
 Each API method call expects a set of request parameters, given as [URL query
 fields], [HTTP headers], or [HTTP message body] and return a JSON object. Most
 parts of PAIA core request parameters and JSON response can be mapped to RDF as
-defined by [PAIA Ontology].
+defined by the [PAIA Ontology].
 
 Request parameters and fields of response objects are defined in this document
 with:
@@ -163,7 +163,6 @@ with:
     * `1..n` (mandatory, repeatable)
     * `0..n` (optional, repeatable)
 * the **data type** of the parameter/field
-  ([simple data types](#simple-data-types) or [document data type](#document-data-type)).
 * a short description
 
 Simple parameter names and response fields consist of lowercase letters `a-z`
@@ -267,11 +266,11 @@ Allow
 
 All POST requests MUST include a HTTP message body.
 
-* For PAIA core the message body MUST be sent in JSON format with content type
+* For [PAIA core] the message body MUST be sent in JSON format with content type
   `application/json`. A PAIA core server MAY also support message body as URL 
   encoded query string.
 
-* For PAIA auth the message body MUST be sent as URL encoded query string
+* For [PAIA auth] the message body MUST be sent as URL encoded query string
   with content type `application/x-www-form-urlencoded`. A PAIA auth server 
   MAY also support message body in JSON.
 
@@ -288,7 +287,8 @@ An error response is returned with an HTTP status code 4xx (client error) or
 5xx (server error) as defined in RFC 2616, unless the request parameter
 `suppress_response_codes` is given.
 
-[Document errors](#document-data-type) MUST NOT result in a request error.
+[Document errors] MUST NOT result in a request error but they are part of a
+normal response.
 
 The response body of a request error is a JSON object with the following fields
 (compatible with OAuth error response):
@@ -354,7 +354,8 @@ GitHub API](http://developer.github.com/v3/#client-errors).
  gateway_timeout        504   The request couldn't be serviced because of a backend failure
 --------------------- ------ ------------------------------------------------------------------------
 
-For instance the following response could result from a request with malformed URIs 
+For instance the following response could result from a request with malformed
+URIs: 
 
 ~~~~ {.json}
 {
@@ -432,31 +433,36 @@ service status
     A PAIA server MUST NOT define any other service status. In JSON service status
     MUST be encoded as numbers instead of strings.
 
-## Document data type
+## Documents
 
-A **document** is a key-value structure with the following fields
+[document]: #documents
+[documents]: #documents
+[document error]: #documents
+[document errors]: #documents
 
- name        occ    data type             description
------------ ------ --------------------- ----------------------------------------------------------
- status      1..1   service status        status (0, 1, 2, 3, 4, or 5)
- item        0..1   URI                   URI of a particular copy
- edition     0..1   URI                   URI of a the document (no particular copy)
- requested   0..1   URI                   URI that was originally requested
- about       0..1   string                textual description of the document
- label       0..1   string                call number, shelf mark or similar item label
- queue       0..1   nonnegative integer   number of waiting requests for the document or item
- renewals    0..1   nonnegative integer   number of times the document has been renewed
- reminder    0..1   nonnegative integer   number of times the patron has been reminded
- starttime   0..1   datetime              date and time when the status began  
- endtime     0..1   datetime              date and time when the status will expire
- duedate     0..1   date                  date when the current status will expire (*deprecated*)
- cancancel   0..1   boolean               whether an ordered or provided document can be canceled
- canrenew    0..1   boolean               whether a document can be renewed
- error       0..1   string                error message, for instance if a request was rejected
- storage     0..1   string                location of the document
- storageid   0..1   URI                   location URI
------------ ------ --------------------- ----------------------------------------------------------
+A **document** is a key-value structure with the following fields:
 
+ name         occ    data type             description
+------------- ----- --------------------- ------------------------------------------------------------------
+ status       1..1   service status        status (0, 1, 2, 3, 4, or 5)
+ item         0..1   URI                   URI of a particular copy
+ edition      0..1   URI                   URI of a the document (no particular copy)
+ requested    0..1   URI                   URI that was originally requested
+ about        0..1   string                textual description of the document
+ label        0..1   string                call number, shelf mark or similar item label
+ queue        0..1   nonnegative integer   number of waiting requests for the document or item
+ renewals     0..1   nonnegative integer   number of times the document has been renewed
+ reminder     0..1   nonnegative integer   number of times the patron has been reminded
+ starttime    0..1   datetime              date and time when the status began 
+ endtime      0..1   datetime              date and time when the status will expire
+ duedate      0..1   date                  date when the current status will expire (*deprecated*)
+ cancancel    0..1   boolean               whether an ordered or provided document can be canceled
+ canrenew     0..1   boolean               whether a document can be renewed
+ error        0..1   string                textual document error, for instance if a request was rejected
+ condition    0..1   [condition]           condition (only in responses to [request], [renew], or [cancel])
+ storage      0..1   string                textual description of location of the document
+ storageid    0..1   URI                   URI of location of the document
+------------- ----- --------------------- ------------------------------------------------------------------
 
 For each document at least an item URI or an edition URI MUST be given.
 Together, item and edition URI MUST uniquely identify a document within
@@ -477,30 +483,25 @@ Note that timezone information is mandatory in these fields.  The field
 `duedate` is deprecated. Clients SHOULD only use it as `endtime` if no
 `endtime` was given.
 
-The response fields `label`, `storage`, `storageid`, and `queue`
-correspond to properties in DAIA.
+If both `storage` and `storageid` are given, a PAIA server MUST return
+identical values of `storage` for identical `id` and identical content
+language.  PAIA clients MAY override the value of `storage` based on
+`storageid` and a preferred language. 
 
 Unknown document URIs and failed attempts to request, renew, or cancel a
 document MUST NOT result in a [request error](#request-errors). Instead they
-are indicated by the `doc.error` response field, which SHOULD contain a
-human-readable error message. Form and type of document error messages are not
-specified, so clients SHOULD use these strings for display only.
+are indicated by a document error with field `error`. Form and type of document
+errors are not specified, so clients SHOULD use these messages for display
+only.
 
-For instance the following response, returned with HTTP status code 200,
-could result from a [request] for an item given by an unknown URI:
+If `condition` is given, a PAIA server MUST also include a document error for
+the same document, for instance the error message "confirmation required". This
+allows PAIA clients without support of [conditions and conformations] to treat
+conditions as simple, unrecoverable document errors.
 
-~~~~ {.json}
-{
-  "doc": [ {
-    "item": "http://example.org/some/uri",
-    "error": "item URI not found"
-  } ]
-}
-~~~~
+<div class="example">
 
-**Examples**
-
-An example of a documentserialized in JSON is given below. In this case a
+An example of a document serialized in JSON is given below. In this case a
 general document (`http://example.org/documents/9876543`) was requested an
 mapped to a particular copy (`http://example.org/items/barcode1234567`) by the
 PAIA server. The copy turned out to be lost, so the request was rejected
@@ -516,6 +517,268 @@ PAIA server. The copy turned out to be lost, so the request was rejected
    "error":     "sorry, we found out that our copy is lost!"
 }
 ~~~~
+
+The following document could result from a [request] for an item given by an
+unknown URI:
+
+~~~~ {.json}
+{
+  "item": "http://example.org/some/uri",
+  "error": "item URI not found"
+}
+~~~~
+
+</div>
+
+## Conditions and confirmations
+
+[condition]: #conditions-and-confirmations
+[confirmation]: #conditions-and-confirmations
+[conditions and conformations]: #conditions-and-confirmations
+
+Conditions and confirmations can OPTIONALLY be used to require or to select
+from additional options in [PAIA core] methods [request], [renew], and
+[cancel]. For instance a PAIA server MAY allow to choose among multiple
+delivery methods or it MAY require to explicitly agree to some terms of
+services when a special document is requested.  A PAIA client without support
+of conditions and confirmations will always be assigned to the default option
+or it will experience a condition as [document error] if no default option is
+available.
+
+### Conditions {.unnumbered}
+
+[condition types]: #conditions
+[condition options]: #conditions
+
+A **condition** is a key-value structure that maps condition types to condition
+settings. 
+
+Conditions can be included in response field `condition` of a [document] if the
+same document also includes a document error in field `error`. The error SHOULD
+provide a short description of the condition, for instance "delivery type must
+be selected" or "confirmation required".
+
+A **condition type** is an URI that identifies the purpose of a condition. A
+PAIA client MUST be able to handle arbitrary condition type URIs.  A PAIA
+server SHOULD support at least the following two condition types:
+
+* <http://purl.org/ontology/paia#StorageCondition>
+  to select a document location
+* <http://purl.org/ontology/paia#FeeCondition>
+  to confirm or select a document service causing a fee
+
+A **condition setting** is a key-value structure with the following keys:
+
+ name      occ  data type           description
+---------- ---- ------------------ ------------------------------------------
+ option    1..n  condition option   list of condition options
+ multiple  0..1  boolean            whether multiple options can be selected
+ default   0..n  URI                set of default option identifiers
+---------- ---- ------------------ ------------------------------------------
+
+A missing field `multiple` MUST be treated equal to a `multiple` field with
+value `false`. The field `default` MAY be an empty array --- this case MUST NOT
+be confused with a missing field `default`. All URIs listed in field `default`
+MUST also be included as field `id` of one condition option. 
+
+If multiple condition options are given, they SHOULD be ordered, for instance
+by popularity.
+
+A **condition option** is a key-value structure with the following keys:
+
+ name      occ  data type  description
+--------- ---- ---------- ---------------------------------------------
+ id       1..1  URI        unique identifier of this option
+ about    1..1  string     textual description or label of this option
+ amount   0..1  money      fee implied by chosing this option
+--------- ---- ---------- ---------------------------------------------
+
+A condition setting MUST NOT contain multiple condition options with same `id`.
+A PAIA server MUST return identical values of `about` for identical values of
+`id` and identical content language.  PAIA clients MAY override the value of
+`about` based on `id` and a preferred language. 
+
+Values of `amout` matching the regular expression `/^0+\.00/` MUST be treated
+equal to no amount and vice versa.
+
+A PAIA server SHOULD use the condition option id
+<http://purl.org/ontology/dso#DocumentService> or other URIs from the [Document
+Service Ontology] for condition options of type
+<http://purl.org/ontology/paia#FeeCondition>. Id and amount of the selected
+condition option SHOULD later occurr in response to request method
+[fees](#fees).
+
+<div class="example">
+Most simple condition only contain a single condition type. In the following
+example condition type <http://purl.org/ontology/paia#FeeCondition> is mapped
+to a condition setting with one condition option. No default option is given,
+so an explicit confirmation is required.
+
+~~~json
+{
+  "http://purl.org/ontology/paia#FeeCondition": {
+    "option": [ 
+      {
+        "id": "http://purl.org/ontology/dso#Loan",
+        "about": "loan",
+        "amount": "0.50 EUR"
+      } 
+    ]
+  }
+}
+~~~
+
+The following condition contains two condition types. The first condition type
+(<http://purl.org/ontology/paia#StorageCondition>) refers to a list of delivery
+places. The first place is marked as default and the third place implies a fee.
+The second condition type (<http://example.org/purpose>) lists two options
+which can also be selected together. An empty set is given as default option.
+
+~~~json
+{
+  "http://purl.org/ontology/paia#StorageCondition": {
+    "option": [
+      {
+        "id": "http://example.org/locations/pickup-desk",
+        "about": "pickup desk"
+      },
+      {
+        "id": "http://example.org/locations/branch",
+        "about": "branch office"
+      },
+      {
+        "id": "http://example.org/services/home-delivery",
+        "amount": "2.50 EUR",
+        "about": "home delivery"
+      }
+    ],
+    "default": [ "http://example.org/locations/pickup-desk" ]
+  },
+  "http://example.org/purpose": {
+    "multiple": true,
+    "option": [
+      { 
+        "id": "http://example.org/purpose/research",
+        "about": "document usage for research"
+      },
+      { 
+        "id": "http://example.org/purpose/leisure",
+        "about": "document usage for leisure"
+      }
+    ],
+    "default": [ ]
+  }
+}
+~~~
+</div>
+
+### Confirmations {.unnumbered}
+
+Confirmations can be sent as part of a [PAIA core] request of methods
+[request], [renew], and [cancel] in field `confirm` of a document to choose
+among condition options for selected condition types.
+
+A **confirmation** is a key-value structure that maps [condition types] to
+(possibly empty) sets of identifiers of selected [condition options]. 
+
+<div class="example">
+This confirmation confirms condition type
+<http://purl.org/ontology/paia#FeeCondition> with condition option identified
+by <http://purl.org/ontology/dso#DocumentService> and confirms another
+condition type with two options from the example condition given above:
+
+```json
+{
+  "http://purl.org/ontology/paia#FeeCondition": [
+    "http://purl.org/ontology/dso#DocumentService"
+  ],
+  "http://example.org/purpose": [
+    "http://example.org/purpose/research",
+    "http://example.org/purpose/leisure"
+  ]
+}
+```
+</div>
+
+<div class="note">
+Valid confirmations can be empty, which is distinct from a missing
+confirmation.  Confirmations can also contain empty lists of option
+identifiers:
+
+```json
+{ }
+{ "http://purl.org/ontology/paia#FeeCondition": [ ] }
+```
+</div>
+
+### How conditions are met {.unnumbered}
+
+A PAIA server MUST use the following algorithm or an equivalent mechanism to
+check whether a given [condition] is met by a given [confirmation] or by a
+missing `confirm` field. If a condition is not met, the server MUST return a
+[document error] for the given document.
+
+1. If no confirmation is given, a default confirmation is created by
+   mapping all condition types to the default values of their condition
+   settings.
+
+2. All condition types in the conformation are removed, unless they
+   have a correspondence in the condition.
+
+3. All condition option identifiers in the conformation are removed,
+   unless they also occur in the condition settings of the corresponding
+   condition.
+
+4. If the confirmation contains multiple condition option identifiers for
+   a condition type that does not have a condition setting with field 
+   `multiple` set to `true`, all but the first identifier are removed.
+
+5. The condition is not met, if there is a condition type in the condition
+   without correspondence in the confirmation.
+
+5. The condition is met if for each condition setting either field `default`
+   is set to the empty array (`[ ]`) or the corresponding list of 
+   remaining option identifiers in the confirmation is not empty.
+
+<div class="note">
+
+To not select any default confirmation options, a PAIA client can send an empty
+object (`{ }`). 
+
+Non applying condition types or options in a confirmation are ignored, so a
+PAIA client can choose to *always* sent some custom default confirmation.
+
+</div>
+
+<div class="example">
+
+The following condition contains the empty set as default value, so it is met
+by *any* confirmation except a confirmation that does *not* include condition
+type <http://example.org/purpose> (for instance `{ }`):
+
+~~~json
+{
+  "http://example.org/purpose": {
+    "multiple": true,
+    "option": [
+      { "id": "http://example.org/research", "about": "for research" },
+      { "id": "http://example.org/leisure", "about": "for leisure" }
+    ],
+    "default": [ ]
+  }
+~~~
+
+All other possible confirmations are reduced to one of this cases (the first
+also used if no confirmation is given):
+
+~~~
+{ "http://example.org/purpose": [ ] }
+{ "http://example.org/purpose": [ "http://example.org/research" ] }
+{ "http://example.org/purpose": [ "http://example.org/leisure" ] }
+{ "http://example.org/purpose": [ "http://example.org/research", "http://example.org/leisure" ] }
+~~~
+
+</div>
 
 
 # PAIA core
@@ -542,11 +805,10 @@ response fields
      type      0..n   URI             list of custom URIs to identify patron types
     --------- ------ --------------- ----------------------------------------------
 
-Application SHOULD refer to a specialized API, such as LDAP, to get more
-detailed patron information.
+PAIA server documentation SHOULD refer to a specialized API, such as LDAP, to
+get more detailed patron information.
 
-**Example**
-
+<div class="example">
 ~~~
 GET /core/123 HTTP/1.1
 Host: example.org
@@ -572,6 +834,7 @@ X-OAuth-Scopes: read_fees read_items read_patron write_items
   "type": ["http://example.org/usertypes/default"]
 }
 ~~~
+</div>
 
 ## items
 
@@ -582,16 +845,16 @@ HTTP verb and URL
 scope
   : read_item
 response fields
-  :  name   occ    data type   description
-    ------ ------ ----------- -----------------------------------------
-     doc    0..n   document    list of documents (order is irrelevant)
-    ------ ------ ----------- -----------------------------------------
+  :  name   occ    data type  description
+    ------ ------ ---------- -----------------------------------------
+     doc    0..n  [document]  list of documents (order is irrelevant)
+    ------ ------ ---------- -----------------------------------------
 
-In most cases, each document will have an item URI for a particular copy, but
-users may also have requested an edition.
+In most cases, each document will refer to a particular copy (`doc.item`), but
+users may also have requested (`doc.requested`) and/or reserved (`doc.edition`)
+an edition.
 
-**Example**
-
+<div class="example">
 ~~~
 GET /core/123/items HTTP/1.1
 Host: example.org
@@ -635,6 +898,7 @@ X-OAuth-Scopes: read_items read_patron
   }]
 }
 ~~~
+</div>
 
 ## request
 
@@ -645,22 +909,35 @@ HTTP verb and URL
 scope
   : write_item
 request parameters
-  :  name            occ    data type   description
-    --------------- ------ ----------- ----------------------------------------
-     doc             1..n               list of documents requested
-     doc.item        0..1   URI         URI of a particular item
-     doc.edition     0..1   URI         URI of a particular edition
-     doc.storageid   0..1   URI         Requested pickup location (deprecated)
-    --------------- ------ ----------- ----------------------------------------
+  :  name            occ   data type      description
+    --------------- ------ -------------- ------------------------------------------
+     doc             1..n  array           list of documents requested
+     doc.item        0..1  URI             URI of a particular item
+     doc.edition     0..1  URI             URI of a particular edition
+     doc.confirm     0..1  [confirmation]  Confirmation
+     doc.storageid   0..1  URI             Requested document location (deprecated)
+    --------------- ------ -------------- ------------------------------------------
 response fields
   :  name   occ    data type   description
     ------ ------ ----------- -----------------------------------------
-     doc    1..n   document    list of documents (order is irrelevant)
+     doc    1..n  [document]    list of documents (order is irrelevant)
     ------ ------ ----------- -----------------------------------------
 
 The response SHOULD include the same documents as requested. A client MAY also
 use the [items](#items) method to get the service status after request.
 
+The field `doc.storageid` is deprecated and MUST be ignored if field
+`doc.confirm` is given. Otherwise a PAIA core server SHOULD map the value of
+field `doc.storageid` (e.g `http://example.org/a/location`) to a corresponding
+[confirmation] in field `doc.confirm`:
+
+```json
+{
+  "http://purl.org/ontology/paia#StorageCondition": [
+    "http://example.org/a/location"
+  ]
+}
+```
 
 ## renew
 
@@ -672,16 +949,17 @@ HTTP verb and URL
 scope
   : write_item
 request parameters
-  : ------------- ------ -------- ------------------------------
-     doc           1..n             list of documents to renew
-     doc.item      0..1   URI       URI of a particular item
-     doc.edition   0..1   URI       URI of a particular edition
-    ------------- ------ --------  -----------------------------
+  : ------------- ------ -------------- -----------------------------
+     doc           1..n  array           list of documents to renew
+     doc.item      0..1  URI             URI of a particular item
+     doc.edition   0..1  URI             URI of a particular edition
+     doc.confirm   0..1  [confirmation]  Confirmation
+    ------------- ------ -------------- -----------------------------
 response fields
-  :  name   occ    data type   description
-    ------ ------ ----------- -----------------------------------------
-     doc   1..n   document     list of documents (order is irrelevant)
-    ----- ------ ------------ -----------------------------------------
+  :  name   occ   data type  description
+    ------ ----- ---------- -----------------------------------------
+     doc   1..n  [document]  list of documents (order is irrelevant)
+    ----- ------ ---------- -----------------------------------------
 
 The response SHOULD include the same documents as requested. A client MAY also
 use the [items](#items) method to get the service status after renewal.
@@ -697,16 +975,17 @@ scope
   : write_item
 request parameters
   :  name          occ    data type
-    ------------- ------ ----------- -----------------------------
-     doc           1..n               list of documents to cancel
-     doc.item      0..1   URI         URI of a particular item
-     doc.edition   0..1   URI         URI of a particular edition
-    ------------- ------ ----------- -----------------------------
+    ------------- ------ --------------- -----------------------------
+     doc           1..n   array           list of documents to cancel
+     doc.item      0..1   URI             URI of a particular item
+     doc.edition   0..1   URI             URI of a particular edition
+     doc.confirm   0..1   [confirmation]  Confirmation
+    ------------- ------ --------------- -----------------------------
 response fields
-  :  name   occ    data type   description
-    ------ ------ ----------- -----------------------------------------
-     doc    1..n   document    list of documents (order is irrelevant)
-    ------ ------ ----------- -----------------------------------------
+  :  name   occ   data type   description
+    ------ ------ ---------- ----------------------------------------
+     doc    1..n  [document]  list of documents (order is irrelevant)
+    ------ ------ ---------- ----------------------------------------
 
 ## fees
 
@@ -718,27 +997,27 @@ scope
   : read_fees
 response fields
   :  name          occ    data type   description
-    ------------- ------ ----------- ----------------------------------------
-     amount        0..1   money       Sum of all fees. May also be negative!
-     fee           0..n               list of fees
+    ------------- ------ ----------- ---------------------------------------------------------------
+     amount        0..1   money       sum of all fees. May also be negative.
+     fee           0..n   array       list of fees
      fee.amount    1..1   money       amount of a single fee
      fee.date      0..1   date        date when the fee was claimed
      fee.about     0..1   string      textual information about the fee
      fee.item      0..1   URI         item that caused the fee
      fee.edition   0..1   URI         edition that caused the fee
-     fee.feetype   0..1   string      textual description of the type of fee
-     fee.feeid     0..1   URI         URI of the type of fee
-    ------------- ------ ----------- ----------------------------------------
+     fee.feetype   0..1   string      textual description of the type of service that caused the fee
+     fee.feeid     0..1   URI         URI of the type of service that caused the fee
+    ------------- ------ ----------- ---------------------------------------------------------------
 
-If given, `fee.feetype` MUST NOT refer to the individual fee but to the type of
-fee.  A PAIA server MUST return identical values of `fee.feetype` for identical
-`fee.feeid`.  The default value of `fee.feeid` is:
+A PAIA server MUST return identical values of `fee.feetype` for identical
+`fee.feeid` and identical content language. PAIA clients MAY override the value
+of `fee.feetype` based on `fee.feeid` and a preferred language. 
 
-* <http://purl.org/ontology/dso#DocumentService> if `fee.item` or `fee.edition` is set,
-* <http://purl.org/ontology/service#Service> otherwise (*experimental!*).
-
-If a fee was caused by a document (`fee.item` or `fee.edition`), the value of
-`fee.feeid` SHOULD be a class URI from the [Document Service Ontology](http://gbv.github.io/dso/).
+If a fee was caused by a document (`fee.item` or `fee.edition` is set) then
+`fee.feeid` SHOULD be taken as <http://purl.org/ontology/dso#DocumentService>
+if not given and SHOULD be a class URI from the [Document Service Ontology]
+otherwise. If the fee was confirmed with a [confirmation], the value of
+`fee.feeid` SHOULD be the value of the confirmed condition option.
 
 # PAIA auth
 
@@ -804,7 +1083,8 @@ response fields
      expires_in      0..1   nonnegative integer    The lifetime in seconds of the access token
     --------------  ------ ---------------------  -------------------------------------------------
 
-**Example of a successful login request**
+<div class="example">
+A successful login request:
 
 ~~~~
 POST /auth/login
@@ -841,7 +1121,7 @@ Pragma: no-cache
 }
 ~~~~
 
-**Example of a rejected login request**
+Response to a rejected login request:
 
 ~~~~
 HTTP/1.1 403 Forbidden
@@ -857,6 +1137,7 @@ WWW-Authenticate: Bearer realm="PAIA auth example"
   "error_description": "invalid patron or password"
 }
 ~~~~
+</div>
 
 ## logout
 
@@ -1051,10 +1332,14 @@ servicetypes
 * Voß, J. 2015. “PAIA Ontology“.
   <http://gbv.github.io/paia-rdf/>.
 
+* Voß, J. 2014. “Document Service Ontology“
+  <http://purl.org/ontology/dso>.
+
 * “PAIA Wiki“.
   <https://github.com/gbv/paia/wiki>
 
 [PAIA Ontology]: http://gbv.github.io/paia-rdf/
+[Document Service Ontology]: http://gbv.github.io/dso/
 
 ## Revision history
 
@@ -1067,7 +1352,7 @@ consists of three numbers, optionally followed by `+` and a suffix:
 * The major version (first number) is increased if changes require
   a modification of PAIA clients
 * The minor version (second number) is increased if changes require
-  a modification a PAIA servers
+  a modification of PAIA servers
 * The patch version (third number) is increased for backwards compatible
   fixes or extensions, such as the introduction of new optional fields
 * The optional suffix indicates informal changes in documentation
@@ -1076,6 +1361,12 @@ consists of three numbers, optionally followed by `+` and a suffix:
 
 Releases with functional changes are tagged with a version number and
 included at <https://github.com/gbv/paia/releases> with release notes.
+
+#### 1.3.0 (2015-11-06) {.unnumbered}
+
+* introduced conditions and confirmations
+* clarified uniqueness of storage/fee/condition id and textual description
+* removed experimental reference to service ontology
 
 #### 1.2.0 (2015-04-28) {.unnumbered}
 

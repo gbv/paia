@@ -9,3 +9,4 @@ ABSTRACT_FROM = abstract.md
 include makespec/Makefile
 
 HTML_ARGS+="--toc-depth=2"
+HTML_ARGS+="--css=makespec.css"
