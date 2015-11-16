@@ -15,8 +15,8 @@ PAIA consists of two independent parts:
   [logout], and password [change]) to get or invalidate an [access token], and to
   modify credentials.
 
-Authentication in PAIA is based on **OAuth 2.0** (RFC 6749) with bearer
-tokens (RFC 6750) over HTTPS (RFC 2818).  
+Authentication in PAIA is based on **OAuth 2.0** ([RFC 6749]) with bearer
+tokens ([RFC 6750]) over HTTPS ([RFC 2818]).
 
 
 ## Status of this document
@@ -49,7 +49,7 @@ PAIA Wiki at <https://github.com/gbv/paia/wiki>.
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
-interpreted as described in RFC 2119.
+interpreted as described in [RFC 2119].
 
 A PAIA server MUST implement [PAIA core] and it MAY implement [PAIA auth].  If
 PAIA auth is not implemented, another way SHOULD BE documented to distribute
@@ -111,10 +111,10 @@ core) or even password (PAIA auth) are compromised by the client.
 ## Access tokens and scopes
 
 All PAIA API methods, except PAI auth [login](#login) and HTTP OPTIONS requests
-require an **access token** as a special request parameter. The access token is a
-so called bearer token as described in RFC 6750. The access token can be sent
-either as a URL query parameter or in an HTTP header. For instance the following
-requests both get information about patron `123` with access token
+require an **access token** as a special request parameter. The access token is
+a so called bearer token as described in [RFC 6750]. The access token can be
+sent either as a URL query parameter or in an HTTP header. For instance the
+following requests both get information about patron `123` with access token
 `vF9dft4qmT`:
 
     curl -H "Authorization: Bearer vF9dft4qmT" https://example.org/core/123
@@ -284,7 +284,7 @@ ISO-8859-1.
 Malformed requests, failed authentication, unsupported methods, and unexpected
 server errors such as backend downtime etc. MUST result in an error response.
 An error response is returned with an HTTP status code 4xx (client error) or
-5xx (server error) as defined in RFC 2616, unless the request parameter
+5xx (server error) as defined in [RFC 2616], unless the request parameter
 `suppress_response_codes` is given.
 
 [Document errors] MUST NOT result in a request error but they are part of a
@@ -1033,10 +1033,10 @@ identifier. A username MAY even be equal to a patron identifier, but this is
 NOT RECOMMENDED.  An access token MUST NOT be equal to the password of the
 same user.
 
-A **PAIA auth** server acts as OAuth authorization server (RFC 6749) with
+A **PAIA auth** server acts as OAuth authorization server ([RFC 6749]) with
 password credentials grant, as defined in section 4.3 of the OAuth 2.0
 specification.  The access tokens provided by the server are so called OAuth
-2.0 bearer tokens (RFC 6750).
+2.0 bearer tokens ([RFC 6750]).
 
 A **PAIA auth** server MUST protect against brute force attacks (e.g. using
 rate-limitation or generating alerts). It is RECOMMENDED to further restrict
@@ -1091,16 +1091,11 @@ POST /auth/login
 Host: example.org
 User-Agent: MyPAIAClient/1.0
 Accept: application/json
-Content-Type: application/json
-Content-Length: 85
+Content-Type: application/x-www-form-urlencoded
 ~~~~
 
-~~~~ {.json}
-{
-  "username": "alice02",
-  "password": "jo-!97kdl+tt",
-  "grant_type": "password"
-}
+~~~~
+grant_type=password&username=alice02&password=jo-!97kdl%2B0tt
 ~~~~
 
 ~~~~
@@ -1314,6 +1309,13 @@ servicetypes
 
 * Rescorla, E. 2000. “RFC 2818: HTTP over TLS.”
   <http://tools.ietf.org/html/rfc2818>.
+
+[RFC 2119]: http://tools.ietf.org/html/rfc2119
+[RFC 4627]: http://tools.ietf.org/html/rfc4627
+[RFC 2616]: http://tools.ietf.org/html/rfc2616
+[RFC 6749]: http://tools.ietf.org/html/rfc6749
+[RFC 6750]: http://tools.ietf.org/html/rfc6750
+[RFC 2818]: http://tools.ietf.org/html/rfc2818
 
 ## Informative References
 
