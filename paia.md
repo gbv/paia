@@ -223,7 +223,7 @@ Accept
   : SHOULD be sent with value `application/json`
 
 Authorization
-  : MAY be sent to provide an [access token]
+  : MAY be sent to provide an [access token] or client credentials ([login])
 
 Accept-Language
   : MAY be sent to indicate preferred languages of textual response fields
@@ -1202,20 +1202,17 @@ returned as  single value like this:
 
 # PAIA auth
 
-**PAIA auth** defines three methods for authentication based on username and
-password. These methods can be used to get access tokens and patron
-identifiers, which are required to access **[PAIA core]** methods. There MAY be
-additional or alternative ways to distribute and manage access tokens and
-patron identifiers.
-
-There is no strict one-to-one relationship between username/password and patron
-identifier/access token, but a username SHOULD uniquely identify a patron
-identifier. A username MAY even be equal to a patron identifier, but this is
-NOT RECOMMENDED.  An access token MUST NOT be equal to the password of the
-same user.
+**PAIA auth** defines three methods to get access tokens and patron identifiers
+([login]), invalidate access tokens ([logout]), and change passwords
+([change]). Access tokens and patron identifiers are required to access **[PAIA
+core]** methods. There MAY be additional or alternative ways to distribute and
+manage access tokens and patron identifiers.
 
 A **PAIA auth** server acts as OAuth authorization server ([RFC 6749]) with
-password credentials grant, as defined in section 4.3 of the OAuth 2.0
+password credentials grant, as defined in [section
+4.3](https://tools.ietf.org/html/rfc6749#section-4.3) of OAuth specification,
+and/or client credentials grant, as defined in [section
+4.4](https://tools.ietf.org/html/rfc6749#section-4.4) of the OAuth
 specification.  The access tokens provided by the server are so called OAuth
 2.0 bearer tokens ([RFC 6750]).
 
@@ -1228,27 +1225,51 @@ authorization.
 ## login
 
 The PAIA auth `login` method is the only PAIA method that does not require an
-access token as part of the query.
+access token as part of the query. The URL of this method acts as OAuth Token
+Endpoint to obtain access tokens. A PAIA auth server can implement passwort
+credentials grant, client credentials grant, or both.
 
 purpose
   : Get a patron identifier and access token to access patron information
 
 URL
   : POST https://example.org/auth/**login**
-    (in addition a PAIA auth server MAY support HTTP GET requests)
+    (a PAIA auth server MAY also support HTTP GET requests)
+
+request header
+  : The request header "Access" is required for client credentials grant
+    with HTTP basic authentification as defined in [RFC 2617].
 
 request parameters
   :  name          occ   data type
-    ------------ ------ ----------- --------------------------------
-     username     1..1   string      User name of a patron
-     password     1..1   string      Password of a patron
-     grant_type   1..1   string      Fixed value set to "password"
+    ------------ ------ ----------- -------------------------------------------
+     username     0..1   string      User name of a patron
+     password     0..1   string      Password of a patron
+     patron       0..1   string      Patron identifier
+     grant_type   1..1   string      One of "password" and "client_credentials"
      scope        0..1   string      Space separated list of scopes
-    ------------ ------ ----------- --------------------------------
+    ------------ ------ ----------- -------------------------------------------
 
-If no `scope` parameter is given, it is set to the default value `read_patron
-read_fees read_items write_items` for full access to all PAIA core methods (see
-[access tokens and scopes ](#access-tokens-and-scopes)).
+    For passwort credentials grant
+
+    * parameter "grant_type" MUST be set to "password"
+    * parameters "username" and "password" are REQUIRED
+
+    For client credentials grant
+
+    * parameter "grant_type" MUST be set to "client_credentials"
+    * parameters "username" and "password" SHOULD be ignored
+
+The request parameter "patron" is only required if username or client
+credentials do not uniquely refer to a patron identifier. The parameter SHOULD
+be ignored otherwise. A username SHOULD uniquely identify a patron identifier.
+A username MAY even be equal to a patron identifier, but this is NOT
+RECOMMENDED.
+
+If no `scope` parameter is given, and username or client credentials do not
+imply a default scope, the scope SHOULD be set to the default value
+`read_patron read_fees read_items write_items` for full access to all PAIA core
+methods (see [access tokens and scopes ](#access-tokens-and-scopes)).
 
 The response format is a JSON structure as defined in section 5.1 (successful
 response) and section 5.2 (error response) of OAuth 2.0. The PAIA auth server
@@ -1266,8 +1287,10 @@ response fields
      expires_in      0..1   nonnegative integer    The lifetime in seconds of the access token
     --------------  ------ ---------------------  -------------------------------------------------
 
+An access token SHOULD NOT be equal to the password of the same user.
+
 <div class="example">
-A successful login request:
+Successful login request with passwort grant:
 
 ~~~~
 POST /auth/login HTTP/1.1
@@ -1297,6 +1320,21 @@ Pragma: no-cache
   "patron": "8362432",
   "scope": "read_patron read_fees read_items write_items"
 }
+~~~~
+
+Login request with client credentials grant:
+
+~~~~
+POST /auth/login HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Authorization: Basic b697689fa1adb419d86dbf8ffef9ce6d
+Accept: application/json
+Content-Type: application/x-www-form-urlencoded
+~~~~
+
+~~~~
+grant_type=client_credentials&patron=8362432
 ~~~~
 
 Response to a rejected login request:
@@ -1517,6 +1555,9 @@ servicetypes
 * Fielding, R. 1999. “RFC 2616: Hypertext Transfer Protocol”.
   <http://tools.ietf.org/html/rfc2616>.
 
+* Franks, J. et al. 1999: “RFC 2617: HTTP Authentication: Basic and Digest Access Authentication”.
+  <http://tools.ietf.org/html/rfc2617>.
+
 * D. Hardt. 2012. “RFC 6749: The OAuth 2.0 Authorization Framework”.
   <http://tools.ietf.org/html/rfc6749>.
 
@@ -1532,6 +1573,7 @@ servicetypes
 [RFC 2119]: http://tools.ietf.org/html/rfc2119
 [RFC 4627]: http://tools.ietf.org/html/rfc4627
 [RFC 2616]: http://tools.ietf.org/html/rfc2616
+[RFC 2617]: http://tools.ietf.org/html/rfc2617
 [RFC 6749]: http://tools.ietf.org/html/rfc6749
 [RFC 6750]: http://tools.ietf.org/html/rfc6750
 [RFC 2818]: http://tools.ietf.org/html/rfc2818
@@ -1583,9 +1625,10 @@ consists of three numbers, optionally followed by `+` and a suffix:
 Releases with functional changes are tagged with a version number and
 included at <https://github.com/gbv/paia/releases> with release notes.
 
-#### 1.4.0 (not released yet) {.unnumbered}
+#### 1.3.1 (experimental release) {.unnumbered}
 
 * added PAIA core method to update patron
+* extend PAIA auth login to optionally support OAuth client credentials grant
 * extend PAIA auth logout method with token_type_hint and optional response fields
 
 #### 1.3.0 (2015-11-06) {.unnumbered}
