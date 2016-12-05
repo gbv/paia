@@ -8,10 +8,10 @@
 PAIA consists of two independent parts:
 
 * **[PAIA core]** defines six basic [API methods] to look up loaned and reserved
-  [items], to [request] and [cancel] loans and reservations, and to look up 
+  [items], to [request] and [cancel] loans and reservations, and to look up
   [fees] and general [patron] information.
 
-* **[PAIA auth]** defines three authentication [API methods] ([login], 
+* **[PAIA auth]** defines three authentication [API methods] ([login],
   [logout], and password [change]) to get or invalidate an [access token], and to
   modify credentials.
 
@@ -27,8 +27,8 @@ library systems (ILS), such as NISO Circulation Interchange Protocol (NCIP),
 SIP2, \[X]SLNP,[^SLNP] DLF-ILS recommendations, and VuFind ILS.
 
 [^SLNP]: The Simple Library Network Protocol (SLNP) and its variant XSLNP is an
-  internal protocol of the the SISIS-Sunrise™ library system, providing access 
-  to patron information, among other functionality. OCLC does not allow 
+  internal protocol of the the SISIS-Sunrise™ library system, providing access
+  to patron information, among other functionality. OCLC does not allow
   publication of the specification or public use of SLNP.
 
 All sources and updates can be found in a public git repository at
@@ -54,18 +54,19 @@ interpreted as described in [RFC 2119].
 A PAIA server MUST implement [PAIA core] and it MAY implement [PAIA auth].  If
 PAIA auth is not implemented, another way SHOULD BE documented to distribute
 patron identifiers and access tokens. A PAIA server MAY support only a subset
-of methods but it MUST return a valid response or error response on every
+of methods but it MUST return a valid response or an [error response] on every
 method request, as defined in this document.
 
 
 [PAIA core]: #paia-core
 [PAIA auth]: #paia-auth
 [patron]: #patron
+[update patron]: #update-patron
 [items]: #items
 [renew]: #renew
 [request]: #request
 [cancel]: #cancel
-[fees]: #Fees
+[fees]: #fees
 [login]: #login
 [logout]: #logout
 [change]: #change
@@ -78,20 +79,20 @@ method request, as defined in this document.
 
 ## API methods
 
-Each API method is accessed at a unique URL with a HTTP verb GET or POST:
+Each API method is accessed at a unique URL with a HTTP verb GET, POST, or PATCH:
 
-  [PAIA core]                                       [PAIA auth]
--------------------------------------------------- ----------------------------------------
-  GET [patron]: general patron information          POST [login]: get access token
-  GET [items]: current loans, reservations, …       POST [logout]: invalidate access token
-  POST [request]: new reservation, delivery, …      POST [change]: modify credentials
-  POST [renew]: existing loans, reservations, …     
-  POST [cancel]: requests, reservations, …     
+[PAIA core]                                                                 [PAIA auth]
+--------------------------------------------------------------------------- --------------------------------------
+  [GET](#patron)/[PATCH](#update-patron) patron: general patron information POST [login]: get access token
+  GET [items]: current loans, reservations, …                               POST [logout]: invalidate access token
+  POST [request]: new reservation, delivery, …                              POST [change]: modify credentials
+  POST [renew]: existing loans, reservations, …
+  POST [cancel]: requests, reservations, …
   GET [fees]: paid and open charges
--------------------------------------------------- ----------------------------------------
+--------------------------------------------------------------------------- --------------------------------------
 
-All API method URLs MUST also be accessible with HTTP verb OPTIONS. All API
-methods with HTTP verb GET MAY also be accessible with HTTP verb HEAD.
+All supported API method URLs MUST also be accessible with HTTP verb OPTIONS.
+All API methods with HTTP verb GET MAY also be accessible with HTTP verb HEAD.
 
 API method URLs share a common base URL for PAIA core methods and common base
 URL for PAIA auth methods.  A server SHOULD NOT provide additional methods at
@@ -101,7 +102,7 @@ as belonging to PAIA.
 Base URLs of PAIA auth and PAIA core are not required to share a common host,
 nor to include the URL path `core/` or `auth/`. In the following, the base URL
 <https://example.org/core/> is used for PAIA core and
-<https://example.org/auth/> for PAIA auth. 
+<https://example.org/auth/> for PAIA auth.
 
 For security reasons, PAIA methods MUST be requested via HTTPS only. A PAIA
 client MUST NOT ignore SSL certificate errors; otherwise access token (PAIA
@@ -110,10 +111,10 @@ core) or even password (PAIA auth) are compromised by the client.
 
 ## Access tokens and scopes
 
-All PAIA API methods, except PAI auth [login](#login) and HTTP OPTIONS requests
-require an **access token** as a special request parameter. The access token is
-a so called bearer token as described in [RFC 6750]. The access token can be
-sent either as a URL query parameter or in an HTTP header. For instance the
+All PAIA API methods, except PAI auth [login] and HTTP OPTIONS requests require
+an **access token** as a special request parameter. The access token is a so
+called bearer token as described in [RFC 6750]. The access token can be sent
+either as a URL query parameter or in an HTTP header. For instance the
 following requests both get information about patron `123` with access token
 `vF9dft4qmT`:
 
@@ -124,14 +125,20 @@ An access token is valid for a limited set of actions, referred to as
 **scope**.  The following scopes are possible for PAIA core:
 
 read_patron
-  : Get patron information by the [patron](#patron) method.
+  : Get patron information by the [patron] method.
+
+update_patron / update_patron_name / update_patron_email / update_patron_address
+  : Update parts of the patron information by the [update patron] method.
+
 read_fees
-  : Get fees of a patron by the [fees](#Fees) method.
+  : Get fees of a patron by the [fees] method.
+
 read_items
-  : Get a patron’s item information by the [items](#items) method.
+  : Get a patron’s item information by the [items] method.
+
 write_items
-  : Request, renew, and cancel items by the [request](#request), 
-    [renew](#renew), and [cancel](#cancel) methods.
+  : Request, renew, and cancel items by the [request], [renew], and
+    [cancel] methods.
 
 For instance a particular token with scopes `read_patron` and `read_items` may
 be used for read-only access to information about a patron, including its
@@ -140,7 +147,7 @@ loans and requested items but not its fees.
 For PAIA auth there is an additional scope:
 
 change_password
-  : Change the password of a patron with the PAIA auth [change](#change) method.
+  : Change the password of a patron with the PAIA auth [change] method.
 
 A PAIA auth server MAY support additional scopes to share an access token with
 other services.
@@ -192,11 +199,13 @@ query fields:
 access_token
   : An [access token] can be sent either as URL query parameter or as HTTP
     request header.
+
 callback
   : A JavaScript callback method name to return JSONP instead of JSON. The
     callback MUST only contain alphanumeric characters and underscores.
+
 suppress_response_codes
-  : If this parameter is present, *all* responses MUST be returned with a 
+  : If this parameter is present, *all* responses MUST be returned with a
     200 OK status code, even [request errors](#request-errors).
 
 
@@ -209,14 +218,18 @@ particular:
 
 User-Agent
   : SHOULD be sent with an appropriate client name and version number
+
 Accept
   : SHOULD be sent with value `application/json`
+
 Authorization
   : MAY be sent to provide an [access token]
+
 Accept-Language
   : MAY be sent to indicate preferred languages of textual response fields
+
 Content-Type
-  : SHOULD be sent for HTTP POST with value `application/json` or 
+  : SHOULD be sent for HTTP POST with value `application/json` or
     for PAIA core and `application/x-www-form-urlencoded` for PAIA auth.
 
 A OPTIONS preflight request for Cross-Origin Resource Sharing (CORS) MUST
@@ -224,8 +237,10 @@ include the cross-origin request headers:
 
 Origin
   : Where the cross-origin request originates from
-Access-Control-Request-Method 
+
+Access-Control-Request-Method
   : The HTTP verb of the actual request (GET or POST)
+
 Access-Control-Request-Headers
   : The value `Authorization` if access tokens are sent as HTTP headers
 
@@ -241,37 +256,44 @@ headers:
 
 Content-Language
   : The language of textual response fields
+
 Content-Type
-  : The value `application/json` or `application/json; charset=utf-8` for 
-    JSON response; the value `application/javascript` or 
+  : The value `application/json` or `application/json; charset=utf-8` for
+    JSON response; the value `application/javascript` or
     `application/javascript; charset=utf-8` for JSONP response
+
 X-OAuth-Scopes
   : A space-separated list of [scopes], the current token has authorized,
-    not limited to PAIA scopes. The `change_password` scope MAY be omitted 
+    not limited to PAIA scopes. The `change_password` scope MAY be omitted
     in PAIA core responses.
+
 X-Accepted-OAuth-Scopes
   : A space-separated list of [scopes], the current method checks for
+
 Access-Control-Expose-Headers
   : The value `X-OAuth-Scopes X-Accepted-OAuth-Scopes`
+
 Access-Control-Allow-Origin
   : The value `*` or another origin domain in response to a `Origin` request
     header.
+
 WWW-Authenticate
   : The value `Bearer` for [request errors](#request-errors) with status 401
+
 Allow
-  : A list of supported HTTP verbs (e.g. `GET, HEAD, OPTIONS`) for 
+  : A list of supported HTTP verbs (e.g. `GET, HEAD, OPTIONS`) for
     [request errors](#request-errors) with status 405
 
 ## HTTP message body
 
-All POST requests MUST include a HTTP message body.
+All POST and PATCH requests MUST include a HTTP message body.
 
 * For [PAIA core] the message body MUST be sent in JSON format with content type
-  `application/json`. A PAIA core server MAY also support message body as URL 
+  `application/json`. A PAIA core server MAY also support message body as URL
   encoded query string.
 
 * For [PAIA auth] the message body MUST be sent as URL encoded query string
-  with content type `application/x-www-form-urlencoded`. A PAIA auth server 
+  with content type `application/x-www-form-urlencoded`. A PAIA auth server
   MAY also support message body in JSON.
 
 A PAIA Server MUST also accept the explicit charset UTF8 (content type
@@ -280,6 +302,8 @@ charset=utf-8`). A PAIA Server MAY support additional request charsets such as
 ISO-8859-1.
 
 ## Request errors
+
+[error response]: #request-errors
 
 Malformed requests, failed authentication, unsupported methods, and unexpected
 server errors such as backend downtime etc. MUST result in an error response.
@@ -306,7 +330,7 @@ in PAIA core. It SHOULD be omitted with PAIA auth requests to not confuse OAuth
 clients.
 
 The response header of a request error MUST include a `WWW-Authenticate` header field to
-indicate the need of providing a proper access token. The field MAY include a short name of the 
+indicate the need of providing a proper access token. The field MAY include a short name of the
 PAIA service with a "realm" parameter:
 
     WWW-Authenticate: Bearer
@@ -333,29 +357,29 @@ GitHub API](http://developer.github.com/v3/#client-errors).
 
  invalid_request        400   Malformed request (for instance error parsing JSON, unsupported
                               request content type, etc.)
- 
+
  invalid_request        422   The request parameters could be parsed but they don’t match the
                               request method (for instance missing fields, invalid values, etc.)
 
  invalid_grant          401   The access token was missing, invalid, or expired
 
  insufficient_scope     403   The access token was accepted but it lacks permission for the request
- 
+
  access_denied          403   Wrong or missing credentials to get an access token
 
  internal_error         500   An unexpected error occurred. This error corresponds to a bug in
                               the implementation of a PAIA auth/core server
- 
+
  service_unavailable    503   The request couldn't be serviced because of a temporary failure
 
  bad_gateway            502   The request couldn't be serviced because of a backend failure
                               (for instance the library system’s database)
- 
+
  gateway_timeout        504   The request couldn't be serviced because of a backend failure
 --------------------- ------ ------------------------------------------------------------------------
 
 For instance the following response could result from a request with malformed
-URIs: 
+URIs:
 
 ~~~~ {.json}
 {
@@ -372,17 +396,21 @@ The following data types are used to define request and response format:
 
 string
   : A Unicode string. Strings MAY be empty.
+
 nonnegative integer
   : An integer number larger than or equal to zero.
+
 boolean
-  : Either true or false. Note that omitted boolean values are *not* false by 
+  : Either true or false. Note that omitted boolean values are *not* false by
     default but unknown!
+
 date
   : A date value in `YYYY-MM-DD` format. A datetime value with time and timezone
     SHOULD be used instead, if possible.
+
 datetime
   : A date value in `YYY-MM-DD` format, optionally followed by a time value. A
-    time value consists of the letter `T` followed by `hh:mm:ss` format, and a 
+    time value consists of the letter `T` followed by `hh:mm:ss` format, and a
     timezone indicator (`Z` for UTC or `+hh:mm` or `-hh:mm`) where:
 
     * `YYYY` indicates a year (`0001` through `9999`)
@@ -398,13 +426,15 @@ datetime
 money
   : A monetary value with currency (format `[0-9]+\.[0-9][0-9] [A-Z][A-Z][A-Z]`),
     for instance `0.80 USD`.
+
 email
   : A syntactically correct email address.
+
 URI
   : A syntactically correct URI.
 
 account state
-  : A nonnegative integer representing the current state of a patron account. 
+  : A nonnegative integer representing the current state of a patron account.
     Possible values are:
 
     0. active
@@ -413,13 +443,13 @@ account state
     3. inactive because of outstanding fees
     4. inactive because account expired and outstanding fees
 
-    A PAIA server MAY define additional states which can be mapped to `1` by PAIA 
+    A PAIA server MAY define additional states which can be mapped to `1` by PAIA
     clients. In JSON account states MUST be encoded as numbers instead of strings.
 
 service status
   : A nonnegative integer representing the current status in fulfillment of a
     service. In most cases the service is related to a document, so the service
-	status is a relation between a particular document and a particular patron. 
+	status is a relation between a particular document and a particular patron.
 	Possible values are:
 
     0. no relation (this applies to most combinations of document and patron, and
@@ -453,7 +483,7 @@ A **document** is a key-value structure with the following fields:
  queue        0..1   nonnegative integer   number of waiting requests for the document or item
  renewals     0..1   nonnegative integer   number of times the document has been renewed
  reminder     0..1   nonnegative integer   number of times the patron has been reminded
- starttime    0..1   datetime              date and time when the status began 
+ starttime    0..1   datetime              date and time when the status began
  endtime      0..1   datetime              date and time when the status will expire
  duedate      0..1   date                  date when the current status will expire (*deprecated*)
  cancancel    0..1   boolean               whether an ordered or provided document can be canceled
@@ -486,7 +516,7 @@ Note that timezone information is mandatory in these fields.  The field
 If both `storage` and `storageid` are given, a PAIA server MUST return
 identical values of `storage` for identical `id` and identical content
 language.  PAIA clients MAY override the value of `storage` based on
-`storageid` and a preferred language. 
+`storageid` and a preferred language.
 
 Unknown document URIs and failed attempts to request, renew, or cancel a
 document MUST NOT result in a [request error](#request-errors). Instead they
@@ -551,7 +581,7 @@ available.
 [condition options]: #conditions
 
 A **condition** is a key-value structure that maps condition types to condition
-settings. 
+settings.
 
 Conditions can be included in response field `condition` of a [document] if the
 same document also includes a document error in field `error`. The error SHOULD
@@ -579,7 +609,7 @@ A **condition setting** is a key-value structure with the following keys:
 A missing field `multiple` MUST be treated equal to a `multiple` field with
 value `false`. The field `default` MAY be an empty array --- this case MUST NOT
 be confused with a missing field `default`. All URIs listed in field `default`
-MUST also be included as field `id` of one condition option. 
+MUST also be included as field `id` of one condition option.
 
 If multiple condition options are given, they SHOULD be ordered, for instance
 by popularity.
@@ -596,7 +626,7 @@ A **condition option** is a key-value structure with the following keys:
 A condition setting MUST NOT contain multiple condition options with same `id`.
 A PAIA server MUST return identical values of `about` for identical values of
 `id` and identical content language.  PAIA clients MAY override the value of
-`about` based on `id` and a preferred language. 
+`about` based on `id` and a preferred language.
 
 Values of `amout` matching the regular expression `/^0+\.00/` MUST be treated
 equal to no amount and vice versa.
@@ -617,12 +647,12 @@ so an explicit confirmation is required.
 ~~~json
 {
   "http://purl.org/ontology/paia#FeeCondition": {
-    "option": [ 
+    "option": [
       {
         "id": "http://purl.org/ontology/dso#Loan",
         "about": "loan",
         "amount": "0.50 EUR"
-      } 
+      }
     ]
   }
 }
@@ -657,11 +687,11 @@ which can also be selected together. An empty set is given as default option.
   "http://example.org/purpose": {
     "multiple": true,
     "option": [
-      { 
+      {
         "id": "http://example.org/purpose/research",
         "about": "document usage for research"
       },
-      { 
+      {
         "id": "http://example.org/purpose/leisure",
         "about": "document usage for leisure"
       }
@@ -679,7 +709,7 @@ Confirmations can be sent as part of a [PAIA core] request of methods
 among condition options for selected condition types.
 
 A **confirmation** is a key-value structure that maps [condition types] to
-(possibly empty) sets of identifiers of selected [condition options]. 
+(possibly empty) sets of identifiers of selected [condition options].
 
 <div class="example">
 This confirmation confirms condition type
@@ -730,20 +760,20 @@ missing `confirm` field. If a condition is not met, the server MUST return a
    condition.
 
 4. If the confirmation contains multiple condition option identifiers for
-   a condition type that does not have a condition setting with field 
+   a condition type that does not have a condition setting with field
    `multiple` set to `true`, all but the first identifier are removed.
 
 5. The condition is not met, if there is a condition type in the condition
    without correspondence in the confirmation.
 
 5. The condition is met if for each condition setting either field `default`
-   is set to the empty array (`[ ]`) or the corresponding list of 
+   is set to the empty array (`[ ]`) or the corresponding list of
    remaining option identifiers in the confirmation is not empty.
 
 <div class="note">
 
 To not select any default confirmation options, a PAIA client can send an empty
-object (`{ }`). 
+object (`{ }`).
 
 Non applying condition types or options in a confirmation are ignored, so a
 PAIA client can choose to *always* sent some custom default confirmation.
@@ -790,10 +820,13 @@ URI escaped patron identifier.
 
 purpose
   : Get general information about a patron
+
 HTTP verb and URL
   : GET https://example.org/core/**{uri_escaped_patron_identifier}**
+
 scope
   : read_patron
+
 response fields
   :  name      occ    data type       description
     --------- ------ --------------- ----------------------------------------------
@@ -826,8 +859,81 @@ X-OAuth-Scopes: read_fees read_items read_patron write_items
 
 ~~~{.json}
 {
-  "name": "Jane Q. Public", 
+  "name": "Jane Q. Public",
   "email": "jane@example.org",
+  "address": "Park Street 2, Springfield",
+  "expires": "2015-05-18",
+  "status": 0,
+  "type": ["http://example.org/usertypes/default"]
+}
+~~~
+</div>
+
+## update patron
+
+purpose
+  : Update general information about a patron
+
+HTTP verb and URL
+  : PATCH https://example.org/core/**{uri_escaped_patron_identifier}**
+
+scopes
+  : update_patron / update_patron_name / update_patron_email / update_patron_address
+
+request parameters
+  : name      occ    data type  description
+    --------- ------ --------- ------------------------------------
+     name      0..1   string    new full name of the patron
+     email     0..1   email     new email address of the patron
+     address   0..1   string    new freeform address of the patron
+    --------- ------ --------- ------------------------------------
+
+response fields
+  : Same as [patron] method on success, [error](#request-errors) otherwise.
+
+This PAIA core method can be used to modify parts of the general patron
+information:  Fields "name", "email", and "address" can be changed with scope
+`update_patron` for all of these fields, or with the scopes
+`update_patron_name`, `update_patron_email`, and/or `update_patron_address` for
+each corresponding field.
+
+This PAIA core method will be introduced with PAIA 1.4.0.  A PAIA server MAY
+chose not not implement this method and return an [error response] with error
+code `access_denied` (403), `invalid_request` (405), or `not_implemented` (501)
+instead.
+
+<div class="note">
+Update of patron fields expires, status, and type via this method is not
+supported.  To change a patron password see method [change] of PAIA auth.
+</div>
+
+<div class="example">
+~~~
+PATCH /core/123 HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer 08568be488a2539
+~~~
+
+~~~{.json}
+{
+  "email": "janes-new-mail@example.com"
+}
+~~~
+
+~~~
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-Accepted-OAuth-Scopes: update_patron update_patron_email
+X-OAuth-Scopes: read_patron update_patron
+~~~
+
+~~~{.json}
+{
+  "name": "Jane Q. Public",
+  "email": "janes-new-mail@example.com",
   "address": "Park Street 2, Springfield",
   "expires": "2015-05-18",
   "status": 0,
@@ -840,10 +946,13 @@ X-OAuth-Scopes: read_fees read_items read_patron write_items
 
 purpose
   : Get a list of loans, reservations and other items related to a patron
+
 HTTP verb and URL
   : GET https://example.org/core/**{uri_escaped_patron_identifier}**/items
+
 scope
   : read_item
+
 response fields
   :  name   occ    data type  description
     ------ ------ ---------- -----------------------------------------
@@ -904,10 +1013,13 @@ X-OAuth-Scopes: read_items read_patron
 
 purpose
   : Request one or more items for reservation or delivery.
+
 HTTP verb and URL
   : POST https://example.org/core/**{uri_escaped_patron_identifier}**/request
+
 scope
   : write_item
+
 request parameters
   :  name            occ   data type      description
     --------------- ------ -------------- ------------------------------------------
@@ -917,6 +1029,7 @@ request parameters
      doc.confirm     0..1  [confirmation]  Confirmation
      doc.storageid   0..1  URI             Requested document location (deprecated)
     --------------- ------ -------------- ------------------------------------------
+
 response fields
   :  name   occ    data type   description
     ------ ------ ----------- -----------------------------------------
@@ -944,10 +1057,13 @@ field `doc.storageid` (e.g `http://example.org/a/location`) to a corresponding
 purpose
   : Renew one or more documents usually held by the patron. PAIA servers
     MAY also allow renewal of reserved, ordered, and provided documents.
+
 HTTP verb and URL
   : POST https://example.org/core/**{uri_escaped_patron_identifier}**/renew
+
 scope
   : write_item
+
 request parameters
   : ------------- ------ -------------- -----------------------------
      doc           1..n  array           list of documents to renew
@@ -955,6 +1071,7 @@ request parameters
      doc.edition   0..1  URI             URI of a particular edition
      doc.confirm   0..1  [confirmation]  Confirmation
     ------------- ------ -------------- -----------------------------
+
 response fields
   :  name   occ   data type  description
     ------ ----- ---------- -----------------------------------------
@@ -969,10 +1086,13 @@ use the [items](#items) method to get the service status after renewal.
 
 purpose
   : Cancel requests for items.
+
 HTTP verb and URL
   : POST https://example.org/core/**{uri_escaped_patron_identifier}**/cancel
+
 scope
   : write_item
+
 request parameters
   :  name          occ    data type
     ------------- ------ --------------- -----------------------------
@@ -981,6 +1101,7 @@ request parameters
      doc.edition   0..1   URI             URI of a particular edition
      doc.confirm   0..1   [confirmation]  Confirmation
     ------------- ------ --------------- -----------------------------
+
 response fields
   :  name   occ   data type   description
     ------ ------ ---------- ----------------------------------------
@@ -991,10 +1112,13 @@ response fields
 
 purpose
   : Look up current fees of a patron.
+
 HTTP verb and URL
   : GET https://example.org/core/**{uri_escaped_patron_identifier}**/fees
+
 scope
   : read_fees
+
 response fields
   :  name          occ    data type   description
     ------------- ------ ----------- ---------------------------------------------------------------
@@ -1011,7 +1135,7 @@ response fields
 
 A PAIA server MUST return identical values of `fee.feetype` for identical
 `fee.feeid` and identical content language. PAIA clients MAY override the value
-of `fee.feetype` based on `fee.feeid` and a preferred language. 
+of `fee.feetype` based on `fee.feeid` and a preferred language.
 
 If a fee was caused by a document (`fee.item` or `fee.edition` is set) then
 `fee.feeid` SHOULD be taken as <http://purl.org/ontology/dso#DocumentService>
@@ -1025,7 +1149,7 @@ otherwise. If the fee was confirmed with a [confirmation], the value of
 password. These methods can be used to get access tokens and patron
 identifiers, which are required to access **[PAIA core]** methods. There MAY be
 additional or alternative ways to distribute and manage access tokens and
-patron identifiers. 
+patron identifiers.
 
 There is no strict one-to-one relationship between username/password and patron
 identifier/access token, but a username SHOULD uniquely identify a patron
@@ -1051,13 +1175,15 @@ access token as part of the query.
 
 purpose
   : Get a patron identifier and access token to access patron information
+
 URL
-  : POST https://example.org/auth/**login** 
+  : POST https://example.org/auth/**login**
     (in addition a PAIA auth server MAY support HTTP GET requests)
+
 request parameters
   :  name          occ   data type
     ------------ ------ ----------- --------------------------------
-     username     1..1   string      User name of a patron 
+     username     1..1   string      User name of a patron
      password     1..1   string      Password of a patron
      grant_type   1..1   string      Fixed value set to "password"
      scope        0..1   string      Space separated list of scopes
@@ -1138,14 +1264,17 @@ WWW-Authenticate: Bearer realm="PAIA auth example"
 
 purpose
   : Invalidate an access token
+
 URL
   : POST https://example.org/auth/**logout**
     (in addition a PAIA auth server MAY support HTTP GET requests)
+
 request parameters
   :  name     occ    data type     description
     -------- ------ ----------- -------------------
      patron   1..1   string      patron identifier
     -------- ------ ----------- -------------------
+
 response fields
   :  name     occ    data type     description
     -------- ------ ----------- -------------------
@@ -1161,51 +1290,61 @@ invalidate additional access tokens that were created for the same patron.
 
 purpose
   : Change password of a patron
+
 URL
   : POST https://example.org/auth/**change**
+
 scope
   : change_password
+
 request parameters
   :  name           occ    data type   description
     -------------- ------ ----------- ----------------------------
      patron         1..1   string      Patron identifier
-     username       1..1   string      User name of the patron 
+     username       1..1   string      User name of the patron
      old_password   1..1   string      Password of the patron
      new_password   1..1   string      New password of the patron
     -------------- ------ ----------- ----------------------------
+
 response fields
   :  name     occ    data type     description
     -------- ------ ----------- -------------------
      patron   1..1   string      patron identifier
     -------- ------ ----------- -------------------
 
-The server MUST check 
+The server MUST check
 
-* the access token 
+* the access token
 * whether username and password match
 * whether the user identified by username has scope `change_password`
 
-A PAIA server MAY reject this method and return an [error
-response](#error-response) with error code `access_denied` (403) or error code
-`not_implemented` (501). On success, the patron identifier is returned.
+A PAIA server MAY reject this method and return an [error response] with error
+code `access_denied` (403) or error code `not_implemented` (501). On success,
+the patron identifier is returned.
 
 # Glossary
 
 access token
   : A confidential random string that must be sent with each PAIA request
     for authentication.
+
 document
   : A concrete or abstract document, such as a work, or an edition.
+
 item
   : A concrete copy of a document, for instance a particular physical book.
+
 PAIA auth server
-  : HTTP endpoint that implements the PAIA auth specification, so 
+  : HTTP endpoint that implements the PAIA auth specification, so
     all PAIA auth methods can be accessed at a common base URL.
+
 PAIA core server
-  : HTTP endpoint that implements the PAIA core specification, so 
+  : HTTP endpoint that implements the PAIA core specification, so
     all PAIA core methods can be accessed at a common base URL.
+
 patron
   : An account of a library user
+
 patron identifier
   : A Unicode string that identifies a library patron account.
 
@@ -1218,7 +1357,7 @@ chain of trust and is as secure as sending access tokens in plain text.
 
 To limit the risk of spoiled access tokens, PAIA servers SHOULD put limits on
 the lifetime of access tokens and on the number of allowed requests per minute
-among other security limitations. 
+among other security limitations.
 
 It is also known that several library systems allow weak passwords. For this reason
 PAIA auth servers MUST follow appropriate security measures, such as protecting
@@ -1254,7 +1393,7 @@ Transitions marked with "/" may also be possible in special circumstances: for
 instance a book ordered from the stacks (status 2) may turn out to be damaged,
 so it is first repaired and reserved for the patron meanwhile (status 1).
 Transitions for digital publications may also be different. Note that a PAIA
-server does not need to implement all service status. A reasonable subset is 
+server does not need to implement all service status. A reasonable subset is
 to only support 0, 1, 3, and 5.
 
 ## Digital documents
@@ -1265,15 +1404,15 @@ following rules of thumb may help:
 * For most digital documents the concept of an item does not make sense and there
   is no URI of a particular copy. In this case the `document.edition` field should
   be used instead of `document.item`.
-* For some digital documents there may be no distinction between status `provided` 
-  and status `held`.  The status `provided` should be preferred when the same 
+* For some digital documents there may be no distinction between status `provided`
+  and status `held`.  The status `provided` should be preferred when the same
   document can be used by multiple patrons at the same time, and `held` should
   be used when the document can exclusively be used by the patron.
 
 ## PAIA core extensions to non-document services
 
 A future version of PAIA may be extended to support services not related to
-documents. For instance a patron may reserve a cabin or some other facility. 
+documents. For instance a patron may reserve a cabin or some other facility.
 The following methods may be added to PAIA core for this purpose:
 
 services
@@ -1364,6 +1503,10 @@ consists of three numbers, optionally followed by `+` and a suffix:
 Releases with functional changes are tagged with a version number and
 included at <https://github.com/gbv/paia/releases> with release notes.
 
+#### 1.4.0 (not released yet) {.unnumbered}
+
+* added PAIA core method to update patron
+
 #### 1.3.0 (2015-11-06) {.unnumbered}
 
 * introduced conditions and confirmations
@@ -1377,7 +1520,7 @@ included at <https://github.com/gbv/paia/releases> with release notes.
 
 #### 1.1.0 (2015-04-21) {.unnumbered}
 
-* added mandatory HTTP OPTIONS and optional HTTP HEAD requests 
+* added mandatory HTTP OPTIONS and optional HTTP HEAD requests
 * extended CORS headers (`Access-Control-...`)
 * fixed name of `WWW-Authenticate` header
 * removed request field `doc.storage` and deprecate field `doc.storageid`
