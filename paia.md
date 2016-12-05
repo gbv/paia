@@ -1270,7 +1270,7 @@ response fields
 A successful login request:
 
 ~~~~
-POST /auth/login
+POST /auth/login HTTP/1.1
 Host: example.org
 User-Agent: MyPAIAClient/1.0
 Accept: application/json
@@ -1327,21 +1327,44 @@ URL
     (in addition a PAIA auth server MAY support HTTP GET requests)
 
 request parameters
-  :  name     occ    data type     description
-    -------- ------ ----------- -------------------
-     patron   1..1   string      patron identifier
-    -------- ------ ----------- -------------------
+  :  name             occ    data type     description
+    ---------------- ------ ----------- -----------------------
+     patron           1..1   string      patron identifier
+     token_type_hint  0..1   string      OAuth Token Type Hint
+    ---------------- ------ ----------- -----------------------
 
 response fields
   :  name     occ    data type     description
     -------- ------ ----------- -------------------
-     patron   1..1   string      patron identifier
+     patron   0..1   string      patron identifier
     -------- ------ ----------- -------------------
 
 The logout method invalidates an access token, independent from the previous
 lifetime of the token. On success, the server MUST invalidate at least the
 access token that was used to access this method. The server MAY further
 invalidate additional access tokens that were created for the same patron.
+
+<div class="example">
+~~~~
+POST /auth/logout HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Accept: application/json
+Content-Type: application/x-www-form-urlencoded
+Authorization: Bearer 2YotnFZFEjr1zCsicMWpAA
+
+patron=8362432
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+~~~~
+
+~~~~ {.json}
+{
+  "patron": "3110372827"
+}
+~~~~
+</div>
 
 ## change
 
@@ -1563,6 +1586,7 @@ included at <https://github.com/gbv/paia/releases> with release notes.
 #### 1.4.0 (not released yet) {.unnumbered}
 
 * added PAIA core method to update patron
+* extend PAIA auth logout method with token_type_hint and optional response fields
 
 #### 1.3.0 (2015-11-06) {.unnumbered}
 
