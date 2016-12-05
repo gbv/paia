@@ -1143,6 +1143,63 @@ if not given and SHOULD be a class URI from the [Document Service Ontology]
 otherwise. If the fee was confirmed with a [confirmation], the value of
 `fee.feeid` SHOULD be the value of the confirmed condition option.
 
+<div class="example">
+~~~
+GET /core/123/fees HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Accept: application/json
+Authorization: Bearer 90245facece931f
+~~~
+
+~~~
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-Accepted-OAuth-Scopes: read_fees
+X-OAuth-Scopes: read_patron read_items read_fees
+~~~
+
+~~~{.json}
+{
+  "amount": "18.00 EUR",
+  "fee": [
+    {
+      "amount": "15.00 EUR",
+      "date": "2016-05-13T00:00:00Z",
+      "about": "annual fee"
+    },
+    {
+      "amount": "2.50 EUR",
+      "date": "2016-08-01T13:17:02Z",
+      "item": "http://bib.example.org/105359165",
+      "feeid": "http://example.org/services/home-delivery",
+      "feetype": "home delivery"
+    },
+    {
+      "amount": "0.50 EUR",
+      "date": "2016-09-02T12:30:00Z",
+      "item": "http://bib.example.org/105359165",
+      "about": "late return",
+      "feeid": "http://purl.org/ontology/dso#Loan",
+      "feetype": "loan"
+    }
+  ]
+}
+~~~
+</div>
+
+<div class="note">
+PAIA core server are not required to track lists of fees. A plain sum can be
+returned as  single value like this:
+
+~~~{.json}
+{
+  "amount": "3.00 EUR",
+  "fee": [ { "amount": "3.00 EUR" } ]
+}
+~~~
+</div>
+
 # PAIA auth
 
 **PAIA auth** defines three methods for authentication based on username and
