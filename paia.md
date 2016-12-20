@@ -251,16 +251,11 @@ and `Authorization`.
 
 ### Response headers {.unnumbered}
 
-Both PAIA core and PAIA auth servers SHOULD include the following HTTP response
+PAIA core and PAIA auth servers SHOULD include the following HTTP response
 headers:
 
 Content-Language
   : The language of textual response fields
-
-Content-Type
-  : The value `application/json` or `application/json; charset=utf-8` for
-    JSON response; the value `application/javascript` or
-    `application/javascript; charset=utf-8` for JSONP response
 
 X-OAuth-Scopes
   : A space-separated list of [scopes], the current token has authorized,
@@ -283,6 +278,17 @@ WWW-Authenticate
 Allow
   : A list of supported HTTP verbs (e.g. `GET, HEAD, OPTIONS`) for
     [request errors](#request-errors) with status 405
+
+PAIA core and PAIA auth servers MUST include the following HTTP response
+headers:
+
+Content-Type
+  : The value `application/json` or `application/json; charset=utf-8` for
+    JSON response; the value `application/javascript` or
+    `application/javascript; charset=utf-8` for JSONP response
+
+X-PAIA-Version
+  : The version of PAIA specification which the server was checked against.
 
 ## HTTP message body
 
@@ -852,6 +858,7 @@ Authorization: Bearer a0dedc54bbfae4b
 
 ~~~
 HTTP/1.1 200 OK
+X-PAIA-Version: 1.3.0
 Content-Type: application/json; charset=utf-8
 X-Accepted-OAuth-Scopes: read_patron
 X-OAuth-Scopes: read_fees read_items read_patron write_items
@@ -925,6 +932,7 @@ Authorization: Bearer 08568be488a2539
 
 ~~~
 HTTP/1.1 200 OK
+X-PAIA-Version: 1.3.0
 Content-Type: application/json; charset=utf-8
 X-Accepted-OAuth-Scopes: update_patron update_patron_email
 X-OAuth-Scopes: read_patron update_patron
@@ -975,6 +983,7 @@ Authorization: Bearer a0dedc54bbfae4b
 ~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
+X-PAIA-Version: 1.3.0
 X-Accepted-OAuth-Scopes: read_patron
 X-OAuth-Scopes: read_items read_patron
 ~~~
@@ -1155,6 +1164,7 @@ Authorization: Bearer 90245facece931f
 ~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
+X-PAIA-Version: 1.3.0
 X-Accepted-OAuth-Scopes: read_fees
 X-OAuth-Scopes: read_patron read_items read_fees
 ~~~
@@ -1307,6 +1317,7 @@ grant_type=password&username=alice02&password=jo-!97kdl%2B0tt
 ~~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
+X-PAIA-Version: 1.3.0
 X-OAuth-Scopes: read_patron read_fees read_items write_items
 Cache-Control: no-store
 Pragma: no-cache
@@ -1342,6 +1353,7 @@ Response to a rejected login request:
 ~~~~
 HTTP/1.1 403 Forbidden
 Content-Type: application/json; charset=utf-8
+X-PAIA-Version: 1.3.0
 Cache-Control: no-store
 Pragma: no-cache
 WWW-Authenticate: Bearer realm="PAIA auth example"
@@ -1395,6 +1407,7 @@ patron=8362432
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
+X-PAIA-Version: 1.3.0
 ~~~~
 
 ~~~~ {.json}
@@ -1489,13 +1502,13 @@ illustrate the semantics of PAIA concepts and methods and usage.
 
 ## Transitions of service states
 
-Six service status [data type](#data-types) values are possible. One document
-can have different status for different patrons and for different times. The
-following table illustrates reasonable transitions of service status with time
-for a fixed patron. For instance some document held by another patron is first
-requested (0 → 1) with PAIA method [request](#request), made available after
-return (1 → 4), picked up (4 → 3), renewed after some time with PAIA method
-[renew](#renew) (3 → 3) and later returned (3 → 0).
+Six service status [data type](#simple-data-types) values are possible. One
+document can have different status for different patrons and for different
+times. The following table illustrates reasonable transitions of service status
+with time for a fixed patron. For instance some document held by another patron
+is first requested (0 → 1) with PAIA method [request](#request), made available
+after return (1 → 4), picked up (4 → 3), renewed after some time with PAIA
+method [renew](#renew) (3 → 3) and later returned (3 → 0).
 
   transition →      0              1: reserved     2: ordered    3: held   4: provided     5: rejected
  -------------- --------------- --------------- --------------- --------- --------------- ------------------------------------
@@ -1625,11 +1638,12 @@ consists of three numbers, optionally followed by `+` and a suffix:
 Releases with functional changes are tagged with a version number and
 included at <https://github.com/gbv/paia/releases> with release notes.
 
-#### 1.3.1 (experimental release) {.unnumbered}
+#### 1.3.2 (pre-release) {.unnumbered}
 
 * added PAIA core method to update patron
 * extend PAIA auth login to optionally support OAuth client credentials grant
 * extend PAIA auth logout method with token_type_hint and optional response fields
+* make response headers Content-Type and X-PAIA-Version mandatory
 
 #### 1.3.0 (2015-11-06) {.unnumbered}
 
