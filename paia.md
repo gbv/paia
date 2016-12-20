@@ -290,6 +290,10 @@ Content-Type
 X-PAIA-Version
   : The version of PAIA specification which the server was checked against.
 
+Access-Control-Allow-Headers
+  : In response to a HTTP OPTIONS request this header MUST included the
+    values `Content-Type`, `Authorization`, and `Accept-Language`
+
 ## HTTP message body
 
 All POST and PATCH requests MUST include a HTTP message body.
@@ -1643,7 +1647,8 @@ included at <https://github.com/gbv/paia/releases> with release notes.
 * added PAIA core method to update patron
 * extend PAIA auth login to optionally support OAuth client credentials grant
 * extend PAIA auth logout method with token_type_hint and optional response fields
-* make response headers Content-Type and X-PAIA-Version mandatory
+* make response headers Content-Type, X-PAIA-Version, and 
+  Access-Control-Allow-Headers (the latter only for OPTIONS requests) mandatory
 
 #### 1.3.0 (2015-11-06) {.unnumbered}
 
