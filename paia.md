@@ -838,15 +838,16 @@ scope
   : read_patron
 
 response fields
-  :  name      occ    data type       description
-    --------- ------ --------------- ----------------------------------------------
-     name      1..1   string          full name of the patron
-     email     0..1   email           email address of the patron
-     address   0..1   string          freeform address of the patron
-     expires   0..1   datetime        patron account expiry
-     status    0..1   account state   current state (0, 1, 2, or 3)
-     type      0..n   URI             list of custom URIs to identify patron types
-    --------- ------ --------------- ----------------------------------------------
+  : name    occ  data type     description
+    ------- ---- ------------- ---------------------------------------------
+    name    1..1 string        full name of the patron
+    email   0..1 email         email address of the patron
+    address 0..1 string        freeform address of the patron
+    expires 0..1 datetime      patron account expiry
+    status  0..1 account state current state (0, 1, 2, or 3)
+    type    0..n URI           list of custom URIs to identify patron types
+    note    0..1 string        simple note to inform the patron
+    ------- ---- ------------- ---------------------------------------------
 
 PAIA server documentation SHOULD refer to a specialized API, such as LDAP, to
 get more detailed patron information.
@@ -1642,19 +1643,26 @@ consists of three numbers, optionally followed by `+` and a suffix:
 Releases with functional changes are tagged with a version number and
 included at <https://github.com/gbv/paia/releases> with release notes.
 
-#### 1.3.2 (pre-release) {.unnumbered}
+#### 1.3.3 (2017-03-29) {.unnumbered}
 
-* added PAIA core method to update patron
-* extend PAIA auth login to optionally support OAuth client credentials grant
-* extend PAIA auth logout method with token_type_hint and optional response fields
+* add patron field `note`
+
+#### 1.3.2 (2016-12-20) {.unnumbered}
+
 * make response headers Content-Type, X-PAIA-Version, and 
   Access-Control-Allow-Headers (the latter only for OPTIONS requests) mandatory
 
+#### 1.3.1 (2016-12-20) {.unnumbered}
+
+* add PAIA core method to update patron
+* extend PAIA auth login to optionally support OAuth client credentials grant
+* extend PAIA auth logout method with token_type_hint and optional response fields
+
 #### 1.3.0 (2015-11-06) {.unnumbered}
 
-* introduced conditions and confirmations
-* clarified uniqueness of storage/fee/condition id and textual description
-* removed experimental reference to service ontology
+* introduce conditions and confirmations
+* clarify uniqueness of storage/fee/condition id and textual description
+* remove experimental reference to service ontology
 
 #### 1.2.0 (2015-04-28) {.unnumbered}
 
@@ -1663,11 +1671,11 @@ included at <https://github.com/gbv/paia/releases> with release notes.
 
 #### 1.1.0 (2015-04-21) {.unnumbered}
 
-* added mandatory HTTP OPTIONS and optional HTTP HEAD requests
-* extended CORS headers (`Access-Control-...`)
-* fixed name of `WWW-Authenticate` header
-* removed request field `doc.storage` and deprecate field `doc.storageid`
-* improved documentation
+* add mandatory HTTP OPTIONS and optional HTTP HEAD requests
+* extend CORS headers (`Access-Control-...`)
+* fix name of `WWW-Authenticate` header
+* remove request field `doc.storage` and deprecate field `doc.storageid`
+* improve documentation
 
 #### 1.0.8 (2015-04-16)  {.unnumbered}
 
@@ -1677,27 +1685,27 @@ included at <https://github.com/gbv/paia/releases> with release notes.
 
 #### 1.0.7 (2015-04-14) {.unnumbered}
 
-* added patron field `type`
+* add patron field `type`
 
 #### 1.0.6 (2014-11-10) {.unnumbered}
 
-* added patron field `address`
+* add patron field `address`
 
 #### 1.0.5 (2014-07-16)  {.unnumbered}
 
-* added CORS HTTP headers
+* add CORS HTTP headers
 
 #### 1.0.4 (2014-07-14) {.unnumbered}
 
-* extended definition of datetime fields
+* extend definition of datetime fields
 
 #### 1.0.3 (2014-07-11) {.unnumbered}
 
-* added document fields `starttime` and `endtime`
+* add document fields `starttime` and `endtime`
 
 #### 1.0.1 (2013-11-20) {.unnumbered}
 
-* added `User-Agent` header
+* add `User-Agent` header
 
 ### Full changelog {.unnumbered}
 
