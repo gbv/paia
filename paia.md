@@ -9,7 +9,7 @@ PAIA consists of two independent parts:
 
 * **[PAIA core]** defines six basic [API methods] to look up loaned and reserved
   [items], to [request] and [cancel] loans and reservations, and to look up
-  [fees] and general [patron] information.
+  [fees], [messages], and general [patron] information.
 
 * **[PAIA auth]** defines three authentication [API methods] ([login],
   [logout], and password [change]) to get or invalidate an [access token], and to
@@ -67,12 +67,15 @@ method request, as defined in this document.
 [request]: #request
 [cancel]: #cancel
 [fees]: #fees
+[messages]: #messages
 [login]: #login
 [logout]: #logout
 [change]: #change
 
 [access token]: #access-tokens-and-scopes
 [scopes]: #access-token-and-scopes
+[access tokens and scopes]: #access-tokens-and-scopes
+[request error]: #request-errors
 
 
 # Basics
@@ -89,9 +92,11 @@ Each API method is accessed at a unique URL with a HTTP verb GET, POST, or PATCH
   POST [renew]: existing loans, reservations, …
   POST [cancel]: requests, reservations, …
   GET [fees]: paid and open charges
+  GET [messages]: individual messages
 --------------------------------------------------------------------------- --------------------------------------
 
 All supported API method URLs MUST also be accessible with HTTP verb OPTIONS.
+Unsupported API methods MUST result in a [request error] with error code 501.
 All API methods with HTTP verb GET MAY also be accessible with HTTP verb HEAD.
 
 API method URLs share a common base URL for PAIA core methods and common base
@@ -130,15 +135,21 @@ read_patron
 update_patron / update_patron_name / update_patron_email / update_patron_address
   : Update parts of the patron information by the [update patron] method.
 
-read_fees
-  : Get fees of a patron by the [fees] method.
-
 read_items
   : Get a patron’s item information by the [items] method.
 
 write_items
   : Request, renew, and cancel items by the [request], [renew], and
     [cancel] methods.
+
+read_fees
+  : Get fees of a patron by the [fees] method.
+
+read_messages
+  : Get messages to a patron by the [messages] method.
+
+delete_messages
+  : Delete messages to a patron listed by the [messages] method.
 
 For instance a particular token with scopes `read_patron` and `read_items` may
 be used for read-only access to information about a patron, including its
@@ -341,7 +352,7 @@ clients.
 
 The response header of a request error MUST include a `WWW-Authenticate` header field to
 indicate the need of providing a proper access token. The field MAY include a short name of the
-PAIA service with a "realm" parameter:
+PAIA server with a "realm" parameter:
 
     WWW-Authenticate: Bearer
     WWW-Authenticate: Bearer realm="PAIA Core"
@@ -569,6 +580,29 @@ unknown URI:
 ~~~~
 
 </div>
+
+## Patron messages
+
+[message]: #patron-messages
+
+A **message** is a key-value structure with the following fields:
+
+name    occ   data type description
+------- ----- --------- ---------------------------------------------------
+id      1..1  URI       unique message identifier as URI
+about   1..1  string    message text without markup
+date    1..1  datetime  message date
+url     0..1  URL       URL of a human-readable page with more information
+
+The unique message identifier MUST have the form
+
+    {base}{uri_escaped_patron_identifier}/messages/{local_id}
+
+where `base` is the PAIA core base URL and `local_id` is a local identifier,
+for instance a random number.  The local identifier SHOULD only contain digits
+and simple letters (a-z, A-Z).
+
+Messages can be read and deleted with PAIA core method [messages].
 
 ## Conditions and confirmations
 
@@ -866,7 +900,7 @@ HTTP/1.1 200 OK
 X-PAIA-Version: 1.3.0
 Content-Type: application/json; charset=utf-8
 X-Accepted-OAuth-Scopes: read_patron
-X-OAuth-Scopes: read_fees read_items read_patron write_items
+X-OAuth-Scopes: read_fees read_items read_patron write_items read_messages delete_messages
 ~~~
 
 ~~~{.json}
@@ -1215,6 +1249,39 @@ returned as  single value like this:
 ~~~
 </div>
 
+## messages
+
+purpose
+  : Look up individual patron messages
+
+HTTP verb and URL
+  : GET https://example.org/core/**{uri_escaped_patron_identifier}**/messages
+
+scope
+  : read_messages
+
+response fields
+  : name    occ  data type description
+    ------- ---- --------- --------------------------------------
+    message 0..n [message] list of messages (order is irrelevant)
+    ------- ---- --------- --------------------------------------
+
+A PAIA server MAY use field `note` of method [patron] as a simplified
+alternative to individual patron messages. A PAIA server SHOULD NOT use
+both ways to transport the same messages.
+
+Messages can also be retrieved individually from its message URI:
+
+GET https://example.org/core/**{uri_escaped_patron_identifier}**/messages/**{message_id}**
+
+Messages can be deleted individually at its message URI with scope `delete_messages`:
+
+DELETE https://example.org/core/**{uri_escaped_patron_identifier}**/messages/**{message_id}**
+
+<div class="example">
+...
+</div>
+
 # PAIA auth
 
 **PAIA auth** defines three methods to get access tokens and patron identifiers
@@ -1235,7 +1302,6 @@ A **PAIA auth** server MUST protect against brute force attacks (e.g. using
 rate-limitation or generating alerts). It is RECOMMENDED to further restrict
 access to **PAIA auth** to specific clients, for instance by additional
 authorization.
-
 
 ## login
 
@@ -1283,8 +1349,8 @@ RECOMMENDED.
 
 If no `scope` parameter is given, and username or client credentials do not
 imply a default scope, the scope SHOULD be set to the default value
-`read_patron read_fees read_items write_items` for full access to all PAIA core
-methods (see [access tokens and scopes ](#access-tokens-and-scopes)).
+`read_patron read_fees read_items write_items read_messages delete_messages`
+for full access to all PAIA core methods (see [access tokens and scopes]).
 
 The response format is a JSON structure as defined in section 5.1 (successful
 response) and section 5.2 (error response) of OAuth 2.0. The PAIA auth server
@@ -1323,7 +1389,7 @@ grant_type=password&username=alice02&password=jo-!97kdl%2B0tt
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 X-PAIA-Version: 1.3.0
-X-OAuth-Scopes: read_patron read_fees read_items write_items
+X-OAuth-Scopes: read_patron read_fees read_items write_items read_messages delete_messages
 Cache-Control: no-store
 Pragma: no-cache
 ~~~~
@@ -1334,7 +1400,7 @@ Pragma: no-cache
   "token_type": "Bearer",
   "expires_in": 3600,
   "patron": "8362432",
-  "scope": "read_patron read_fees read_items write_items"
+  "scope": "read_patron read_fees read_items write_items read_messages delete_messages"
 }
 ~~~~
 
