@@ -68,6 +68,7 @@ method request, as defined in this document.
 [cancel]: #cancel
 [fees]: #fees
 [messages]: #messages
+[delete messages]: #delete-messages
 [login]: #login
 [logout]: #logout
 [change]: #change
@@ -92,7 +93,7 @@ Each API method is accessed at a unique URL with a HTTP verb GET, POST, or PATCH
   POST [renew]: existing loans, reservations, …
   POST [cancel]: requests, reservations, …
   GET [fees]: paid and open charges
-  GET [messages]: individual messages
+  [GET](#messages)/[DELETE](#delete-messages): individual patron messages
 --------------------------------------------------------------------------- --------------------------------------
 
 All supported API method URLs MUST also be accessible with HTTP verb OPTIONS.
@@ -602,7 +603,7 @@ where `base` is the PAIA core base URL and `local_id` is a local identifier,
 for instance a random number.  The local identifier SHOULD only contain digits
 and simple letters (a-z, A-Z).
 
-Messages can be read and deleted with PAIA core method [messages].
+Messages can be read and deleted with PAIA core methods [messages] and [delete messages].
 
 ## Conditions and confirmations
 
@@ -1251,6 +1252,8 @@ returned as  single value like this:
 
 ## messages
 
+[messages]: #messages
+
 purpose
   : Look up individual patron messages
 
@@ -1270,17 +1273,179 @@ A PAIA server MAY use field `note` of method [patron] as a simplified
 alternative to individual patron messages. A PAIA server SHOULD NOT use
 both ways to transport the same messages.
 
-Messages can also be retrieved individually from its message URI:
+Single messages can also be retrieved by message URI:
 
 GET https://example.org/core/**{uri_escaped_patron_identifier}**/messages/**{message_id}**
 
-Messages can be deleted individually at its message URI with scope `delete_messages`:
+<div class="example">
+~~~
+GET /core/123/messages HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Accept: application/json
+Authorization: Bearer 90245facece931f
+~~~
+
+~~~
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-PAIA-Version: 1.3.0
+X-Accepted-OAuth-Scopes: read_messages
+X-OAuth-Scopes: read_patron read_items read_fees read_messages
+~~~
+
+~~~{.json}
+{
+  "message": [
+    {
+      "id": "http://example.org/core/123/messages/15",
+      "about": "Your ordered item is ready for pickup at the reading room.",
+      "date": "2018-06-04T12:24:28-06:00"
+    },
+    {
+      "id": "http://example.org/core/123/messages/17",
+      "about": "Your request is not possible, the ordered item is not available.",
+      "date": "2018-07-02T09:45:03-04:21"
+    },
+    {
+      "id": "http://example.org/core/123/messages/16",
+      "about": "Thank you for your request. Your order will be processed.",
+      "date": "2018-06-10T16:15:03-01:00"
+    }
+  ]
+}
+~~~
+</div>
+
+<div class="example">
+~~~
+GET /core/123/messages/15 HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Accept: application/json
+Authorization: Bearer 90245facece931f
+~~~
+
+~~~
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-PAIA-Version: 1.3.0
+X-Accepted-OAuth-Scopes: read_messages
+X-OAuth-Scopes: read_patron read_items read_fees read_messages
+~~~
+
+~~~{.json}
+{
+  "message": [
+    {
+      "id": "http://example.org/core/123/messages/15",
+      "about": "Your ordered item is ready for pickup at the reading room.",
+      "date": "2018-06-04T12:24:28-06:00"
+    }
+  ]
+}
+~~~
+</div>
+
+## delete messages
+
+[delete messages]: #delete-messages
+
+purpose
+  : Delete individual patron messages
+
+HTTP verb and URL
+  : DELETE https://example.org/core/**{uri_escaped_patron_identifier}**/messages
+
+scope
+  : delete_messages
+  
+request parameters
+  : name       occ    data type  description
+    ---------- ------ ---------- ----------------------
+    message    1..n   URI        list of message URIs
+    ---------- ------ ---------- ----------------------
+    
+response fields
+  : Same as [messages] method on success, [error](#request-errors) otherwise.
+
+Single messages can also be deleted by message URI:
 
 DELETE https://example.org/core/**{uri_escaped_patron_identifier}**/messages/**{message_id}**
 
 <div class="example">
-...
+~~~
+DELETE /core/123/messages HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Accept: application/json
+Authorization: Bearer 90245facece931f
+~~~
+
+~~~{.json}
+{
+  "message": [
+    "http://example.org/core/123/messages/15"
+  ]
+}
+~~~
+
+~~~
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-PAIA-Version: 1.3.0
+X-Accepted-OAuth-Scopes: delete_messages read_messages
+X-OAuth-Scopes: read_patron read_items read_fees read_messages delete_messages
+~~~
+
+~~~{.json}
+{
+  "message": [
+    {
+      "id": "http://example.org/core/123/messages/17",
+      "about": "Your request is not possible, the ordered item is not available.",
+      "date": "2018-07-02T09:45:03-04:21"
+    },
+    {
+      "id": "http://example.org/core/123/messages/16",
+      "about": "Thank you for your request. Your order will be processed.",
+      "date": "2018-06-10T16:15:03-01:00"
+    }
+  ]
+}
+~~~
 </div>
+
+<div class="example">
+~~~
+DELETE /core/123/messages/16 HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Accept: application/json
+Authorization: Bearer 90245facece931f
+~~~
+
+~~~
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-PAIA-Version: 1.3.0
+X-Accepted-OAuth-Scopes: delete_messages read_messages
+X-OAuth-Scopes: read_patron read_items read_fees read_messages delete_messages
+~~~
+
+~~~{.json}
+{
+  "message": [
+    {
+      "id": "http://example.org/core/123/messages/17",
+      "about": "Your request is not possible, the ordered item is not available.",
+      "date": "2018-07-02T09:45:03-04:21"
+    }
+  ]
+}
+~~~
+</div>
+
 
 # PAIA auth
 
