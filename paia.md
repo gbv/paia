@@ -9,7 +9,7 @@ PAIA consists of two independent parts:
 
 * **[PAIA core]** defines six basic [API methods] to look up loaned and reserved
   [items], to [request] and [cancel] loans and reservations, and to look up
-  [fees] and general [patron] information.
+  [fees], [notifications], and general [patron] information.
 
 * **[PAIA auth]** defines three authentication [API methods] ([login],
   [logout], and password [change]) to get or invalidate an [access token], and to
@@ -67,12 +67,16 @@ method request, as defined in this document.
 [request]: #request
 [cancel]: #cancel
 [fees]: #fees
+[notifications]: #notifications
+[delete notifications]: #delete-notifications
 [login]: #login
 [logout]: #logout
 [change]: #change
 
 [access token]: #access-tokens-and-scopes
 [scopes]: #access-token-and-scopes
+[access tokens and scopes]: #access-tokens-and-scopes
+[request error]: #request-errors
 
 
 # Basics
@@ -89,9 +93,11 @@ Each API method is accessed at a unique URL with a HTTP verb GET, POST, or PATCH
   POST [renew]: existing loans, reservations, …
   POST [cancel]: requests, reservations, …
   GET [fees]: paid and open charges
+  GET/DELETE [notifications]: patron notifications
 --------------------------------------------------------------------------- --------------------------------------
 
 All supported API method URLs MUST also be accessible with HTTP verb OPTIONS.
+Unsupported API methods MUST result in a [request error] with error code 501.
 All API methods with HTTP verb GET MAY also be accessible with HTTP verb HEAD.
 
 API method URLs share a common base URL for PAIA core methods and common base
@@ -130,15 +136,21 @@ read_patron
 update_patron / update_patron_name / update_patron_email / update_patron_address
   : Update parts of the patron information by the [update patron] method.
 
-read_fees
-  : Get fees of a patron by the [fees] method.
-
 read_items
   : Get a patron’s item information by the [items] method.
 
 write_items
   : Request, renew, and cancel items by the [request], [renew], and
     [cancel] methods.
+
+read_fees
+  : Get fees of a patron by the [fees] method.
+
+read_notifications
+  : Get notifications to a patron by the [notifications] method.
+
+delete_notifications
+  : Delete notifications to a patron listed by the [notifications] method.
 
 For instance a particular token with scopes `read_patron` and `read_items` may
 be used for read-only access to information about a patron, including its
@@ -156,9 +168,9 @@ other services.
 ## Request and response format
 
 Each API method call expects a set of request parameters, given as [URL query
-fields], [HTTP headers], or [HTTP message body] and return a JSON object. Most
-parts of PAIA core request parameters and JSON response can be mapped to RDF as
-defined by the [PAIA Ontology].
+fields], [HTTP headers], or [HTTP message body] and returns a JSON object or
+empty response body. Most parts of PAIA core request parameters and JSON
+response can be mapped to RDF as defined by the [PAIA Ontology].
 
 Request parameters and fields of response objects are defined in this document
 with:
@@ -341,7 +353,7 @@ clients.
 
 The response header of a request error MUST include a `WWW-Authenticate` header field to
 indicate the need of providing a proper access token. The field MAY include a short name of the
-PAIA service with a "realm" parameter:
+PAIA server with a "realm" parameter:
 
     WWW-Authenticate: Bearer
     WWW-Authenticate: Bearer realm="PAIA Core"
@@ -531,11 +543,11 @@ language.  PAIA clients MAY override the value of `storage` based on
 Unknown document URIs and failed attempts to request, renew, or cancel a
 document MUST NOT result in a [request error](#request-errors). Instead they
 are indicated by a document error with field `error`. Form and type of document
-errors are not specified, so clients SHOULD use these messages for display
+errors are not specified, so clients SHOULD use these notifications for display
 only.
 
 If `condition` is given, a PAIA server MUST also include a document error for
-the same document, for instance the error message "confirmation required". This
+the same document, for instance the error notification "confirmation required". This
 allows PAIA clients without support of [conditions and conformations] to treat
 conditions as simple, unrecoverable document errors.
 
@@ -554,7 +566,7 @@ PAIA server. The copy turned out to be lost, so the request was rejected
    "edition":   "http://example.org/documents/9876543",
    "requested": "http://example.org/documents/9876543",
    "starttime": "2014-07-12T14:07Z",
-   "error":     "sorry, we found out that our copy is lost!"
+   "error":     "Sorry, we found out that our copy is lost!"
 }
 ~~~~
 
@@ -569,6 +581,28 @@ unknown URI:
 ~~~~
 
 </div>
+
+## Notifications {#patron-notification}
+
+A **notification** is a key-value structure with the following fields:
+
+name    occ   data type description
+------- ----- --------- ---------------------------------------------------
+id      1..1  URI       unique notification identifier as URI
+about   1..1  string    notification text without markup
+date    1..1  datetime  notification date
+item    0..1  URI       item that is related to the notification
+url     0..1  URL       URL of a human-readable page with more information
+
+The unique notification identifier MUST have the form
+
+>`{base}{uri_escaped_patron_identifier}/notifications/{local_part}`
+
+where `base` is the PAIA core base URL and `local_part` is a local identifier,
+for instance a random number.  The local part SHOULD consist of digits (`0-9`),
+simple letters (`a-z`, `A-Z`), and hyphens (`-`) only.
+
+Notifications can be read and deleted with PAIA core method [notifications].
 
 ## Conditions and confirmations
 
@@ -863,10 +897,10 @@ Authorization: Bearer a0dedc54bbfae4b
 
 ~~~
 HTTP/1.1 200 OK
-X-PAIA-Version: 1.3.0
+X-PAIA-Version: 1.3.4
 Content-Type: application/json; charset=utf-8
 X-Accepted-OAuth-Scopes: read_patron
-X-OAuth-Scopes: read_fees read_items read_patron write_items
+X-OAuth-Scopes: read_fees read_items read_patron write_items read_notifications delete_notifications
 ~~~
 
 ~~~{.json}
@@ -937,7 +971,7 @@ Authorization: Bearer 08568be488a2539
 
 ~~~
 HTTP/1.1 200 OK
-X-PAIA-Version: 1.3.0
+X-PAIA-Version: 1.3.4
 Content-Type: application/json; charset=utf-8
 X-Accepted-OAuth-Scopes: update_patron update_patron_email
 X-OAuth-Scopes: read_patron update_patron
@@ -988,7 +1022,7 @@ Authorization: Bearer a0dedc54bbfae4b
 ~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-X-PAIA-Version: 1.3.0
+X-PAIA-Version: 1.3.4
 X-Accepted-OAuth-Scopes: read_patron
 X-OAuth-Scopes: read_items read_patron
 ~~~
@@ -1169,7 +1203,7 @@ Authorization: Bearer 90245facece931f
 ~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-X-PAIA-Version: 1.3.0
+X-PAIA-Version: 1.3.4
 X-Accepted-OAuth-Scopes: read_fees
 X-OAuth-Scopes: read_patron read_items read_fees
 ~~~
@@ -1215,6 +1249,152 @@ returned as  single value like this:
 ~~~
 </div>
 
+## notifications
+
+The PAIA core notifications method consists of three specific methods to [list
+notifications](#list-notifications), to [get a
+notification](#get-notification), and to [delete a
+notification](#delete-notification).
+
+A PAIA server MAY use field `note` of method [patron] as a simplified
+alternative to notifications. A PAIA server SHOULD NOT use both ways to
+transport the same notifications.
+
+### list notifications
+
+purpose
+  : Look up all patron notifications
+
+HTTP verb and URL
+  : GET https://example.org/core/**{uri_escaped_patron_identifier}**/notifications
+
+scope
+  : read_notifications
+
+response
+  : name         occ  data type                                description
+    ------------ ---- ---------------------------------------- --------------------------------------------
+    notification 0..n [notification](#patron-notification)     list of notifications (order is irrelevant)
+    ------------ ---- ---------------------------------------- --------------------------------------------
+
+<div class="example">
+~~~
+GET /core/123/notifications HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Accept: application/json
+Authorization: Bearer 90245facece931f
+~~~
+
+~~~
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-PAIA-Version: 1.3.4
+X-Accepted-OAuth-Scopes: read_notifications
+X-OAuth-Scopes: read_patron read_items read_fees read_notifications
+~~~
+
+~~~{.json}
+{
+  "notification": [
+    {
+      "id": "http://example.org/core/123/notifications/15",
+      "about": "Your ordered item is ready for pickup at the service desk.",
+      "item": "http://bib.example.org/8861930",       
+      "date": "2018-06-04T12:24:28-06:00"
+    },
+    {
+      "id": "http://example.org/core/123/notifications/17",
+      "about": "We found your library card, please consult the service desk!",
+      "date": "2018-07-02T09:45:03-04:21"
+    },
+    {
+      "id": "http://example.org/core/123/notifications/16",
+      "about": "The copy you requested is lost. Sorry!",
+      "item": "http://example.org/items/barcode1234567",
+      "date": "2018-06-10T16:15:03-01:00"
+    }
+  ]
+}
+~~~
+</div>
+
+### get notification
+
+purpose
+  : Get a patron notification
+
+HTTP verb and URL
+  : GET https://example.org/core/**{uri_escaped_patron_identifier}**/notifications/**{local_part}**
+
+scope
+  : read_notification
+ 
+response
+  : JSON object of type [notification](#patron-notification)
+
+
+<div class="example">
+~~~
+GET /core/123/notifications/15 HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Accept: application/json
+Authorization: Bearer 90245facece931f
+~~~
+
+~~~
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-PAIA-Version: 1.3.4
+X-Accepted-OAuth-Scopes: read_notifications
+X-OAuth-Scopes: read_patron read_items read_fees read_notifications
+~~~
+
+~~~{.json}
+{
+  "id": "http://example.org/core/123/notifications/15",
+  "about": "Your ordered item is ready for pickup at the service desk.",
+  "item": "http://bib.example.org/8861930",       
+  "date": "2018-06-04T12:24:28-06:00"
+}
+~~~
+</div>
+
+
+### delete notification
+
+purpose
+  : Delete a patron notification
+
+HTTP verb and URL
+  : DELETE https://example.org/core/**{uri_escaped_patron_identifier}**/notifications/**{local_part}**
+
+scope
+  : delete_notifications
+  
+response
+  : HTTP status code 204 without response body on success, [error](#request-errors) otherwise.
+
+<div class="example">
+~~~
+DELETE /core/123/notifications/16 HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Accept: application/json
+Authorization: Bearer 90245facece931f
+~~~
+
+~~~
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-PAIA-Version: 1.3.4
+X-Accepted-OAuth-Scopes: delete_notifications read_notifications
+X-OAuth-Scopes: read_patron read_items read_fees read_notifications delete_notifications
+~~~
+</div>
+
+
 # PAIA auth
 
 **PAIA auth** defines three methods to get access tokens and patron identifiers
@@ -1235,7 +1415,6 @@ A **PAIA auth** server MUST protect against brute force attacks (e.g. using
 rate-limitation or generating alerts). It is RECOMMENDED to further restrict
 access to **PAIA auth** to specific clients, for instance by additional
 authorization.
-
 
 ## login
 
@@ -1283,8 +1462,8 @@ RECOMMENDED.
 
 If no `scope` parameter is given, and username or client credentials do not
 imply a default scope, the scope SHOULD be set to the default value
-`read_patron read_fees read_items write_items` for full access to all PAIA core
-methods (see [access tokens and scopes ](#access-tokens-and-scopes)).
+`read_patron read_fees read_items write_items read_notifications delete_notifications`
+for full access to all PAIA core methods (see [access tokens and scopes]).
 
 The response format is a JSON structure as defined in section 5.1 (successful
 response) and section 5.2 (error response) of OAuth 2.0. The PAIA auth server
@@ -1322,8 +1501,8 @@ grant_type=password&username=alice02&password=jo-!97kdl%2B0tt
 ~~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-X-PAIA-Version: 1.3.0
-X-OAuth-Scopes: read_patron read_fees read_items write_items
+X-PAIA-Version: 1.3.4
+X-OAuth-Scopes: read_patron read_fees read_items write_items read_notifications delete_notifications
 Cache-Control: no-store
 Pragma: no-cache
 ~~~~
@@ -1334,7 +1513,7 @@ Pragma: no-cache
   "token_type": "Bearer",
   "expires_in": 3600,
   "patron": "8362432",
-  "scope": "read_patron read_fees read_items write_items"
+  "scope": "read_patron read_fees read_items write_items read_notifications delete_notifications"
 }
 ~~~~
 
@@ -1358,7 +1537,7 @@ Response to a rejected login request:
 ~~~~
 HTTP/1.1 403 Forbidden
 Content-Type: application/json; charset=utf-8
-X-PAIA-Version: 1.3.0
+X-PAIA-Version: 1.3.4
 Cache-Control: no-store
 Pragma: no-cache
 WWW-Authenticate: Bearer realm="PAIA auth example"
@@ -1412,7 +1591,7 @@ patron=8362432
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
-X-PAIA-Version: 1.3.0
+X-PAIA-Version: 1.3.4
 ~~~~
 
 ~~~~ {.json}
@@ -1642,6 +1821,10 @@ consists of three numbers, optionally followed by `+` and a suffix:
 
 Releases with functional changes are tagged with a version number and
 included at <https://github.com/gbv/paia/releases> with release notes.
+
+#### 1.3.4 (2018-09-10) {.unnumbered}
+
+* add support of [notifications](#patron-notification)
 
 #### 1.3.3 (2017-03-29) {.unnumbered}
 
