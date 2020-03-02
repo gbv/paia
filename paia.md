@@ -1177,6 +1177,7 @@ response fields
      fee.about     0..1   string      textual information about the fee
      fee.item      0..1   URI         item that caused the fee
      fee.edition   0..1   URI         edition that caused the fee
+     fee.group     0..1   string      textual identifier for grouping fees
      fee.feetype   0..1   string      textual description of the type of service that caused the fee
      fee.feeid     0..1   URI         URI of the type of service that caused the fee
     ------------- ------ ----------- ---------------------------------------------------------------
@@ -1821,6 +1822,10 @@ consists of three numbers, optionally followed by `+` and a suffix:
 
 Releases with functional changes are tagged with a version number and
 included at <https://github.com/gbv/paia/releases> with release notes.
+
+#### 1.3.5 (2020-03-02) {.unnumbered}
+
+* add optional fee field `group`
 
 #### 1.3.4 (2018-09-10) {.unnumbered}
 
