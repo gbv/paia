@@ -12,8 +12,8 @@ PAIA consists of two independent parts:
   [fees], [notifications], and general [patron] information.
 
 * **[PAIA auth]** defines three authentication [API methods] ([login],
-  [logout], and password [change]) to get or invalidate an [access token], and to
-  modify credentials.
+  [logout], [change] and [reset]) to get or invalidate 
+  and [access token], and to modify/reset credentials.
 
 Authentication in PAIA is based on **OAuth 2.0** ([RFC 6749]) with bearer
 tokens ([RFC 6750]) over HTTPS ([RFC 2818]).
@@ -72,6 +72,7 @@ method request, as defined in this document.
 [login]: #login
 [logout]: #logout
 [change]: #change
+[reset]: #reset
 
 [access token]: #access-tokens-and-scopes
 [scopes]: #access-token-and-scopes
@@ -90,7 +91,7 @@ Each API method is accessed at a unique URL with a HTTP verb GET, POST, or PATCH
   [GET](#patron)/[PATCH](#update-patron) patron: general patron information POST [login]: get access token
   GET [items]: current loans, reservations, …                               POST [logout]: invalidate access token
   POST [request]: new reservation, delivery, …                              POST [change]: modify credentials
-  POST [renew]: existing loans, reservations, …
+  POST [renew]: existing loans, reservations, …                             POST [reset]: reset credentials
   POST [cancel]: requests, reservations, …
   GET [fees]: paid and open charges
   GET/DELETE [notifications]: patron notifications
@@ -160,6 +161,9 @@ For PAIA auth there is an additional scope:
 
 change_password
   : Change the password of a patron with the PAIA auth [change] method.
+
+reset_password
+  : Reset the password of a patron with the PAIA auth [reset] method.
 
 A PAIA auth server MAY support additional scopes to share an access token with
 other services.
@@ -271,8 +275,8 @@ Content-Language
 
 X-OAuth-Scopes
   : A space-separated list of [scopes], the current token has authorized,
-    not limited to PAIA scopes. The `change_password` scope MAY be omitted
-    in PAIA core responses.
+    not limited to PAIA scopes. The scopes `change_password` and `reset_password`
+    MAY be omitted in PAIA core responses.
 
 X-Accepted-OAuth-Scopes
   : A space-separated list of [scopes], the current method checks for
@@ -373,7 +377,7 @@ GitHub API](http://developer.github.com/v3/#client-errors).
                               `access_denied` to prevent leaking patron identifiers.
 
  not_implemented        501   Known but unsupported request URL (for instance a PAIA auth server
-                              server may not implement `http://example.org/core/change`)
+                              server that does not implement `http://example.org/core/change`)
 
  invalid_request        405   Unexpected HTTP verb
 
@@ -948,7 +952,8 @@ instead.
 
 <div class="note">
 Update of patron fields expires, status, and type via this method is not
-supported.  To change a patron password see method [change] of PAIA auth.
+supported.  To change a patron password see methods [change] and [reset] of
+PAIA auth.
 </div>
 
 <div class="example">
@@ -1385,10 +1390,10 @@ X-OAuth-Scopes: read_patron read_items read_fees read_notifications delete_notif
 # PAIA auth
 
 **PAIA auth** defines three methods to get access tokens and patron identifiers
-([login]), invalidate access tokens ([logout]), and change passwords
-([change]). Access tokens and patron identifiers are required to access **[PAIA
-core]** methods. There MAY be additional or alternative ways to distribute and
-manage access tokens and patron identifiers.
+([login]), invalidate access tokens ([logout]), and change or reset passwords
+([change] and [reset]). Access tokens and patron identifiers are required to
+access **[PAIA core]** methods. There MAY be additional or alternative ways to
+distribute and manage access tokens and patron identifiers.
 
 A **PAIA auth** server acts as OAuth authorization server ([RFC 6749]) with
 password credentials grant, as defined in [section
@@ -1469,6 +1474,11 @@ response fields
     --------------  ------ ---------------------  -------------------------------------------------
 
 An access token SHOULD NOT be equal to the password of the same user.
+
+If a PAIA server supports [resetting passwords](#reset) it SHOULD be configured
+to allow getting access tokens with scope `reset_password` without request parameter
+`password`. In this case the server SHOULD also return tokens for non-existing patrons
+to avoid proping patron identifiers and/or user names.
 
 <div class="example">
 Successful login request with passwort grant:
@@ -1650,6 +1660,65 @@ X-PAIA-Version: 1.4.0
 }
 ~~~~
 </div>
+
+## reset
+
+purpose
+  : Reset password of a patron
+
+URL
+  : POST https://example.org/auth/**reset**
+
+scope
+  : reset_password
+
+request parameters
+  :  name           occ    data type   description
+    -------------- ------ ----------- ----------------------------
+     patron         1..1   string      Patron identifier
+    -------------- ------ ----------- ----------------------------
+
+response fields
+  :  name     occ    data type     description
+    -------- ------ ----------- -------------------
+     patron   1..1   string      patron identifier
+     message  0..1   string      optional message
+    -------- ------ ----------- -------------------
+
+If supported, this method initiates a password reset by means not defined by
+this specification (for instance a message is sent to the patron by email).
+The server SHOULD also create a [notification](#patron-notification) when a
+password has been resetted.
+
+The [login] method must be called first to retrieve an access token with scope
+`reset_passord` and to validate the patron identifier.
+
+<div class="example">
+~~~~
+POST /auth/reset HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Accept: application/json
+Accept-Language: en
+Content-Type: application/x-www-form-urlencoded
+Authorization: Bearer WwLagU19tegibdLWJ9R69s
+
+patron=8362432
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+X-PAIA-Version: 1.4.0
+Content-Language: en
+~~~~
+
+~~~~ {.json}
+{
+  "patron": "836243",
+  "message": "An email has been sent to you to set a new password"
+}
+~~~~
+</div>
+
 
 # Glossary
 
@@ -1836,11 +1905,12 @@ consists of three numbers, optionally followed by `+` and a suffix:
 Releases with functional changes are tagged with a version number and
 included at <https://github.com/gbv/paia/releases> with release notes.
 
-#### 1.4.0 (2023-0?-??) {.unnumbered}
+#### 1.4.0 (2023-08-24) {.unnumbered}
 
 * add optional comment field
 * remove deprecated fields `duedate` and `storageid`
 * make `patron` field of logout method optional
+* add PAIA auth method to reset passwords
 
 #### 1.3.4 (2018-09-10) {.unnumbered}
 
