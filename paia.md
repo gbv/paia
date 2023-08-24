@@ -1112,9 +1112,7 @@ response fields
      doc   1..n  [document]  list of documents (order is irrelevant)
     ----- ------ ---------- -----------------------------------------
 
-The response SHOULD include the same documents as requested. A client MAY also
-use the [items](#items) method to get the service status after renewal.
-
+The response SHOULD include the same documents as requested.
 
 ## cancel
 
@@ -1142,6 +1140,8 @@ response fields
     ------ ------ ---------- ----------------------------------------
      doc    1..n  [document]  list of documents (order is irrelevant)
     ------ ------ ---------- ----------------------------------------
+
+The response SHOULD include the same documents as requested.
 
 ## fees
 
@@ -1809,7 +1809,7 @@ consists of three numbers, optionally followed by `+` and a suffix:
 Releases with functional changes are tagged with a version number and
 included at <https://github.com/gbv/paia/releases> with release notes.
 
-#### 1.4.0 (2023-08-24) {.unnumbered}
+#### 1.4.0 (2023-0?-??) {.unnumbered}
 
 * add optional comment field
 * remove deprecated fields `duedate` and `storageid`
