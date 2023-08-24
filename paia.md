@@ -502,6 +502,7 @@ A **document** is a key-value structure with the following fields:
  requested    0..1   URI                   URI that was originally requested
  about        0..1   string                textual description of the document
  label        0..1   string                call number, shelf mark or similar item label
+ comment      0..1   string                comment on this document or its processing
  queue        0..1   nonnegative integer   number of waiting requests for the document or item
  renewals     0..1   nonnegative integer   number of times the document has been renewed
  reminder     0..1   nonnegative integer   number of times the patron has been reminded
@@ -1075,6 +1076,7 @@ request parameters
      doc.item        0..1  URI             URI of a particular item
      doc.edition     0..1  URI             URI of a particular edition
      doc.confirm     0..1  [confirmation]  Confirmation
+     doc.comment     0..1  string          comment about the document or request
      doc.storageid   0..1  URI             Requested document location (deprecated)
     --------------- ------ -------------- ------------------------------------------
 
@@ -1118,6 +1120,7 @@ request parameters
      doc.item      0..1  URI             URI of a particular item
      doc.edition   0..1  URI             URI of a particular edition
      doc.confirm   0..1  [confirmation]  Confirmation
+     doc.comment   0..1  string          comment about the document or renewal
     ------------- ------ -------------- -----------------------------
 
 response fields
@@ -1148,6 +1151,7 @@ request parameters
      doc.item      0..1   URI             URI of a particular item
      doc.edition   0..1   URI             URI of a particular edition
      doc.confirm   0..1   [confirmation]  Confirmation
+     doc.comment   0..1  string           comment about the document or cancelation
     ------------- ------ --------------- -----------------------------
 
 response fields
@@ -1821,6 +1825,10 @@ consists of three numbers, optionally followed by `+` and a suffix:
 
 Releases with functional changes are tagged with a version number and
 included at <https://github.com/gbv/paia/releases> with release notes.
+
+#### 1.3.5 (2023-08-24) {.unnumbered}
+
+* add optional comment field
 
 #### 1.3.4 (2018-09-10) {.unnumbered}
 
