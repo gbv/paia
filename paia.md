@@ -508,7 +508,6 @@ A **document** is a key-value structure with the following fields:
  reminder     0..1   nonnegative integer   number of times the patron has been reminded
  starttime    0..1   datetime              date and time when the status began
  endtime      0..1   datetime              date and time when the status will expire
- duedate      0..1   date                  date when the current status will expire (*deprecated*)
  cancancel    0..1   boolean               whether an ordered or provided document can be canceled
  canrenew     0..1   boolean               whether a document can be renewed
  error        0..1   string                textual document error, for instance if a request was rejected
@@ -532,9 +531,7 @@ The fields `starttime` and `endtime` MUST be interpreted as following:
  4        when the document is provided    when the provision will expire
  5        when the request was rejected    -
 
-Note that timezone information is mandatory in these fields.  The field
-`duedate` is deprecated. Clients SHOULD only use it as `endtime` if no
-`endtime` was given.
+Note that timezone information is mandatory in these fields.
 
 If both `storage` and `storageid` are given, a PAIA server MUST return
 identical values of `storage` for identical `id` and identical content
@@ -1077,7 +1074,6 @@ request parameters
      doc.edition     0..1  URI             URI of a particular edition
      doc.confirm     0..1  [confirmation]  Confirmation
      doc.comment     0..1  string          comment about the document or request
-     doc.storageid   0..1  URI             Requested document location (deprecated)
     --------------- ------ -------------- ------------------------------------------
 
 response fields
@@ -1088,19 +1084,6 @@ response fields
 
 The response SHOULD include the same documents as requested. A client MAY also
 use the [items](#items) method to get the service status after request.
-
-The field `doc.storageid` is deprecated and MUST be ignored if field
-`doc.confirm` is given. Otherwise a PAIA core server SHOULD map the value of
-field `doc.storageid` (e.g `http://example.org/a/location`) to a corresponding
-[confirmation] in field `doc.confirm`:
-
-```json
-{
-  "http://purl.org/ontology/paia#StorageCondition": [
-    "http://example.org/a/location"
-  ]
-}
-```
 
 ## renew
 
@@ -1826,9 +1809,10 @@ consists of three numbers, optionally followed by `+` and a suffix:
 Releases with functional changes are tagged with a version number and
 included at <https://github.com/gbv/paia/releases> with release notes.
 
-#### 1.3.5 (2023-08-24) {.unnumbered}
+#### 1.4.0 (2023-08-24) {.unnumbered}
 
 * add optional comment field
+* remove deprecated fields `duedate` and `storageid`
 
 #### 1.3.4 (2018-09-10) {.unnumbered}
 
