@@ -1550,7 +1550,7 @@ URL
 request parameters
   :  name             occ    data type     description
     ---------------- ------ ----------- -----------------------
-     patron           1..1   string      patron identifier
+     patron           0..1   string      patron identifier
      token_type_hint  0..1   string      OAuth Token Type Hint
     ---------------- ------ ----------- -----------------------
 
@@ -1564,6 +1564,8 @@ The logout method invalidates an access token, independent from the previous
 lifetime of the token. On success, the server MUST invalidate at least the
 access token that was used to access this method. The server MAY further
 invalidate additional access tokens that were created for the same patron.
+
+Note that this method does not fully conform to [RFC 7009  OAuth 2.0 token revocation](https://github.com/gbv/paia/issues/49) but provides same functionality.
 
 <div class="example">
 ~~~~
@@ -1813,6 +1815,7 @@ included at <https://github.com/gbv/paia/releases> with release notes.
 
 * add optional comment field
 * remove deprecated fields `duedate` and `storageid`
+* make `patron` field of logout method optional
 
 #### 1.3.4 (2018-09-10) {.unnumbered}
 
