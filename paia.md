@@ -895,7 +895,7 @@ Authorization: Bearer a0dedc54bbfae4b
 
 ~~~
 HTTP/1.1 200 OK
-X-PAIA-Version: 1.3.4
+X-PAIA-Version: 1.4.0
 Content-Type: application/json; charset=utf-8
 X-Accepted-OAuth-Scopes: read_patron
 X-OAuth-Scopes: read_fees read_items read_patron write_items read_notifications delete_notifications
@@ -969,7 +969,7 @@ Authorization: Bearer 08568be488a2539
 
 ~~~
 HTTP/1.1 200 OK
-X-PAIA-Version: 1.3.4
+X-PAIA-Version: 1.4.0
 Content-Type: application/json; charset=utf-8
 X-Accepted-OAuth-Scopes: update_patron update_patron_email
 X-OAuth-Scopes: read_patron update_patron
@@ -1020,7 +1020,7 @@ Authorization: Bearer a0dedc54bbfae4b
 ~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-X-PAIA-Version: 1.3.4
+X-PAIA-Version: 1.4.0
 X-Accepted-OAuth-Scopes: read_patron
 X-OAuth-Scopes: read_items read_patron
 ~~~
@@ -1190,7 +1190,7 @@ Authorization: Bearer 90245facece931f
 ~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-X-PAIA-Version: 1.3.4
+X-PAIA-Version: 1.4.0
 X-Accepted-OAuth-Scopes: read_fees
 X-OAuth-Scopes: read_patron read_items read_fees
 ~~~
@@ -1276,7 +1276,7 @@ Authorization: Bearer 90245facece931f
 ~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-X-PAIA-Version: 1.3.4
+X-PAIA-Version: 1.4.0
 X-Accepted-OAuth-Scopes: read_notifications
 X-OAuth-Scopes: read_patron read_items read_fees read_notifications
 ~~~
@@ -1333,7 +1333,7 @@ Authorization: Bearer 90245facece931f
 ~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-X-PAIA-Version: 1.3.4
+X-PAIA-Version: 1.4.0
 X-Accepted-OAuth-Scopes: read_notifications
 X-OAuth-Scopes: read_patron read_items read_fees read_notifications
 ~~~
@@ -1375,7 +1375,7 @@ Authorization: Bearer 90245facece931f
 ~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-X-PAIA-Version: 1.3.4
+X-PAIA-Version: 1.4.0
 X-Accepted-OAuth-Scopes: delete_notifications read_notifications
 X-OAuth-Scopes: read_patron read_items read_fees read_notifications delete_notifications
 ~~~
@@ -1488,7 +1488,7 @@ grant_type=password&username=alice02&password=jo-!97kdl%2B0tt
 ~~~~
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-X-PAIA-Version: 1.3.4
+X-PAIA-Version: 1.4.0
 X-OAuth-Scopes: read_patron read_fees read_items write_items read_notifications delete_notifications
 Cache-Control: no-store
 Pragma: no-cache
@@ -1524,7 +1524,7 @@ Response to a rejected login request:
 ~~~~
 HTTP/1.1 403 Forbidden
 Content-Type: application/json; charset=utf-8
-X-PAIA-Version: 1.3.4
+X-PAIA-Version: 1.4.0
 Cache-Control: no-store
 Pragma: no-cache
 WWW-Authenticate: Bearer realm="PAIA auth example"
@@ -1580,7 +1580,7 @@ patron=8362432
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
-X-PAIA-Version: 1.3.4
+X-PAIA-Version: 1.4.0
 ~~~~
 
 ~~~~ {.json}
@@ -1625,6 +1625,31 @@ The server MUST check
 A PAIA server MAY reject this method and return an [error response] with error
 code `access_denied` (403) or error code `not_implemented` (501). On success,
 the patron identifier is returned.
+
+<div class="example">
+Successfully change password:
+
+~~~~
+POST /auth/change HTTP/1.1
+Host: example.org
+User-Agent: MyPAIAClient/1.0
+Accept: application/json
+Content-Type: application/x-www-form-urlencoded
+Authorization: Bearer KrLmpnAjEZv9DK85ULS3K3
+
+patron=8362432&old_password=12345&new_password=BKaa8p90gq3nhkiXX4Fxkqii
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+X-PAIA-Version: 1.4.0
+~~~~
+
+~~~~ {.json}
+{
+  "patron": "836243"
+}
+~~~~
+</div>
 
 # Glossary
 
