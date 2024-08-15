@@ -1001,7 +1001,7 @@ HTTP verb and URL
   : GET https://example.org/core/**{uri_escaped_patron_identifier}**/items
 
 scope
-  : read_item
+  : read_items
 
 response fields
   :  name   occ    data type  description
@@ -1069,7 +1069,7 @@ HTTP verb and URL
   : POST https://example.org/core/**{uri_escaped_patron_identifier}**/request
 
 scope
-  : write_item
+  : write_items
 
 request parameters
   :  name            occ   data type      description
@@ -1100,7 +1100,7 @@ HTTP verb and URL
   : POST https://example.org/core/**{uri_escaped_patron_identifier}**/renew
 
 scope
-  : write_item
+  : write_items
 
 request parameters
   : ------------- ------ -------------- -----------------------------
@@ -1128,7 +1128,7 @@ HTTP verb and URL
   : POST https://example.org/core/**{uri_escaped_patron_identifier}**/cancel
 
 scope
-  : write_item
+  : write_items
 
 request parameters
   :  name          occ    data type
@@ -1320,7 +1320,7 @@ HTTP verb and URL
   : GET https://example.org/core/**{uri_escaped_patron_identifier}**/notifications/**{local_part}**
 
 scope
-  : read_notification
+  : read_notifications
  
 response
   : JSON object of type [notification](#patron-notification)
