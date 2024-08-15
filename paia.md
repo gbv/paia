@@ -450,8 +450,8 @@ datetime
     `2016-03-09T11:58:19+10:00`, and `2017-08-21T12:24:28-06:00`.
 
 money
-  : A monetary value with currency (format `[0-9]+\.[0-9][0-9] [A-Z][A-Z][A-Z]`),
-    for instance `0.80 USD`.
+  : A monetary value with currency (format `-?[0-9]+\.[0-9][0-9] [A-Z][A-Z][A-Z]`),
+    for instance `0.80 USD`. May also be negative.
 
 email
   : A syntactically correct email address.
